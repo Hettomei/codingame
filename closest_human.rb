@@ -45,6 +45,10 @@ class Ash
     @closest_zombie ||= @zombies.closest(self)
   end
 
+  def can_protect?(human)
+    human.distance(self) < CAN_KILL_ZOMBIE
+  end
+
 end
 
 class Humans
@@ -210,7 +214,7 @@ loop do
   if rest_move > 0
     rest_move -= 1
     coord = ash.closest_zombie
-  elsif (ash.on?(human) && !ash.can_kill_a_zombie?)
+  elsif (ash.can_protect?(human) && !ash.can_kill_a_zombie?)
     rest_move = 1
     coord = ash.closest_zombie
   else
