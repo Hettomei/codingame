@@ -46,7 +46,7 @@ class Ash
   end
 
   def can_protect?(human)
-    human.distance(self) < CAN_KILL_ZOMBIE / 2
+    human.distance(self) < 2000
   end
 
 end
