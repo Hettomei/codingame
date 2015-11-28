@@ -10,16 +10,31 @@ module Distance
     (x - obj.x) ** 2 + (y - obj.y) ** 2
   end
 
+  def on?(obj)
+    x == obj.x && y == obj.y
+  end
 end
 
 class Ash
 
   attr_reader :x, :y
+  attr_accessor :zombies
+
+  include Distance
 
   def initialize str
     ash = str.split(" ").map { |x| x.to_i }
     @x  = ash[0]
     @y  = ash[1]
+  end
+
+  def can_kill_a_zombie?
+    # 2000 unité
+    Math.sqrt(closest_zombie.distance(self)).floor < 2000
+  end
+
+  def closest_zombie
+    @closest_zombie ||= @zombies.closest(self)
   end
 
 end
@@ -139,10 +154,20 @@ loop do
     zs << Zombie.new(gets)
   end
 
+  ash.zombies = zs
+
   if humans.count == 1
     coord = zs.closest(ash)
   else
-    coord = humans.closest(ash)
+    human = humans.closest(ash)
+    # Si on est sur un humain,
+    # mais qu'on peut tuer personne,
+    # alors on s'approche du zombie le plus proche
+    if ash.on?(human) && !ash.can_kill_a_zombie?
+      coord = zs.closest(ash)
+    else
+      coord = human
+    end
   end
 
   puts "#{coord.x} #{coord.y}"
