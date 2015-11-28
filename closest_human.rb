@@ -17,20 +17,28 @@ end
 
 class Ash
 
+  CAN_KILL_ZOMBIE = 2000 ** 2
   attr_reader :x, :y
-  attr_accessor :zombies
 
   include Distance
 
-  def initialize str
+  def initialize str, zombies
     ash = str.split(" ").map { |x| x.to_i }
     @x  = ash[0]
     @y  = ash[1]
+    @zombies = zombies
   end
 
   def can_kill_a_zombie?
-    # 2000 unité
-    Math.sqrt(closest_zombie.distance(self)).floor < 2000
+    can_kill?(closest_zombie)
+  end
+
+  def can_kill?(zombie)
+    zombie.distance(self) < CAN_KILL_ZOMBIE
+  end
+
+  def can_kill_on_next?(zombie)
+    zombie.distance(self) < CAN_KILL_ZOMBIE * 2
   end
 
   def closest_zombie
@@ -70,9 +78,15 @@ class Humans
     @humans.count
   end
 
+  def destroy(human)
+    @humans.delete(human)
+  end
+
 end
 
 class Human
+
+  KILLED_BY_ZOMBI = 360000
 
   include Distance
 
@@ -82,6 +96,14 @@ class Human
     @id = human[0]
     @x  = human[1]
     @y  = human[2]
+  end
+
+  def considered_dead?(zombies)
+    closest_zombie(zombies).distance(self) < KILLED_BY_ZOMBI
+  end
+
+  def closest_zombie(zombies)
+    @closest_zombie ||= zombies.closest(self)
   end
 
 end
@@ -137,12 +159,38 @@ class Zombie
 end
 
 
+def human_ash_can_save(humans, ash, zombies)
+  human = nil
+
+  loop do
+    human = humans.closest(ash)
+
+    if humans.count == 1
+      break
+    end
+
+    if human.considered_dead?(zombies)
+      zombie = human.closest_zombie(zombies)
+      if ash.can_kill_on_next?(zombie)
+        break
+      else
+        humans.destroy(human)
+      end
+    else
+      break
+    end
+  end
+
+  human
+end
+
 STDOUT.sync = true # DO NOT REMOVE
 
 rest_move = 0
 
 loop do
-  ash = Ash.new(gets)
+  zombies = Zombies.new
+  ash = Ash.new(gets, zombies)
 
   human_count = gets.to_i
   humans = Humans.new
@@ -151,29 +199,22 @@ loop do
   end
 
   zombie_count = gets.to_i
-  zs = Zombies.new
   zombie_count.times do
-    zs << Zombie.new(gets)
+    zombies << Zombie.new(gets)
   end
 
-  ash.zombies = zs
-
-  if humans.count == 1
-    coord = zs.closest(ash)
+  human = human_ash_can_save(humans, ash, zombies)
+  # Si on est sur un humain,
+  # mais qu'on peut tuer personne,
+  # alors on s'approche du zombie le plus proche
+  if rest_move > 0
+    rest_move -= 1
+    coord = ash.closest_zombie
+  elsif (ash.on?(human) && !ash.can_kill_a_zombie?)
+    rest_move = 1
+    coord = ash.closest_zombie
   else
-    human = humans.closest(ash)
-    # Si on est sur un humain,
-    # mais qu'on peut tuer personne,
-    # alors on s'approche du zombie le plus proche
-    if rest_move > 0
-      rest_move -= 1
-      coord = ash.closest_zombie
-    elsif (ash.on?(human) && !ash.can_kill_a_zombie?)
-      rest_move = 1
-      coord = ash.closest_zombie
-    else
-      coord = human
-    end
+    coord = human
   end
 
   puts "#{coord.x} #{coord.y}"
