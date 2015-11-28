@@ -139,6 +139,8 @@ end
 
 STDOUT.sync = true # DO NOT REMOVE
 
+rest_move = 0
+
 loop do
   ash = Ash.new(gets)
 
@@ -163,8 +165,12 @@ loop do
     # Si on est sur un humain,
     # mais qu'on peut tuer personne,
     # alors on s'approche du zombie le plus proche
-    if ash.on?(human) && !ash.can_kill_a_zombie?
-      coord = zs.closest(ash)
+    if rest_move > 0
+      rest_move -= 1
+      coord = ash.closest_zombie
+    elsif (ash.on?(human) && !ash.can_kill_a_zombie?)
+      rest_move = 1
+      coord = ash.closest_zombie
     else
       coord = human
     end
