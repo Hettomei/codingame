@@ -51,6 +51,10 @@ class Humans
     human
   end
 
+  def count
+    @humans.count
+  end
+
 end
 
 class Human
@@ -94,6 +98,10 @@ class Zombies
     zombie
   end
 
+  def count
+    @zombies.count
+  end
+
 end
 
 class Zombie
@@ -131,8 +139,11 @@ loop do
     zs << Zombie.new(gets)
   end
 
-  z = zs.closest(ash)
-  h = humans.closest(ash)
+  if humans.count == 1
+    coord = zs.closest(ash)
+  else
+    coord = humans.closest(ash)
+  end
 
-  puts "#{h.x} #{h.y}"
+  puts "#{coord.x} #{coord.y}"
 end
