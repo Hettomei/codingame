@@ -211,7 +211,7 @@ loop do
     rest_move -= 1
     coord = ash.closest_zombie
   elsif (ash.on?(human) && !ash.can_kill_a_zombie?)
-    rest_move = 2
+    rest_move = 3
     coord = ash.closest_zombie
   else
     coord = human
