@@ -12,16 +12,16 @@ STDOUT.sync = true # DO NOT REMOVE
 end
 
 # game loop
-# a = 0
+a = 0
 loop do
   # v_speed: the vertical speed (in m/s), can be negative.
   # fuel: the quantity of remaining fuel in liters.
   # power: the thrust power (0 to 4).
   x, y, h_speed, v_speed, fuel, rotate, power = gets.split(" ").collect {|x| x.to_i}
 
-  # a += 1
+  a += 1
   # go up
-  if v_speed < -35
+  if a > 12
     puts "0 4"
   else
     puts "0 0"
