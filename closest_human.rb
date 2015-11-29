@@ -46,7 +46,7 @@ class Ash
   end
 
   def can_protect?(human)
-    human.distance(self) < 2000
+    human.distance(self) < 100
   end
 
 end
