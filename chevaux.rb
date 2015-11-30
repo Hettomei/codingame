@@ -5,6 +5,7 @@ chevaux = []
   chevaux << gets.to_i
 end
 
+chevaux.sort!
 previous = nil
 value = 10000000
 
