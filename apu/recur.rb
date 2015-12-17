@@ -20,12 +20,11 @@ class Node
     if all[y + 1] && all[y + 1][x]
       @bottom = Node.new(x, y + 1, all)
     end
-
   end
 
   def print_coord
     if good?
-      "#{x} #{y}"
+      "#{@x} #{@y}"
     else
       "-1 -1"
     end
@@ -59,21 +58,34 @@ class Node
     end
   end
 
+  def next_valid_bottom
+    if @bottom.nil?
+      @bottom
+    elsif @bottom.good?
+      @bottom
+    elsif @bottom.bad?
+      @bottom.next_valid_bottom
+    end
+  end
+
   def next_valid_existing_node
     if @right.nil?
-      if @bottom.nil?
-        nil
-      elsif @bottom.good?
-        @bottom
-      elsif @bottom.bad?
-        @bottom.next_valid_existing_node
-      end
+      @right
     elsif @right.good?
       @right
     elsif @right.bad?
       @right.next_valid_existing_node
     end
   end
+
+  def print_sibling
+    puts "#{print_coord} #{valid_right.print_coord} #{valid_bottom.print_coord}"
+    b = gets
+    puts b && b.chomp
+    puts '-'
+    (next_valid_existing_node && next_valid_existing_node.print_sibling) || (next_valid_bottom && next_valid_bottom.print_sibling)
+  end
+
 end
 
 width = gets.to_i
@@ -96,11 +108,9 @@ if next_node.bad?
   next_node = next_node.next_valid_existing_node
 end
 
-# begin
-#   a = "#{next_node.print_coord} #{next_node.valid_right.print_coord} #{next_node.valid_bottom.print_coord}"
-#   puts a
-#   b = gets.chomp
-#   puts b
-#   puts a == b
-#   next_node = next_node.next_valid_existing_node
-# end while next_node
+next_node.print_sibling if next_node # needed if all point are "."
+
+begin
+  b = gets
+  p b
+end while b
