@@ -1,12 +1,12 @@
 # Auto-generated code below aims at helping you parse
 # the standard input according to the problem statement.
 
-read N
+# read N
 
-previous=-10000000
-value=10000000
+previous=-110000000
+value=110000000
 
-for i in $(cat /dev/stdin | sort -n ); do
+for i in $(cat tie.txt | sort -n ); do
   newVal=$(($i - $previous))
   if [ $newVal -lt $value ]
   then
