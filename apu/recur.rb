@@ -1,11 +1,10 @@
-require 'pp'
-
 STDOUT.sync = true # DO NOT REMOVE
 
 class Node
 
-  attr_reader :x, :y
+  @@already_print = []
 
+  attr_reader :x, :y
   def initialize(x, y, all)
     @x = x
     @y = y
@@ -31,11 +30,15 @@ class Node
   end
 
   def good?
-    @c == "0"
+    @c == "0" && !printed?
   end
 
   def bad?
     !good?
+  end
+
+  def printed?
+    @@already_print.find{ |node| node.x == @x && node.y == @y }
   end
 
   def valid_right
@@ -64,26 +67,30 @@ class Node
     elsif @bottom.good?
       @bottom
     elsif @bottom.bad?
-      @bottom.next_valid_bottom
+      @bottom.next_valid_right
     end
   end
 
-  def next_valid_existing_node
+  def next_valid_right
     if @right.nil?
       @right
     elsif @right.good?
       @right
     elsif @right.bad?
-      @right.next_valid_existing_node
+      @right.next_valid_right
     end
   end
 
   def print_sibling
+    return nil if printed?
+
     puts "#{print_coord} #{valid_right.print_coord} #{valid_bottom.print_coord}"
+    @@already_print << self
     b = gets
-    puts b && b.chomp
+    puts b.chomp if b
     puts '-'
-    (next_valid_existing_node && next_valid_existing_node.print_sibling) || (next_valid_bottom && next_valid_bottom.print_sibling)
+
+    (next_valid_right && next_valid_right.print_sibling) && (next_valid_bottom && next_valid_bottom.print_sibling)
   end
 
 end
@@ -91,8 +98,6 @@ end
 width = gets.to_i
 height = gets.to_i
 all = []
-
-y = 0
 
 height.times do
   all << gets.chomp.chars
@@ -105,12 +110,13 @@ end
 next_node = Node.new(0, 0, all)
 
 if next_node.bad?
-  next_node = next_node.next_valid_existing_node
+  next_node = next_node.next_valid_right
 end
 
 next_node.print_sibling if next_node # needed if all point are "."
 
+p "----------------"
 begin
   b = gets
-  p b
+  p (b.chomp) if b
 end while b
