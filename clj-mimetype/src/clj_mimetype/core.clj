@@ -1,26 +1,28 @@
 (ns clj-mimetype.core
   (:gen-class))
 
-(def a '(4
-         7
-         png image/png
-         TIFF image/TIFF
-         css text/css
-         TXT text/plain
-         example.TXT
-         referecnce.txt
-         strangename.tiff
-         resolv.CSS
-         matrix.TiFF
-         lanDsCape.Png
-         extract.cSs))
-
-
 (defn -main
-  "I don't do a whole lot ... yet."
   [& args]
-  (println "write")
-  (let [n (read) extension (repeatedly n (fn []([(read) (read)])))]
-    (let [clean-ext (map [] extension)]
-    (println extension)))
-    (println 'fin))
+  (println "          ")
+  (println "          ")
+  (let [n-extension (read) n-file (read) _ (read-line)]
+    (println n-extension n-file)
+    (let [extensions (repeatedly n-extension read-line)
+          map-ext (map #(clojure.string/split % #" ") extensions)
+          down (map (fn [a] [(clojure.string/lower-case (first a)) (last a)]) map-ext)
+          ]
+      (prn extensions)
+      (prn map-ext)
+      (prn down)
+      (println "-------------")
+      (let [files (repeatedly n-file read-line)
+            files-low (map (fn [f](clojure.string/lower-case f)) files)
+            files-ext (map (fn [f](clojure.string/split f #".")) files-low)
+            ]
+        (prn files)
+        (prn files-low)
+        (prn files-ext)
+        )
+      )
+    )
+  (println 'fin))
