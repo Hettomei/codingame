@@ -23,10 +23,5 @@
           files-replace (map (fn [a] (str/replace a #"\.$" "-")) files-low)
           files-ext (array-to-split files-replace)
           only-ext (map #(last (rest %)) files-ext)]
-      (prn files-low)
-      (prn files-replace)
-      (prn files-ext)
-      (prn only-ext)
-      (println "---------------------------------------------------")
       (println (str/join "\n" (map #(ext-to-mime % "UNKNOWN") only-ext)))
       )))
