@@ -2,6 +2,11 @@
   (:gen-class)
   (:require [clojure.string :as str]))
 
+(defn array-to-low [array]
+  (map (fn [e](str/lower-case e)) array))
+
+(defn array-to-split [array]
+  (map (fn [f](str/split f #"\.")) array))
 
 (defn -main
   [& args]
@@ -18,13 +23,14 @@
       (prn down)
       (println "-------------")
       (let [files (repeatedly n-file read-line)
-            files-low (map (fn [f](str/lower-case f)) files)
-            files-ext (map (fn [f](str/split f #"\.")) files-low)
+            files-low (array-to-low files)
+            files-ext (array-to-split files-low)
+            only-ext (map #(second %) files-ext)
             ]
         (prn files)
         (prn files-low)
         (prn files-ext)
+        (prn only-ext)
         )
-      )
-    )
+      ))
   (println 'fin))
