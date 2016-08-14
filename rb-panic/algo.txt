@@ -1,0 +1,23 @@
+algo #1:
+
+regarder la direction
+la suivre
+si mur
+on block
+
+
+probleme : nique tous les tours.
+
+
+algo #2:
+
+chercher le prochain assenceur
+-> si part à RIGHT
+   et ascenseur à droite , WAIT
+-> si part à LEFT
+   et ascenseur à droite , BLOCK
+
+si plus d'ascenseur
+chercher la sortie
+
+je vais transformer la sortie en ascenseur
