@@ -17,14 +17,9 @@
 
 (defn -main [& args]
   (let [LON (str-to-num (read-line)) LAT (str-to-num (read-line)) N (str-to-num (read-line))]
-    (pprint LON)
-    (pprint LAT)
-    (pprint N)
     (let [DEFIB (repeatedly N #(clojure.string/split (read-line) #";"))
           DEFIB2 (map (fn[a][(second a) (str-to-num (get a 4)) (str-to-num (get a 5))]) DEFIB )]
-      (pprint DEFIB2)
       (let [DEFIB3 (map (fn[a] [ (first a) (distance LON LAT (second a) (last a)) ]) DEFIB2 )]
-        (pprint DEFIB3)
         (println (first (apply min-key last DEFIB3)))
         )
   )))

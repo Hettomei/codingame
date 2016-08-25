@@ -2,7 +2,7 @@
 # the standard input according to the problem statement.
 
 @n = gets.to_i # the number of temperatures to analyse
-@temps = gets.chomp.split(" ").map(&:to_i).sort # the n temperatures expressed as integers ranging from -273 to 5526
+@temps = gets.chomp # the n temperatures expressed as integers ranging from -273 to 5526
 @temps = [0] if @temps.empty?
 
 STDERR.puts @n.inspect
