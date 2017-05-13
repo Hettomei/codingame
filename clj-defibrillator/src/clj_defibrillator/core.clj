@@ -20,6 +20,4 @@
     (let [DEFIB (repeatedly N #(clojure.string/split (read-line) #";"))
           DEFIB2 (map (fn[a][(second a) (str-to-num (get a 4)) (str-to-num (get a 5))]) DEFIB )]
       (let [DEFIB3 (map (fn[a] [ (first a) (distance LON LAT (second a) (last a)) ]) DEFIB2 )]
-        (println (first (apply min-key last DEFIB3)))
-        )
-  )))
+        (println (first (apply min-key last DEFIB3)))))))

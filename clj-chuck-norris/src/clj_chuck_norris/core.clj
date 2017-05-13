@@ -25,18 +25,21 @@
   [str-1-or-0]
   (let [only-0 (clojure.string/replace str-1-or-0 #"1" "0")]
     (if (= \1 (first str-1-or-0))
-      (str "0" only-0)
-      (str "00" only-0))))
+      (str "0" " " only-0)
+      (str "00" " " only-0))))
+
+(defn to-7-bit
+  [ascii]
+  (let [str-bin (Integer/toBinaryString ascii)]
+    (if (count str-bin < 7
+  )
 
 (defn -main [& args]
   (let [MESSAGE (read-line)
         ascii (map int MESSAGE)
-        str-binary (apply str (map #(Integer/toBinaryString %) ascii))
+        str-binary (apply str (map to-7-bit ascii))
         seq-binary (re-seq #"0+|1+" str-binary)
         ]
-    (prn MESSAGE)
-    (prn ascii)
     (prn str-binary)
-    (prn seq-binary)
     (println (clojure.string/join " " (map to-chuck seq-binary)))
     ))
