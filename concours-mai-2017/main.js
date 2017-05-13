@@ -1,58 +1,62 @@
+/* global readline print */
+
 /**
  * Bring data on patient samples from the diagnosis machine to the laboratory with enough molecules to produce medicine!
  **/
+import { p, createPlayer, createAvailableMolecules, createSample } from './utils'
 
-var projectCount = parseInt(readline());
-for (var i = 0; i < projectCount; i++) {
-    var inputs = readline().split(' ');
-    var a = parseInt(inputs[0]);
-    var b = parseInt(inputs[1]);
-    var c = parseInt(inputs[2]);
-    var d = parseInt(inputs[3]);
-    var e = parseInt(inputs[4]);
+function voidd (e) { return e }
+
+function onlyCloud (samples) {
+  return samples.filter(s => s.carriedBy === -1)
 }
 
-// game loop
+function maxHealth (samples) {
+  return samples.reduce(
+    (precedente, enCour) => precedente.health > enCour.health ? precedente : enCour
+  )
+}
+
+// always zero att start
+const projectCount = parseInt(readline())
+for (let i = 0; i < projectCount; i++) {
+  const fsdfds = readline().split(' ')
+  voidd(fsdfds)
+  // const a = parseInt(inputs[0])
+  // const b = parseInt(inputs[1])
+  // const c = parseInt(inputs[2])
+  // const d = parseInt(inputs[3])
+  // const e = parseInt(inputs[4])
+}
+
 while (true) {
-    for (var i = 0; i < 2; i++) {
-        var inputs = readline().split(' ');
-        var target = inputs[0];
-        var eta = parseInt(inputs[1]);
-        var score = parseInt(inputs[2]);
-        var storageA = parseInt(inputs[3]);
-        var storageB = parseInt(inputs[4]);
-        var storageC = parseInt(inputs[5]);
-        var storageD = parseInt(inputs[6]);
-        var storageE = parseInt(inputs[7]);
-        var expertiseA = parseInt(inputs[8]);
-        var expertiseB = parseInt(inputs[9]);
-        var expertiseC = parseInt(inputs[10]);
-        var expertiseD = parseInt(inputs[11]);
-        var expertiseE = parseInt(inputs[12]);
-    }
-    var inputs = readline().split(' ');
-    var availableA = parseInt(inputs[0]);
-    var availableB = parseInt(inputs[1]);
-    var availableC = parseInt(inputs[2]);
-    var availableD = parseInt(inputs[3]);
-    var availableE = parseInt(inputs[4]);
-    var sampleCount = parseInt(readline());
-    for (var i = 0; i < sampleCount; i++) {
-        var inputs = readline().split(' ');
-        var sampleId = parseInt(inputs[0]);
-        var carriedBy = parseInt(inputs[1]);
-        var rank = parseInt(inputs[2]);
-        var expertiseGain = inputs[3];
-        var health = parseInt(inputs[4]);
-        var costA = parseInt(inputs[5]);
-        var costB = parseInt(inputs[6]);
-        var costC = parseInt(inputs[7]);
-        var costD = parseInt(inputs[8]);
-        var costE = parseInt(inputs[9]);
-    }
+  const player1 = createPlayer(readline().split(' '))
+  p(player1)
+  const player2 = createPlayer(readline().split(' '))
+  voidd(player2)
 
-    // Write an action using print()
-    // To debug: printErr('Debug messages...');
+  // ignore it
+  const availableMolecules = createAvailableMolecules(readline().split(' '))
+  voidd(availableMolecules)
 
-    print('GOTO DIAGNOSIS');
+  const sampleCount = parseInt(readline())
+  const samples = []
+  for (let i = 0; i < sampleCount; i++) {
+    samples.push(createSample(readline().split(' ')))
+  }
+
+  if (player1.target === 'START_POS') {
+    // Si player1.target = START_POS alors aller chercher un DIAGNOSIS
+    print('GOTO DIAGNOSIS')
+  } else {
+    // Dans DIAGNOSIS, ne prendre que les element du cloud :
+    // sample.carriedBy = -1
+    // strategie : prendre les plus haut point de health
+    // En prendre 3
+
+    const sample = maxHealth(onlyCloud(samples))
+    print('CONNECT ' + sample.id)
+  }
+
+  // The complex is composed of 3 modules named DIAGNOSIS, MOLECULES and LABORATORY.
 }

@@ -1,0 +1,4 @@
+{
+  "extends": "standard",
+  "comma-dangle": ["error", "always"],
+}
