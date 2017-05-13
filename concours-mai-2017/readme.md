@@ -56,6 +56,7 @@ The laboratory module
 To use this module, the player's robot must be carrying a sample data file as well as the required amount of molecules for producing that sample's medicine.
 
 Connecting to this module with CONNECT id where id is the identifier of a diagnosed sample data the player can research, will have several effects:
+
 The sample data id as well as the associated molecules are removed from play.
 
 The players scores as many points as the sample's health points.
