@@ -1,42 +1,12 @@
 /* global print readline */
 
-import { p, createPlayer, createAvailableMolecules, createSample } from './utils'
+import { p, createPlayer, createProject, createAvailableMolecules } from './utils'
+import * as s from './samples'
 
 const n = true
 
 function voidd(e) { return e }
 voidd(p)
-
-// function onlyCloud(samples) {
-//   return samples.filter(s => s.carriedBy === -1)
-// }
-
-function onlyMine(samples) {
-  return samples.filter(s => s.carriedBy === 0)
-}
-
-function lessOrEqThan(samples, max) {
-  return samples.filter(s => s.sumCost() <= max)
-}
-
-function undiag(samples) {
-  return samples.filter(s => s.health === -1)
-}
-
-function diag(samples) {
-  return samples.filter(s => s.health > 0)
-}
-
-function maxHealth(samples) {
-  return samples.reduce(
-    (precedente, enCour) => {
-      if (precedente.health > enCour.health) {
-        return precedente
-      }
-      return enCour
-    },
-  )
-}
 
 function takeMolecule(player, sample) {
   if (player.storageA < sample.costA) {
@@ -51,12 +21,8 @@ function takeMolecule(player, sample) {
   return 'E'
 }
 
-function sampleComplete(player, sample, startAt) {
-  return player.sumStorage() + startAt === sample.sumCost()
-}
-
-function maxCarring(player, startAt) {
-  return player.sumStorage() + startAt === 10
+function sampleComplete(player, sample) {
+  return player.sumStorage() === sample.sumCost()
 }
 
 class StateManager {
@@ -67,6 +33,7 @@ class StateManager {
 
   change(state) {
     this.currentState = state
+    return this
   }
 
   execute(player, samples) {
@@ -91,7 +58,7 @@ class GoSample extends BaseState {
 class TakeUndiagnosedSample extends BaseState {
   execute(player, samples) {
     print('CONNECT 3')
-    const undiagSamples = undiag(onlyMine(samples))
+    const undiagSamples = s.undiag(s.onlyMine(samples))
 
     if ((undiagSamples.length + 1) === 3) {
       this.stateManager.change(new GoDiagnosis(this.stateManager))
@@ -108,28 +75,33 @@ class GoDiagnosis extends BaseState {
 
 class ManageSample extends BaseState {
   execute(player, samples) {
-    const mine = onlyMine(samples)
-    const undiagSamples = undiag(mine)
+    const mines = s.onlyMine(samples)
+    const undiagSamples = s.undiag(mines)
+    const diagSamples = s.diag(mines)
+    const untraitableSamples = s.untraitable(diagSamples)
+    const traitableSamples = s.traitable(diagSamples)
 
     // diagnose all
-    if (undiagSamples.length > 0){
+    if (undiagSamples.length > 0) {
       const sample = undiagSamples[0]
       print(`CONNECT ${sample.id}`)
+
       // keep only sample with <= 10 molecules
-    } else if (lessOrEqThan(undiagSamples, 10).length > 0){
-      lessOrEqThan()
+    } else if (untraitableSamples.length > 0) {
+      print(`CONNECT ${untraitableSamples[0].id}`)
+
+      // si > 0 sample, collecter
+    } else if (traitableSamples.length > 0) {
+      this.stateManager
+        .change(new GoMolecules(this.stateManager))
+        .execute()
+
+      // on a plus rien, retour debut
     } else {
-
-      const sample = undiagSamples[0]
-      print(`CONNECT ${sample.id}`)
-
-      if ((undiagSamples.length - 1) === 0) {
-        this.stateManager.change(new GoMolecules(this.stateManager))
-      }
+      this.stateManager
+        .change(new GoSample(this.stateManager))
+        .execute()
     }
-    // si 0 sample -> aller en rechercher
-    //
-    // si > 0 sample, collecter
   }
 }
 
@@ -143,14 +115,12 @@ class GoMolecules extends BaseState {
 
 class TakeMolecules extends BaseState {
   execute(player, samples) {
-    const bestSample = maxHealth(lessOrEqThan(onlyMine(samples), 10))
-    p(bestSample.raw)
+    const bestSample = s.maxHealth(s.traitable(s.onlyMine(samples), 10))
     const moleculeId = takeMolecule(player, bestSample)
+    player.addMolecule(moleculeId)
     print(`CONNECT ${moleculeId}`)
 
-    // Si y a 10 molecule, stop
-    // Si sample complet, stop
-    if (sampleComplete(player, bestSample, 1) || maxCarring(player, 1)) {
+    if (sampleComplete(player, bestSample)) {
       this.stateManager.change(new GoLaboratory(this.stateManager))
     }
   }
@@ -165,11 +135,11 @@ class GoLaboratory extends BaseState {
 
 class SendToLaboratory extends BaseState {
   execute(player, samples) {
-    const toCure = lessOrEqThan(onlyMine(samples), 10)
-    const bestSample = maxHealth(toCure)
+    const traitables = s.traitable(s.onlyMine(samples), 10)
+    const bestSample = s.maxHealth(traitables)
     print(`CONNECT ${bestSample.id}`)
 
-    if (toCure.length - 1 === 0) {
+    if (traitables.length - 1 === 0) {
       this.stateManager.change(new GoSample(this.stateManager))
     } else {
       this.stateManager.change(new GoMolecules(this.stateManager))
@@ -177,23 +147,18 @@ class SendToLaboratory extends BaseState {
   }
 }
 
-// always zero att start
-const projectCount = parseInt(readline(), 10)
-for (let i = 0; i < projectCount; i += 1) {
-  const fsdfds = readline().split(' ')
-  voidd(fsdfds)
-  // const a = parseInt(inputs[0])
-  // const b = parseInt(inputs[1])
-  // const c = parseInt(inputs[2])
-  // const d = parseInt(inputs[3])
-  // const e = parseInt(inputs[4])
-}
-
-/* ////////////////////////////////////////////////// */
-/* ////////////////////////////////////////////////// */
-/* ////////////////////////////////////////////////// */
-
 const sm = new StateManager()
+
+const projectCount = parseInt(readline(), 10)
+const projects = []
+for (let i = 0; i < projectCount; i += 1) {
+  projects.push(createProject(readline().split(' ')))
+}
+p(projects)
+
+/* ////////////////////////////////////////////////// */
+/* ////////////////////////////////////////////////// */
+/* ////////////////////////////////////////////////// */
 
 while (n) {
   const player1 = createPlayer(readline().split(' '))
@@ -207,7 +172,7 @@ while (n) {
   const sampleCount = parseInt(readline(), 10)
   const samples = []
   for (let i = 0; i < sampleCount; i += 1) {
-    samples.push(createSample(readline().split(' ')))
+    samples.push(s.create(readline().split(' ')))
   }
   // sort now to always pic same best/undiagnose...
   samples.sort((a, b) => a.value - b.value)

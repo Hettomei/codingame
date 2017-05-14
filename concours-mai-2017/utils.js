@@ -4,7 +4,9 @@ const arrayContructor = [].constructor
 const objectConstructor = {}.constructor
 
 export function p(obj) {
-  if (obj.constructor === objectConstructor) {
+  if (!obj) {
+    printErr(obj)
+  } else if (obj.constructor === objectConstructor) {
     printErr('{')
     Object.entries(obj).forEach(([k, v]) => printErr(`  ${k}: ${v}`))
     printErr('}')
@@ -17,7 +19,7 @@ export function p(obj) {
 
 export function createPlayer(array) {
   return {
-    all: array,
+    raw: array,
     target: array[0],
     eta: parseInt(array[1], 10),
     score: parseInt(array[2], 10),
@@ -36,30 +38,16 @@ export function createPlayer(array) {
     sumStorage() {
       return this.storageA + this.storageB + this.storageC + this.storageD + this.storageE
     },
-  }
-}
 
-export function createSample(array) {
-  return {
-    all: array,
-    id: parseInt(array[0], 10),
-    carriedBy: parseInt(array[1], 10),
-    rank: parseInt(array[2], 10),
-    expertiseGain: array[3],
-    health: parseInt(array[4], 10),
-    costA: parseInt(array[5], 10),
-    costB: parseInt(array[6], 10),
-    costC: parseInt(array[7], 10),
-    costD: parseInt(array[8], 10),
-    costE: parseInt(array[9], 10),
-
-    sumCost() { return this.costA + this.costB + this.costC + this.costD + this.costE },
+    addMolecule(molId) {
+      this[`storage${molId}`] = this[`storage${molId}`] + 1
+    },
   }
 }
 
 export function createAvailableMolecules(array) {
   return {
-    all: array,
+    raw: array,
     a: parseInt(array[0], 10),
     b: parseInt(array[1], 10),
     c: parseInt(array[2], 10),
@@ -68,3 +56,12 @@ export function createAvailableMolecules(array) {
   }
 }
 
+export function createProject(array) {
+  return {
+    a: parseInt(array[0], 10),
+    b: parseInt(array[1], 10),
+    c: parseInt(array[2], 10),
+    d: parseInt(array[3], 10),
+    e: parseInt(array[4], 10),
+  }
+}

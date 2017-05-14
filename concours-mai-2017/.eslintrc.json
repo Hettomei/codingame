@@ -2,6 +2,8 @@
   "extends": "airbnb",
   "rules": {
     "semi": ["error", "never"],
-    "max-len": ["error", 100]
+    "max-len": ["error", 100],
+    "no-use-before-define": ["error", { "functions": true, "classes": false }]
   }
+
 }
