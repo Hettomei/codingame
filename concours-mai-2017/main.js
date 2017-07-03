@@ -8,17 +8,19 @@ const n = true
 function voidd(e) { return e }
 voidd(p)
 
-function takeMolecule(player, sample) {
-  if (player.storageA < sample.costA) {
+function takeMolecule(player, sample, availableMolecules) {
+  if (availableMolecules.a > 0 && player.storageA < sample.costA) {
     return 'A'
-  } else if (player.storageB < sample.costB) {
+  } else if (availableMolecules.b > 0 && player.storageB < sample.costB) {
     return 'B'
-  } else if (player.storageC < sample.costC) {
+  } else if (availableMolecules.c > 0 && player.storageC < sample.costC) {
     return 'C'
-  } else if (player.storageD < sample.costD) {
+  } else if (availableMolecules.d > 0 && player.storageD < sample.costD) {
     return 'D'
+  } else if (availableMolecules.e > 0 && player.storageE < sample.costE) {
+    return 'E'
   }
-  return 'E'
+  return null
 }
 
 function sampleComplete(player, sample) {
@@ -36,8 +38,13 @@ class StateManager {
     return this
   }
 
-  execute(player, samples) {
-    this.currentState.execute(player, samples)
+  wait(nextState) {
+    this.currentState = new WaitState(this, nextState)
+    return this
+  }
+
+  execute(player, samples, availableMolecules) {
+    this.currentState.execute(player, samples, availableMolecules)
   }
 
 }
@@ -48,16 +55,34 @@ class BaseState {
   }
 }
 
+class WaitState extends BaseState {
+  constructor(stateManager, nextState) {
+    super(stateManager)
+    this.nextState = nextState
+  }
+
+  execute(player, samples, availableMolecules) {
+    if (player.eta === 0) {
+      this.stateManager
+        .change(this.nextState)
+        .execute(player, samples, availableMolecules)
+    } else {
+      print(`JAIME LA VIE : ${player.eta}`)
+    }
+  }
+}
+
 class GoSample extends BaseState {
   execute() {
     print('GOTO SAMPLES')
-    this.stateManager.change(new TakeUndiagnosedSample(this.stateManager))
+    this.stateManager.wait(new TakeUndiagnosedSample(this.stateManager))
   }
 }
 
 class TakeUndiagnosedSample extends BaseState {
   execute(player, samples) {
-    print('CONNECT 3')
+    const rank = 1
+    print(`CONNECT ${rank}`)
     const undiagSamples = s.undiag(s.onlyMine(samples))
 
     if ((undiagSamples.length + 1) === 3) {
@@ -69,7 +94,7 @@ class TakeUndiagnosedSample extends BaseState {
 class GoDiagnosis extends BaseState {
   execute() {
     print('GOTO DIAGNOSIS')
-    this.stateManager.change(new ManageSample(this.stateManager))
+    this.stateManager.wait(new ManageSample(this.stateManager))
   }
 }
 
@@ -105,20 +130,24 @@ class ManageSample extends BaseState {
   }
 }
 
-
 class GoMolecules extends BaseState {
   execute() {
     print('GOTO MOLECULES')
-    this.stateManager.change(new TakeMolecules(this.stateManager))
+    this.stateManager.wait(new TakeMolecules(this.stateManager))
   }
 }
 
 class TakeMolecules extends BaseState {
-  execute(player, samples) {
+  execute(player, samples, availableMolecules) {
     const bestSample = s.maxHealth(s.traitable(s.onlyMine(samples), 10))
-    const moleculeId = takeMolecule(player, bestSample)
-    player.addMolecule(moleculeId)
-    print(`CONNECT ${moleculeId}`)
+    const moleculeId = takeMolecule(player, bestSample, availableMolecules)
+    // p(bestSample)
+    if (moleculeId) {
+      player.addMolecule(moleculeId)
+      print(`CONNECT ${moleculeId}`)
+    } else {
+      print('WAIT')
+    }
 
     if (sampleComplete(player, bestSample)) {
       this.stateManager.change(new GoLaboratory(this.stateManager))
@@ -129,7 +158,7 @@ class TakeMolecules extends BaseState {
 class GoLaboratory extends BaseState {
   execute() {
     print('GOTO LABORATORY')
-    this.stateManager.change(new SendToLaboratory(this.stateManager))
+    this.stateManager.wait(new SendToLaboratory(this.stateManager))
   }
 }
 
@@ -154,11 +183,6 @@ const projects = []
 for (let i = 0; i < projectCount; i += 1) {
   projects.push(createProject(readline().split(' ')))
 }
-p(projects)
-
-/* ////////////////////////////////////////////////// */
-/* ////////////////////////////////////////////////// */
-/* ////////////////////////////////////////////////// */
 
 while (n) {
   const player1 = createPlayer(readline().split(' '))
@@ -167,7 +191,6 @@ while (n) {
 
   // ignore it
   const availableMolecules = createAvailableMolecules(readline().split(' '))
-  voidd(availableMolecules)
 
   const sampleCount = parseInt(readline(), 10)
   const samples = []
@@ -177,5 +200,5 @@ while (n) {
   // sort now to always pic same best/undiagnose...
   samples.sort((a, b) => a.value - b.value)
 
-  sm.execute(player1, samples)
+  sm.execute(player1, samples, availableMolecules)
 }

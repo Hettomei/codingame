@@ -58,6 +58,7 @@ export function createAvailableMolecules(array) {
 
 export function createProject(array) {
   return {
+    raw: array,
     a: parseInt(array[0], 10),
     b: parseInt(array[1], 10),
     c: parseInt(array[2], 10),
