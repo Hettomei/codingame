@@ -68,7 +68,10 @@
   (map-indexed
     (fn [x line]
       (map-indexed
-        (fn [y cell] (list x y))
+        (fn [y cell]
+          (next-state
+            (nth (nth cells x) y)
+            (around-cell :x x :y y :cells cells)))
         line))
     cells))
 
@@ -92,7 +95,7 @@
     (prn 'arround (around-cell :x 1 :y 1 :cells result)
          'next-state (next-state (nth (nth result 1) 1) (around-cell :x 1 :y 1 :cells result)))
 
-    )
-    ; (print-2d-array (new-state result)))
+    (print-2d-array (new-state result))
+    (run! #(println (apply str %)) (new-state result)))
   (println)
   (println))
