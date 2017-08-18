@@ -1,13 +1,9 @@
-(ns clj-game-of-life.core
+(ns Solution
   (:gen-class))
 
-(defn print-2d-array [array]
-  (println '-------)
-  (run! prn array)
-  (println '-------))
-
-(defn proof-position [& {:keys [x y cells] }]
-  (prn 'x x 'y y '--> (nth (nth cells x) y)))
+(defn p [& mess]
+  (binding [*out* *err*]
+    (prn mess)))
 
 (defn build-array [acc current]
   (let [line (read-line)
@@ -71,29 +67,20 @@
         line))
     cells))
 
+(defn codin-output [cells]
+  (println
+    (apply str
+           (interpose
+             "\n"
+             (map #(apply str %) cells)))))
+
 (defn -main [& args]
-  (let [width (read-line)
-        height (Integer/parseInt (read-line))
+  (let [width (read)
+        height (read)
+        ; just to satisfy codingame input
+        _ (read-line)
         p-result (reduce build-array '() (range height))
         result (reverse p-result)]
-    (prn 'width width 'height height )
-    (print-2d-array result)
-
-    (proof-position :x 0 :y 0 :cells result)
-    (prn 'arround (around-cell :x 0 :y 0 :cells result)
-         'next-state (next-state (nth (nth result 0) 0) (around-cell :x 0 :y 0 :cells result)))
-
-    (proof-position :x 0 :y 1 :cells result)
-    (prn 'arround (around-cell :x 0 :y 1 :cells result)
-         'next-state (next-state (nth (nth result 0) 1) (around-cell :x 0 :y 1 :cells result)))
-
-    (proof-position :x 1 :y 1 :cells result)
-    (prn 'arround (around-cell :x 1 :y 1 :cells result)
-         'next-state (next-state (nth (nth result 1) 1) (around-cell :x 1 :y 1 :cells result)))
-
-    (print-2d-array (new-state result))
-    (run! #(println (apply str %)) (new-state result))
-    (println)
-    (println (apply str (interpose "\n" (map #(apply str %) result)))))
-  (println)
-  (println))
+    (doseq [line (new-state result)]
+      (println (apply str line)))))
+    ; (codin-output (new-state result))))
