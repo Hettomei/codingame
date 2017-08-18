@@ -1,5 +1,7 @@
 (ns clj-game-of-life.core
   (:gen-class))
+  ; (:require [clojure.test :refer :all]))
+
 
 ; (ns Solution
 ;   (:gen-class))
