@@ -16,3 +16,7 @@ Sortie
 010
 010
 010
+
+cat input.test | lein run
+ls src/clj_game_of_life/core.clj | entr -s 'echo go && cat input2.t
+est | lein run'
