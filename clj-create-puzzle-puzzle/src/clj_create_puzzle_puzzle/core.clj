@@ -13,4 +13,5 @@
 
 (defn -main [& args]
   (let [current-level (read) xp-needed (read) n (read)]
-    (println (compute current-level xp-needed (* n 300)))))
+    (println (clojure.string/join "\n"
+                                  (compute current-level xp-needed (* n 300))))))
