@@ -14,7 +14,8 @@ et finalement s'il ne peut toujours pas il va à l’OUEST.
 
 Sur son chemin, Bender peut rencontrer des modificateurs de trajectoire
 qui vont lui faire changer instantanément de direction.
-Le modificateur S l'orientera désormais vers le SUD,
+Le modificateur
+S l'orientera désormais vers le SUD,
 E vers l’EST,
 N vers le NORD et
 W vers l’OUEST.
