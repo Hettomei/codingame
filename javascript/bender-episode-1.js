@@ -39,8 +39,33 @@ initGrid = [
   '#E     N #',
   '##########',
 ];
+
+initGrid = [
+  '##########',
+  '# @      #',
+  '# B      #',
+  '#XXX     #',
+  '# B      #',
+  '#    BXX$#',
+  '#XXXXXXXX#',
+  '#        #',
+  '#        #',
+  '##########',
+];
+
+initGrid = [
+'##########',
+'#    I   #',
+'#        #',
+'#       $#',
+'#       @#',
+'#        #',
+'#       I#',
+'#        #',
+'#        #',
+'##########',
+]
 initGrid = initGrid.map(l => l.split(''));
-initGrid.map(l => l.join('')).forEach(l => log(l));
 
 function getStart(grid) {
   const y = grid.findIndex(line => line.includes('@'));
@@ -86,37 +111,82 @@ function nextDir(dir) {
   }[dir];
 }
 
+const canPassAll = result => result !== '#';
+const canPassNormal = result => result !== '#' && result !== 'X';
+
+let canPass = canPassNormal;
+
+function changePass() {
+  if (canPass === canPassAll) {
+    canPass = canPassNormal;
+  } else {
+    canPass = canPassAll;
+  }
+}
+
 function nextCase(grid, x, y, dir) {
   const newX = x + getDirX[dir];
   const newY = y + getDirY[dir];
 
   const result = grid[newY][newX];
-  if (result === 'X' || result === '#') {
-    return nextCase(grid, x, y, nextDir(dir));
+  if (canPass(result)) {
+    return {
+      newX,
+      newY,
+      newNewDir: dir,
+    };
   }
 
-  return {
-    newX,
-    newY,
-    newGrid: grid,
-    newDir: dir,
-  };
+  return nextCase(grid, x, y, nextDir(dir));
 }
 
-let startDir = 'S';
+function findExit(grid, x, y) {
+  return isOn('$', grid, x, y);
+}
+
+function drinkBeer(grid, x, y) {
+  return isOn('B', grid, x, y);
+}
+
+function onX(grid, x, y) {
+  return isOn('X', grid, x, y);
+}
+
+function changeDir(grid, x, y) {
+  return ['S', 'N', 'E', 'W'].find(dir => isOn(dir, grid, x, y));
+}
+
+function replace(grid, x, y, char) {
+  const g = grid.map(a => a.slice());
+  g[y][x] = char;
+  return g;
+}
+
+function pprint(grid, x, y) {
+  replace(grid, x, y, '@').map(l => l.join('')).forEach(l => log(l));
+}
 
 function next(grid, dir, x, y, moves) {
-  console.log(moves);
-  if (isOn('$', grid, x, y)) { return moves; }
+  log('length', moves.length, dir, x, y, moves[moves.length - 1]);
+  pprint(grid, x, y);
+  if (moves.length > 30) { return ['L']; }
 
-  if (isOn('S', grid, x, y)) { startDir = 'S' ; }
-  if (isOn('N', grid, x, y)) { startDir = 'N' ; }
-  if (isOn('E', grid, x, y)) { startDir = 'E' ; }
-  if (isOn('W', grid, x, y)) { startDir = 'W' ; }
+  let newGrid = grid;
+  let newDir = dir;
+  if (findExit(grid, x, y)) {
+    return moves;
+  } else if (changeDir(grid, x, y)) {
+    newDir = changeDir(grid, x, y);
+  } else if (drinkBeer(grid, x, y)) {
+    changePass();
+  } else if (onX(grid, x, y)) {
+    newGrid = replace(grid, x, y, ' ');
+  }
 
-  const { newGrid, newX, newY, newDir } = nextCase(grid, x, y, startDir);
 
-  return next(newGrid, newDir, newX, newY, moves.concat(newDir));
+  const { newX, newY, newNewDir } = nextCase(newGrid, x, y, newDir);
+
+  return next(newGrid, newNewDir, newX, newY, moves.concat(newNewDir));
 }
 
 const [x, y] = getStart(initGrid);
@@ -129,6 +199,7 @@ const toText = {
   E: 'EAST',
   N: 'NORTH',
   W: 'WEST',
+  L: 'LOOP',
 };
 
 answers.forEach(letter => print(toText[letter]));
