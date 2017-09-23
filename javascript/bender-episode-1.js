@@ -54,17 +54,18 @@ initGrid = [
 ];
 
 initGrid = [
-'##########',
-'#    I   #',
-'#        #',
-'#       $#',
-'#       @#',
-'#        #',
-'#       I#',
-'#        #',
-'#        #',
-'##########',
-]
+  '##########',
+  '#    I   #',
+  '#        #',
+  '#       $#',
+  '#       @#',
+  '#        #',
+  '#       I#',
+  '#        #',
+  '#        #',
+  '##########',
+];
+
 initGrid = initGrid.map(l => l.split(''));
 
 function getStart(grid) {
@@ -91,7 +92,7 @@ const getDirY = {
   W: 0,
 };
 
-const invertDir = 0;
+let invertDir = 0;
 
 function nextDir(dir) {
   if (invertDir % 2 === 0) {
@@ -104,11 +105,19 @@ function nextDir(dir) {
   }
 
   return {
-    S: 'W',
     W: 'N',
     N: 'E',
     E: 'S',
+    S: 'W',
   }[dir];
+}
+
+function defaultDirObstacle() {
+  if (invertDir % 2 === 0) {
+    return 'S';
+  }
+
+  return 'W';
 }
 
 const canPassAll = result => result !== '#';
@@ -124,7 +133,7 @@ function changePass() {
   }
 }
 
-function nextCase(grid, x, y, dir) {
+function nextCase(grid, x, y, dir, count) {
   const newX = x + getDirX[dir];
   const newY = y + getDirY[dir];
 
@@ -137,7 +146,11 @@ function nextCase(grid, x, y, dir) {
     };
   }
 
-  return nextCase(grid, x, y, nextDir(dir));
+  // obstacle, premiere foi, force sud ou ouest;
+  if (count === 0) {
+    return nextCase(grid, x, y, defaultDirObstacle(), count + 1);
+  }
+  return nextCase(grid, x, y, nextDir(dir), count + 1);
 }
 
 function findExit(grid, x, y) {
@@ -150,6 +163,10 @@ function drinkBeer(grid, x, y) {
 
 function onX(grid, x, y) {
   return isOn('X', grid, x, y);
+}
+
+function onInverser(grid, x, y) {
+  return isOn('I', grid, x, y);
 }
 
 function changeDir(grid, x, y) {
@@ -166,6 +183,10 @@ function pprint(grid, x, y) {
   replace(grid, x, y, '@').map(l => l.join('')).forEach(l => log(l));
 }
 
+function changePrio() {
+  invertDir += 1;
+}
+
 function next(grid, dir, x, y, moves) {
   log('length', moves.length, dir, x, y, moves[moves.length - 1]);
   pprint(grid, x, y);
@@ -177,6 +198,8 @@ function next(grid, dir, x, y, moves) {
     return moves;
   } else if (changeDir(grid, x, y)) {
     newDir = changeDir(grid, x, y);
+  } else if (onInverser(grid, x, y)) {
+    changePrio();
   } else if (drinkBeer(grid, x, y)) {
     changePass();
   } else if (onX(grid, x, y)) {
@@ -184,7 +207,7 @@ function next(grid, dir, x, y, moves) {
   }
 
 
-  const { newX, newY, newNewDir } = nextCase(newGrid, x, y, newDir);
+  const { newX, newY, newNewDir } = nextCase(newGrid, x, y, newDir, 0);
 
   return next(newGrid, newNewDir, newX, newY, moves.concat(newNewDir));
 }
