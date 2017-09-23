@@ -66,6 +66,37 @@ initGrid = [
   '##########',
 ];
 
+initGrid = [
+  '##########',
+  '#    T   #',
+  '#        #',
+  '#        #',
+  '#        #',
+  '#@       #',
+  '#        #',
+  '#        #',
+  '#    T  $#',
+  '##########',
+];
+
+initGrid = [
+  '###############',
+  '#      IXXXXX #',
+  '#  @          #',
+  '#E S          #',
+  '#             #',
+  '#  I          #',
+  '#  B          #',
+  '#  B   S     W#',
+  '#  B   T      #',
+  '#             #',
+  '#         T   #',
+  '#         B   #',
+  '#N          W$#',
+  '#        XXXX #',
+  '###############',
+];
+
 initGrid = initGrid.map(l => l.split(''));
 
 function getStart(grid) {
@@ -139,16 +170,19 @@ function nextCase(grid, x, y, dir, count) {
 
   const result = grid[newY][newX];
   if (canPass(result)) {
-    return {
+    return [
       newX,
       newY,
-      newNewDir: dir,
-    };
+      dir,
+    ];
   }
 
   // obstacle, premiere foi, force sud ou ouest;
   if (count === 0) {
     return nextCase(grid, x, y, defaultDirObstacle(), count + 1);
+    // a security
+  } else if (count > 10) {
+    return [null, null, null, true];
   }
   return nextCase(grid, x, y, nextDir(dir), count + 1);
 }
@@ -163,6 +197,10 @@ function drinkBeer(grid, x, y) {
 
 function onX(grid, x, y) {
   return isOn('X', grid, x, y);
+}
+
+function onTeleporter(grid, x, y) {
+  return isOn('T', grid, x, y);
 }
 
 function onInverser(grid, x, y) {
@@ -187,16 +225,52 @@ function changePrio() {
   invertDir += 1;
 }
 
+function changeTeleport(grid, x, y) {
+  const result = [];
+
+  grid.forEach((line, yy) => {
+    line.forEach((char, xx) => {
+      if (char === 'T') {
+        result.push([xx, yy]);
+      }
+    });
+  });
+
+  const [x1, y1] = result[0];
+  if (x1 === x && y1 === y) {
+    return result[1];
+  }
+
+  return result[0];
+}
+
 function next(grid, dir, x, y, moves) {
   log('length', moves.length, dir, x, y, moves[moves.length - 1]);
-  pprint(grid, x, y);
-  if (moves.length > 30) { return ['L']; }
+  // pprint(grid, x, y);
+  // log('');
+  // log('');
+  // log('');
+  // log('');
+  // log('');
+  // log('');
+  // log('');
+  // log('');
+  // log('');
+  // log('');
+  // log('');
+
+  if (moves.length > 200) { return ['L']; }
+
+  if (findExit(grid, x, y)) {
+    return moves;
+  }
 
   let newGrid = grid;
   let newDir = dir;
-  if (findExit(grid, x, y)) {
-    return moves;
-  } else if (changeDir(grid, x, y)) {
+
+  let newX = x;
+  let newY = y;
+  if (changeDir(grid, x, y)) {
     newDir = changeDir(grid, x, y);
   } else if (onInverser(grid, x, y)) {
     changePrio();
@@ -204,12 +278,15 @@ function next(grid, dir, x, y, moves) {
     changePass();
   } else if (onX(grid, x, y)) {
     newGrid = replace(grid, x, y, ' ');
+  } else if (onTeleporter(grid, x, y)) {
+    [newX, newY] = changeTeleport(grid, x, y);
   }
 
 
-  const { newX, newY, newNewDir } = nextCase(newGrid, x, y, newDir, 0);
+  const [newnewX, newnewY, newNewDir, loop] = nextCase(newGrid, newX, newY, newDir, 0);
+  if (loop) { return ['L']; }
 
-  return next(newGrid, newNewDir, newX, newY, moves.concat(newNewDir));
+  return next(newGrid, newNewDir, newnewX, newnewY, moves.concat(newNewDir));
 }
 
 const [x, y] = getStart(initGrid);
