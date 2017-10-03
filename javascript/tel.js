@@ -23,8 +23,6 @@ const place = tree => ([number, ...tel]) => {
   return place(node.children)(tel);
 };
 
-// for (var i = 0; i < N; i++) {
-  // const tel = readline().split('');
 const tel1 = '01234567'.split('');
 const tel2 = '0123345'.split('');
 const tel3 = '0223345'.split('');
