@@ -55,10 +55,18 @@ function acc(me, b) {
   return 0;
 }
 
-function toClosest(me, others) {
+function moveReaper(me, others) {
   const closestOthers = others.slice().sort((a, b) => distance(me, a) - distance(me, b));
   const best = closestOthers[0];
   return `${best.x} ${best.y} ${acc(me, best)}`;
+}
+
+function moveDestroyer(destroyer, tankers) {
+  const closestOthers = tankers
+    .slice()
+    .sort((a, b) => distance(destroyer, a) - distance(destroyer, b));
+  const best = closestOthers[0];
+  return `${best.x} ${best.y} ${300}`;
 }
 
 function follow(me, other) {
@@ -87,15 +95,14 @@ while (TRUE) {
 
   const epaves = all.filter(f(EPAVE));
   if (epaves.length) {
-    print(toClosest(reaper, epaves));
+    print(moveReaper(reaper, epaves));
   } else {
-    p('follow');
     print(follow(reaper, destroyer));
   }
 
   const tankers = all.filter(f(TANKER));
   if (tankers.length) {
-    print(toClosest(destroyer, tankers));
+    print(moveDestroyer(destroyer, tankers));
   } else {
     print('WAIT');
   }
