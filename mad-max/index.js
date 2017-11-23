@@ -1,7 +1,7 @@
-/* global readline printErr print */
+/* global readline print */
 /* eslint-disable no-restricted-globals */
 
-// Write an action using print()
+const printErr = undefined;
 const p = printErr;
 const TRUE = true;
 const readSplit = () => readline().split(' ').map(j => parseInt(j, 10));
@@ -94,6 +94,14 @@ function moveReaper(me) {
   return `${newPoint.x} ${newPoint.y} ${300}`;
 }
 
+function moveDoof(me) {
+  const newPoint = { x: me.x, y: me.y - 6000 };
+
+
+  p('newpoint', z(newPoint), distance(me, newPoint));
+  return `${newPoint.x} ${newPoint.y} ${300}`;
+}
+
 // function moveDestroyer(destroyer, tankers) {
 //   const closestOthers = tankers
 //     .slice()
@@ -106,41 +114,52 @@ function moveReaper(me) {
 //   return `${other.x} ${other.y} ${acc(me, other)}`;
 // }
 
-while (TRUE) {
-  const myScore = parseInt(readline(), 10);
-  const enemyScore1 = parseInt(readline(), 10);
-  const enemyScore2 = parseInt(readline(), 10);
-  const myRage = parseInt(readline(), 10);
-  const enemyRage1 = parseInt(readline(), 10);
-  const enemyRage2 = parseInt(readline(), 10);
-  p(myScore, enemyScore1, enemyScore2, myRage, enemyRage1, enemyRage2);
+function main() {
+  while (TRUE) {
+    const myScore = parseInt(readline(), 10);
+    const enemyScore1 = parseInt(readline(), 10);
+    const enemyScore2 = parseInt(readline(), 10);
+    const myRage = parseInt(readline(), 10);
+    const enemyRage1 = parseInt(readline(), 10);
+    const enemyRage2 = parseInt(readline(), 10);
+    p(myScore, enemyScore1, enemyScore2, myRage, enemyRage1, enemyRage2);
 
-  const unitCount = parseInt(readline(), 10);
-  const all = new Array(unitCount)
-    .fill(null)
-    .map(readSplit)
-    .map(toObj);
+    const unitCount = parseInt(readline(), 10);
+    const all = new Array(unitCount)
+      .fill(null)
+      .map(readSplit)
+      .map(toObj);
 
-  const reaper = all[0];
-  // const destroyer = all[1];
-  ppp(reaper);
-  print(moveReaper(reaper));
-  // const doof = all[2];
+    const reaper = all[0];
+    const doof = all[2];
+    // const destroyer = all[1];
+    ppp(reaper);
+    print(moveReaper(reaper));
+    print(moveDoof(doof));
 
-  // const epaves = all.filter(f(EPAVE));
-  // if (epaves.length) {
-  //   print(moveReaper(reaper, epaves));
-  // } else {
-  // print(follow(reaper, destroyer));
-  // }
+    // const epaves = all.filter(f(EPAVE));
+    // if (epaves.length) {
+    //   print(moveReaper(reaper, epaves));
+    // } else {
+    // print(follow(reaper, destroyer));
+    // }
 
-  // const tankers = all.filter(f(TANKER));
-  // if (tankers.length) {
-  //   print(moveDestroyer(destroyer, tankers));
-  // } else {
-  //   print('WAIT');
-  // }
+    // const tankers = all.filter(f(TANKER));
+    // if (tankers.length) {
+    //   print(moveDestroyer(destroyer, tankers));
+    // } else {
+    //   print('WAIT');
+    // }
 
-  print('WAIT');
-  print('WAIT');
+    print('WAIT');
+  }
 }
+
+// main();
+
+module.exports = {
+  square,
+  toObj,
+  main,
+  distance,
+};
