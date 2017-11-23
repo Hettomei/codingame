@@ -44,62 +44,28 @@ function distance(a, b) {
   return Math.sqrt(square(a.x - b.x) + square(a.y - b.y));
 }
 
-// 0 <= acc <= 300
-// function acc(me, b) {
-//   const d = distance(me, b);
-//   const v = distance({ x: 0, y: 0 }, { x: me.vx, y: me.vy });
-//   if (d - v > 800) {
-//     return 300;
-//   } else if (d - v > 700) {
-//     return 150;
-//   } else if (d - v > 600) {
-//     return 60;
-//   } else if (d - v > 500) {
-//     return 50;
-//   } else if (d - v < 400) {
-//     return 50;
-//   }
-//   return 0;
-// }
+function vitesse(car, acc) {
+  return (acc / car.mass) * (1 - car.friction);
+}
+
+function emplacementFinal(car, direction, acc) {
+  // return vitesse(car, acc);
+  return { x: car.x, y: car.y - vitesse(car, acc) };
+}
 
 function moveReaper(me) {
   const newPoint = { x: me.x, y: me.y - 6000 };
-
-  // Vos unités ont un rayon de 400 et accélèrent de ACC/masse.
-  // ##########
-  // ACC=100
-  // masse=0.5
-  // acc de ACC/masse
-  // acc = 100/0.5 = 200
-  //
-  // v = acc*(1-friction)
-  // v = 200 * (1-0.2)
-  // v = 160
-  // fric = 0.2
-  // ##########
-  // ACC=300
-  // masse=0.5
-  // acc de ACC/masse
-  // acc = 300/0.5 = 600
-  //
-  // v = acc*(1-friction)
-  // fric = 0.2
-  // v = 600 * (1-0.2)
-  // v = 480
-  //
-  // et donc y = y - 480
-
 
   p('newpoint', z(newPoint), distance(me, newPoint));
   return `${newPoint.x} ${newPoint.y} ${300}`;
 }
 
 function moveDoof(me) {
-  const newPoint = { x: me.x, y: me.y - 6000 };
+  // const newPoint = { x: me.x, y: me.y - 6000 };
 
-
-  p('newpoint', z(newPoint), distance(me, newPoint));
-  return `${newPoint.x} ${newPoint.y} ${300}`;
+  // p('newpoint', z(newPoint), distance(me, newPoint));
+  // return `${newPoint.x} ${newPoint.y} ${300}`;
+  return 'WAIT';
 }
 
 // function moveDestroyer(destroyer, tankers) {
@@ -131,9 +97,10 @@ function main() {
       .map(toObj);
 
     const reaper = all[0];
+    reaper.friction = 0.2;
     const doof = all[2];
+    doof.friction = 0.25;
     // const destroyer = all[1];
-    ppp(reaper);
     print(moveReaper(reaper));
     print(moveDoof(doof));
 
@@ -162,4 +129,7 @@ module.exports = {
   toObj,
   main,
   distance,
+  moveDoof,
+  vitesse,
+  emplacementFinal,
 };

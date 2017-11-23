@@ -6,10 +6,11 @@
   // acc de ACC/masse
   // acc = 100/0.5 = 200
   //
+  // fric = 0.2
   // v = acc*(1-friction)
   // v = 200 * (1-0.2)
   // v = 160
-  // fric = 0.2
+
   // ##########
   // ACC=300
   // masse=0.5

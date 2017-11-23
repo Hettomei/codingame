@@ -43,4 +43,28 @@ describe('index', () => {
       });
     });
   });
+
+  describe('.vitesse()', () => {
+    it('vitesse', () => {
+      [
+        [{ friction: 0.2, mass: 0.5 }, 100, 160],
+        [{ friction: 0.2, mass: 0.5 }, 300, 480],
+        [{ friction: 0.25, mass: 1 }, 300, 225],
+      ].forEach(([car, speed, expected]) => {
+        expect(Math.round(i.vitesse(car, speed))).to.equal(expected);
+      });
+    });
+  });
+
+  describe('.emplacementFinal()', () => {
+    it('emplacementFinal', () => {
+      const car = {
+        x: -1785, y: 3818, mass: 0.5, friction: 0.2,
+      };
+      const direction = { x: -1785, y: -2182 };
+      const acc = 300;
+
+      expect(i.emplacementFinal(car, direction, acc)).to.deep.equal({ x: -1785, y: 3218 });
+    });
+  });
 });
