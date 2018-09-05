@@ -29,22 +29,40 @@
         (recur (dec i) (conj result (clean card))))
       result)))
 
+(def force* ["2" "3" "4" "5" "6" "7" "8" "9" "10" "J" "Q" "K" "A"])
+
+
+(defn win [card1 card2]
+  (let [a (.indexOf force* card1)
+        b (.indexOf force* card2)]
+    (println 'card1 a)
+    (println 'card2 b)
+    (if (> a b) true false)))
+
 (defn round [manche
              [card1 & deck1]
              [card2 & deck2]]
-  (println)
+  (println "-------")
+  (println 'manche manche)
   (println 'play card1 'stay deck1)
   (println 'play card2 'stay deck2)
-  )
+
+  (if (win card1 card2)
+    (println 'j1 'win 'against 'j2)
+    (println 'j2 'win 'against 'j1))
+
+  (if (and deck1 deck2)
+    (round (inc manche) deck1 deck2)
+    [manche (if deck1 1 2)]
+    ))
 
 (defn result [j1 j2]
   (println 'j1 j1)
   (println 'j2 j2)
-  (round 0 j1 j2)
-  (println)
-  "PAT"
-  )
+  (let [result (round 1 j1 j2)]
+    result))
+
 (defn -main [& args]
-  (println (result
-             (prepare-deck (read-line))
-             (prepare-deck (read-line)))))
+  (println 'result (result
+                     (prepare-deck (read-line))
+                     (prepare-deck (read-line)))))
