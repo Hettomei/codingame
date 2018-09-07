@@ -39,6 +39,9 @@
     (println 'card2 b)
     (if (> a b) true false)))
 
+(defn add-to-deck [j-card other-j-card deck]
+  (concat deck [j-card] [other-j-card]))
+
 (defn round [manche
              [card1 & deck1]
              [card2 & deck2]]
@@ -48,8 +51,14 @@
   (println 'play card2 'stay deck2)
 
   (if (win card1 card2)
-    (println 'j1 'win 'against 'j2)
-    (println 'j2 'win 'against 'j1))
+    (do
+      (println 'j1 'win 'against 'j2)
+      (let [xx (add-to-deck card1 card2 deck1)]
+        (println 'AAAAAAAAAAAAAAA xx)
+        ))
+    (do
+      (println 'j2 'win 'against 'j1)
+      (add-to-deck card2 card1 deck2)))
 
   (if (and deck1 deck2)
     (round (inc manche) deck1 deck2)
