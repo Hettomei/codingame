@@ -11,7 +11,7 @@
 
 (deftest add-to-deck-test
   (testing "ok"
-    (is (= (add-to-deck 'd 'e ['a 'b 'c]) ['a 'b 'c 'd 'e]))))
+    (is (= (add-to-deck ['a 'b 'c] 'd 'e) ['a 'b 'c 'd 'e]))))
 
 (deftest final
   (testing "test01"
