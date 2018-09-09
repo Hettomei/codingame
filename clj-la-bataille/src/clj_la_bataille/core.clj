@@ -50,20 +50,20 @@
   (println 'play card1 'stay deck1)
   (println 'play card2 'stay deck2)
 
-  (if (win card1 card2)
-    (do
-      (println 'j1 'win 'against 'j2)
-      (let [new-deck-1 (add-to-deck card1 card2 deck1)]
-        (if (and new-deck-1 deck2)
-          (round (inc manche) new-deck-1 deck2)
-          [1 manche])))
-
-    (do
-      (println 'j2 'win 'against 'j1)
-      (let [new-deck-2 (add-to-deck card2 card1 deck2)]
-        (if (and new-deck-2 deck1)
-          (round (inc manche) deck1 new-deck-2)
-          [2 manche])))))
+  (cond
+    (win card1 card2) (do
+                        (println 'j1 'win 'against 'j2)
+                        (let [new-deck-1 (add-to-deck card1 card2 deck1)]
+                          (if (and new-deck-1 deck2)
+                            (round (inc manche) new-deck-1 deck2)
+                            [1 manche])))
+    (win card2 card1) (do
+                        (println 'j2 'win 'against 'j1)
+                        (let [new-deck-2 (add-to-deck card1 card2 deck2)]
+                          (if (and new-deck-2 deck1)
+                            (round (inc manche) deck1 new-deck-2)
+                            [2 manche])))
+    :else ['PAT manche]))
 
 (defn -main [& args]
   (let [deck-j1 (prepare-deck (read-line))
