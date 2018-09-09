@@ -1,7 +1,7 @@
 (ns clj-la-bataille.core
   (:gen-class))
 
-(use '[clojure.string :only (join split)])
+(use '[clojure.string :only (join)])
 (declare round)
 
 ; (ns Solution
@@ -53,9 +53,9 @@
                 card1 deck1 played-cards-1
                 card2 deck2 played-cards-2]
 
-  (println 'bataille 'manche manche)
-  (println 'j1 'play card1 'in-deck deck1 'to-add played-cards-1)
-  (println 'j2 'play card2 'in-deck deck2 'to-add played-cards-2)
+  ; (println 'bataille 'manche manche)
+  ; (println 'j1 'play card1 'in-deck deck1 'to-add played-cards-1)
+  ; (println 'j2 'play card2 'in-deck deck2 'to-add played-cards-2)
 
   (cond
     (win card1 card2) (round
@@ -78,10 +78,10 @@
 (defn round [manche
              [card1 & deck1]
              [card2 & deck2]]
-  (println "-------")
-  (println 'manche manche)
-  (println 'play card1 'stay deck1)
-  (println 'play card2 'stay deck2)
+  ; (println "-------")
+  ; (println 'manche manche)
+  ; (println 'play card1 'stay deck1)
+  ; (println 'play card2 'stay deck2)
 
   (cond
 
@@ -94,18 +94,18 @@
                               card2 deck2 [])
 
     (win card1 card2) (do
-                        (println 'j1 'win 'against 'j2)
+                        ; (println 'j1 'win 'against 'j2)
                         (let [new-deck-1 (add-to-deck deck1 card1 card2)]
                           (round (inc manche) new-deck-1 deck2)))
 
     (win card2 card1) (do
-                        (println 'j2 'win 'against 'j1)
+                        ; (println 'j2 'win 'against 'j1)
                         (let [new-deck-2 (add-to-deck deck2 card1 card2)]
                           (round (inc manche) deck1 new-deck-2)))))
 
 (defn -main [& args]
   (let [deck-j1 (prepare-deck (read-line))
         deck-j2 (prepare-deck (read-line))]
-    (println 'j1 deck-j1)
-    (println 'j2 deck-j2)
+    ; (println 'j1 deck-j1)
+    ; (println 'j2 deck-j2)
     (println (join " " (round 1 deck-j1 deck-j2)))))
