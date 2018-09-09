@@ -13,12 +13,18 @@
 ; Joueur 1 : 5H 6S 10D 9S 8D KH 7D 10H 7H 5C QC 2C
 ; Joueur 2 : 4H 6D
 
+; bataille: Chaque joueur défausse 3 cartes
+
 ; Si la partie a une fin :
 ; le numéro du gagnant (1 ou 2)
 ; et le nombre de manches jouées séparés par un espace.
 ; Une bataille ou une succession de batailles comptent pour une seule manche.
 
 ; Si les joueurs terminent ex aequo : PAT
+
+; Si un des deux joueurs n'a plus assez de cartes pour jouer lors d'une bataille
+; (pendant la phase de défausse ou pendant la phase de combat qui suit la défausse),
+; alors les joueurs sont ex aequo.
 
 (defn clean [card]
   (join "" (drop-last card)))
@@ -42,6 +48,9 @@
 (defn add-to-deck [j-card other-j-card deck]
   (concat deck [j-card] [other-j-card]))
 
+(defn bataille [card1 deck1 card2 deck2]
+  ['bataille])
+
 (defn round [manche
              [card1 & deck1]
              [card2 & deck2]]
@@ -51,19 +60,21 @@
   (println 'play card2 'stay deck2)
 
   (cond
+
+    (not card1) [2 (dec manche)]
+    (not card2) [1 (dec manche)]
+
     (win card1 card2) (do
                         (println 'j1 'win 'against 'j2)
                         (let [new-deck-1 (add-to-deck card1 card2 deck1)]
-                          (if (and new-deck-1 deck2)
-                            (round (inc manche) new-deck-1 deck2)
-                            [1 manche])))
+                          (round (inc manche) new-deck-1 deck2)))
+
     (win card2 card1) (do
                         (println 'j2 'win 'against 'j1)
                         (let [new-deck-2 (add-to-deck card1 card2 deck2)]
-                          (if (and new-deck-2 deck1)
-                            (round (inc manche) deck1 new-deck-2)
-                            [2 manche])))
-    :else ['PAT manche]))
+                          (round (inc manche) deck1 new-deck-2)))
+    ; BATAILLE
+    :else (bataille card1 deck1 card2 deck2)))
 
 (defn -main [& args]
   (let [deck-j1 (prepare-deck (read-line))
