@@ -1,6 +1,8 @@
 (ns clj-la-bataille.core
   (:gen-class))
 
+(use '[clojure.string :only (join split)])
+
 ; (ns Solution
 ;   (:gen-class))
 
@@ -19,7 +21,7 @@
 ; Si les joueurs terminent ex aequo : PAT
 
 (defn clean [card]
-  (clojure.string/join "" (drop-last card)))
+  (join "" (drop-last card)))
 
 (defn prepare-deck [n]
   ; read-string convert n to integer
@@ -35,9 +37,7 @@
 (defn win [card1 card2]
   (let [a (.indexOf force* card1)
         b (.indexOf force* card2)]
-    (println 'card1 a)
-    (println 'card2 b)
-    (if (> a b) true false)))
+    (> a b)))
 
 (defn add-to-deck [j-card other-j-card deck]
   (concat deck [j-card] [other-j-card]))
@@ -53,25 +53,21 @@
   (if (win card1 card2)
     (do
       (println 'j1 'win 'against 'j2)
-      (let [xx (add-to-deck card1 card2 deck1)]
-        (println 'AAAAAAAAAAAAAAA xx)
-        ))
+      (let [new-deck-1 (add-to-deck card1 card2 deck1)]
+        (if (and new-deck-1 deck2)
+          (round (inc manche) new-deck-1 deck2)
+          [1 manche])))
+
     (do
       (println 'j2 'win 'against 'j1)
-      (add-to-deck card2 card1 deck2)))
-
-  (if (and deck1 deck2)
-    (round (inc manche) deck1 deck2)
-    [manche (if deck1 1 2)]
-    ))
-
-(defn result [j1 j2]
-  (println 'j1 j1)
-  (println 'j2 j2)
-  (let [result (round 1 j1 j2)]
-    result))
+      (let [new-deck-2 (add-to-deck card2 card1 deck2)]
+        (if (and new-deck-2 deck1)
+          (round (inc manche) deck1 new-deck-2)
+          [2 manche])))))
 
 (defn -main [& args]
-  (println 'result (result
-                     (prepare-deck (read-line))
-                     (prepare-deck (read-line)))))
+  (let [deck-j1 (prepare-deck (read-line))
+        deck-j2 (prepare-deck (read-line))]
+    (println 'j1 deck-j1)
+    (println 'j2 deck-j2)
+    (println (join " " (round 1 deck-j1 deck-j2)))))
