@@ -1,12 +1,6 @@
 (ns clj-la-bataille.core
   (:gen-class))
 
-(use '[clojure.string :only (join)])
-(declare round)
-
-; (ns Solution
-;   (:gen-class))
-
 ; Par exemple, si la distribution des cartes est la suivante :
 ; Joueur 1 : 10 9 8 K 7 5 6
 ; Joueur 2 : 10 7 5 Q 2 4 6
@@ -26,6 +20,9 @@
 ; Si un des deux joueurs n'a plus assez de cartes pour jouer lors d'une bataille
 ; (pendant la phase de défausse ou pendant la phase de combat qui suit la défausse),
 ; alors les joueurs sont ex aequo.
+
+(use '[clojure.string :only (join)])
+(declare round)
 
 (defn clean [card]
   (join "" (drop-last card)))
@@ -47,7 +44,7 @@
     (> a b)))
 
 (defn add-to-deck [& cards]
-  (flatten cards))
+  (remove nil? (flatten cards)))
 
 (defn bataille [manche
                 card1 deck1 played-cards-1
@@ -71,9 +68,9 @@
 
     (= card1 card2) (let [[d11 d12 d13 to-play-1] deck1
                           [d21 d22 d23 to-play-2] deck2]
-                      (bataille manche
-                                to-play-1 (drop 4 deck1) (add-to-deck played-cards-1 card1 d11 d12 d13)
-                                to-play-2 (drop 4 deck2) (add-to-deck played-cards-2 card2 d21 d22 d23)))))
+                      (recur manche
+                             to-play-1 (drop 4 deck1) (add-to-deck played-cards-1 card1 d11 d12 d13)
+                             to-play-2 (drop 4 deck2) (add-to-deck played-cards-2 card2 d21 d22 d23)))))
 
 (defn round [manche
              [card1 & deck1]
@@ -96,12 +93,12 @@
     (win card1 card2) (do
                         ; (println 'j1 'win 'against 'j2)
                         (let [new-deck-1 (add-to-deck deck1 card1 card2)]
-                          (round (inc manche) new-deck-1 deck2)))
+                          (recur (inc manche) new-deck-1 deck2)))
 
     (win card2 card1) (do
                         ; (println 'j2 'win 'against 'j1)
                         (let [new-deck-2 (add-to-deck deck2 card1 card2)]
-                          (round (inc manche) deck1 new-deck-2)))))
+                          (recur (inc manche) deck1 new-deck-2)))))
 
 (defn -main [& args]
   (let [deck-j1 (prepare-deck (read-line))
