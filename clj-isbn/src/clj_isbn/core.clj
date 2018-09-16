@@ -21,6 +21,11 @@
       (= n 13) true
       :else false)))
 
+
+(defn sum-10 [isbn]
+  (let [a (map #(Integer/parseInt (str %)) isbn)]
+    (println a))
+  10)
 ; ISBN-10 check digit is calculated by Modulus 11
 ; with decreasing weights on the first 9 digits.
 
@@ -40,7 +45,9 @@
   (let [clean (apply str (re-seq #"[0-9]{9,10}X?$" isbn))
         n (count clean)]
     (cond
-      (= n 10) true
+      (= n 10) (or
+                 (= (str (sum-10 (butlast isbn))) (last isbn))
+                 (and (= (last isbn) "X") (= 10 (sum-10 (butlast isbn)))))
       :else false)))
 
 (defn valid [isbn]
