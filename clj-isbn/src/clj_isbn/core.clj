@@ -23,9 +23,18 @@
 
 
 (defn sum-10 [isbn]
-  (let [a (map #(Integer/parseInt (str %)) isbn)]
-    (println a))
-  10)
+  (let [
+        [a b c d e f g h i] (map #(Integer/parseInt (str %)) (butlast isbn))
+        summ (+ (* a 10) (* b 9) (* c 8) (* d 7) (* e 6) (* f 5) (* g 4) (* h 3) (* i 2))
+        reminder (rem summ 11)
+        result (if (= 0 reminder) 0 (- 11 reminder))
+        ]
+    ; (println 'isbn isbn)
+    ; (println 'sum summ)
+    ; (println 'reminder reminder)
+    ; (println 'result result)
+    result))
+    ; reminder))
 ; ISBN-10 check digit is calculated by Modulus 11
 ; with decreasing weights on the first 9 digits.
 
@@ -44,11 +53,12 @@
 (defn is-valid-10 [isbn]
   (let [clean (apply str (re-seq #"[0-9]{9,10}X?$" isbn))
         n (count clean)]
-    (cond
-      (= n 10) (or
-                 (= (str (sum-10 (butlast isbn))) (last isbn))
-                 (and (= (last isbn) "X") (= 10 (sum-10 (butlast isbn)))))
-      :else false)))
+    ; (println 'aaaa isbn (str (sum-10 isbn)) 'last (last isbn))
+    ; (println 'bbbbb isbn (= (str (sum-10 isbn)) (str (last isbn))))
+    (and (= n 10)
+         (or
+           (= (str (sum-10 isbn)) (str (last isbn)))
+           (and (= (str (last isbn)) "X") (= 10 (sum-10 isbn)))))))
 
 (defn valid [isbn]
   (let [n (count isbn)]
