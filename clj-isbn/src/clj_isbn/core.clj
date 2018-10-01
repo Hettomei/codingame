@@ -4,6 +4,14 @@
 ;   (:gen-class))
 
 
+(defn sum-13 [isbn]
+  (let [
+        [a b c d e f g h i j k l] (map #(Integer/parseInt (str %)) (butlast isbn))
+        summ (+ a (* b 3) c (* d 3) e (* f 3) g (* h 3) i (* j 3) k (* l 3))
+        reminder (rem summ 10)
+        result (if (= 0 reminder) 0 (- 10 reminder))
+        ]
+    result))
 ; ISBN-13 check digit is calculated by Modulus 10
 ; with alternate weights of 1 and 3 on the first 12 digits.
 
@@ -17,9 +25,8 @@
 (defn is-valid-13 [isbn]
   (let [clean (apply str (re-seq #"[0-9]" isbn))
         n (count clean)]
-    (cond
-      (= n 13) true
-      :else false)))
+    (and (= n 13)
+         (= (str (sum-13 isbn)) (str (last isbn))))))
 
 
 (defn sum-10 [isbn]
@@ -29,12 +36,8 @@
         reminder (rem summ 11)
         result (if (= 0 reminder) 0 (- 11 reminder))
         ]
-    ; (println 'isbn isbn)
-    ; (println 'sum summ)
-    ; (println 'reminder reminder)
-    ; (println 'result result)
     result))
-    ; reminder))
+; reminder))
 ; ISBN-10 check digit is calculated by Modulus 11
 ; with decreasing weights on the first 9 digits.
 
@@ -74,9 +77,9 @@
         valids   (filter valid isbns)
         invalids (filter (complement valid) isbns)]
 
-    (println 'valids)
-    (doseq [i valids] (println i))
-    (println '--------)
+    ; (println 'valids)
+    ; (doseq [i valids] (println i))
+    ; (println '--------)
 
-    (println (count invalids) 'invalid)
+    (println (count invalids) "invalid:")
     (doseq [i invalids] (println i))))
