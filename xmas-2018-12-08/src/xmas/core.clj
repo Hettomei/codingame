@@ -11,7 +11,7 @@
 
 ; (defn ppprint [& arg]
 ;   (doseq [i arg] (pprint i))
-  ; (println "-----------"))
+; (println "-----------"))
 
 ; doall is a workaround to ensure repeatedly + read-line have done all work
 (defn build-area []
@@ -70,18 +70,17 @@
     ; (ppprint "player2" player2)
     ; (ppprint "items" items)
     ; (ppprint "resting-quests" resting-quests)
-  "PUSH 0 UP"
+    "PUSH 0 UP"
     )
-    )
+  (System/exit 0)
+  )
 
 (defn move []
   "MOVE"
-  "PUSH 0 UP")
+  "PUSH 0 UP"
+  (System/exit 0)
+  )
 
 (defn -main [& args]
-  (let [all (repeatedly 16 read-line)]
-    (doall all)
-    (let [area (build-area all)])
-  )))
-  ; (while true
-  ;   (println (if (= "1" (read-line)) (push) (move)))))
+  (while true
+    (println (if (= "1" (read-line)) (push) (move)))))
