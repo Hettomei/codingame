@@ -1,25 +1,22 @@
 const THREE = require('three');
-require('./OrbitControls');
 
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+const SCREEN_WIDTH = window.innerWidth;
+const SCREEN_HEIGHT = window.innerHeight;
 
 const renderer = new THREE.WebGLRenderer();
-renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
 document.body.appendChild(renderer.domElement);
 
-camera.position.set(0, 0, 100);
-camera.lookAt(0, 0, 0);
+const scene = new THREE.Scene();
 
-renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-renderer.gammaInput = true;
-renderer.gammaOutput = true;
-
-function createCube() {
-  const geometryBox = new THREE.BoxGeometry(20, 20, 20);
-  const materialMesh = new THREE.MeshLambertMaterial({ color: 0x0ff00f });
-  return new THREE.Mesh(geometryBox, materialMesh);
-}
+const camera = new THREE.OrthographicCamera(
+  SCREEN_WIDTH / -2,
+  SCREEN_WIDTH / 2,
+  SCREEN_HEIGHT / 2,
+  SCREEN_HEIGHT / -2,
+  1,
+  1000,
+);
 
 function createLine() {
   const materialLine = new THREE.LineBasicMaterial({ color: 0x0000ff });
@@ -30,73 +27,45 @@ function createLine() {
   return new THREE.Line(geometry, materialLine);
 }
 
-function createSphere() {
-  const geometry = new THREE.SphereGeometry(20, 20, 20, 20);
-  const material = new THREE.MeshLambertMaterial({ color: 0xffff00 });
-  return new THREE.Mesh(geometry, material);
-}
+camera.position.set(0, -100, 0);
+camera.lookAt(0, 0, 0);
 
-const cube = createCube();
-const line = createLine();
-const sphere = createSphere();
+const sphereStruct = {
+  originX: -550,
+  originZ: -300,
+  lifeTime: 1700, // ms
+  angle: THREE.Math.degToRad(45),
+  vi: 1, // vitesse initiale
+};
+sphereStruct.cosAngle = Math.cos(sphereStruct.angle);
+sphereStruct.sinAngle = Math.sin(sphereStruct.angle);
 
-sphere.position.set(-70, 0, 0);
-
-// var directionalLight = new THREE.DirectionalLight( 0xffffff, 0 );
-// scene.add( directionalLight );
-const controls = new THREE.OrbitControls(camera);
-
-
-const scene = new THREE.Scene();
-const ambient = new THREE.AmbientLight(0xffffff, 0.2);
-scene.add(ambient);
-const spotLight = new THREE.SpotLight(0xffffff, 1);
-spotLight.position.set(15, 40, 35);
-spotLight.angle = Math.PI / 4;
-spotLight.penumbra = 0.05;
-spotLight.decay = 2;
-spotLight.distance = 200;
-spotLight.castShadow = true;
-spotLight.shadow.mapSize.width = 1024;
-spotLight.shadow.mapSize.height = 1024;
-spotLight.shadow.camera.near = 10;
-spotLight.shadow.camera.far = 200;
-scene.add(spotLight);
-
-const lightHelper = new THREE.SpotLightHelper(spotLight);
-scene.add(lightHelper);
-const shadowCameraHelper = new THREE.CameraHelper(spotLight.shadow.camera);
-scene.add(shadowCameraHelper);
+const G = 9 * 1 / 10000;
+const g = -1 / 2 * G;
 
 
-scene.add(cube);
-scene.add(line);
+const geometry = new THREE.SphereGeometry(0, 0, 0, 200);
+const material = new THREE.MeshBasicMaterial({ color: 0xffff00 });
+const sphere = new THREE.Mesh(geometry, material);
+sphere.position.set(sphereStruct.originX, 0, sphereStruct.originZ);
 scene.add(sphere);
 
-const geometry = new THREE.PlaneGeometry(100, 20, 3);
-const material = new THREE.MeshBasicMaterial({ color: 0x0e0e0e, side: THREE.DoubleSide });
-const plane = new THREE.Mesh(geometry, material);
-scene.add(plane);
+let d1 = Date.now();
 
 function animate() {
+  let t = Date.now() - d1;
+
+  if (t > sphereStruct.lifeTime) {
+    t = 0;
+    d1 = Date.now();
+  }
+
   requestAnimationFrame(animate);
-  controls.update();
 
-  cube.rotation.x += 0.005;
-  cube.rotation.y += 0.005;
+  const x = sphereStruct.vi * sphereStruct.cosAngle * t + sphereStruct.originX;
+  const z = g * t * t + sphereStruct.vi * sphereStruct.sinAngle * t + sphereStruct.originZ;
 
-  line.rotation.x += 0.05;
-  line.rotation.y += 0.001;
-
-  const orbitRadius = 100; // for example
-  const date = Date.now() * 0.001;
-
-  sphere.position.set(
-    Math.cos(date) * orbitRadius,
-    0,
-    Math.sin(date) * orbitRadius,
-  );
-
+  sphere.position.set(x, 0, z);
   renderer.render(scene, camera);
 }
 
