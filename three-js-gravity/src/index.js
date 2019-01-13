@@ -30,43 +30,63 @@ function createLine() {
 camera.position.set(0, -100, 0);
 camera.lookAt(0, 0, 0);
 
-const sphereStruct = {
-  originX: -550,
-  originZ: -300,
-  lifeTime: 1700, // ms
-  angle: THREE.Math.degToRad(45),
-  vi: 1, // vitesse initiale
-};
-sphereStruct.cosAngle = Math.cos(sphereStruct.angle);
-sphereStruct.sinAngle = Math.sin(sphereStruct.angle);
+function createSphereStruct(angle) {
+  const angleRad = THREE.Math.degToRad(angle);
+
+  return {
+    originX: -550,
+    originZ: -300,
+    lifeTime: 1700, // ms
+    angle,
+    vi: 1, // vitesse initiale
+    cosAngle: Math.cos(angleRad),
+    sinAngle: Math.sin(angleRad),
+  };
+}
+
+let sphereStruct = createSphereStruct(60);
 
 const G = 9 * 1 / 10000;
 const g = -1 / 2 * G;
 
 
-const geometry = new THREE.SphereGeometry(0, 0, 0, 200);
+const hgeometry = new THREE.SphereGeometry(10, 10, 10, 200);
+const hmaterial = new THREE.MeshBasicMaterial({ color: 0x005fff });
+const home = new THREE.Mesh(hgeometry, hmaterial);
+home.position.set(sphereStruct.originX, 0, sphereStruct.originZ);
+scene.add(home);
+
+const geometry = new THREE.SphereGeometry(4, 4, 4, 200);
 const material = new THREE.MeshBasicMaterial({ color: 0xffff00 });
-const sphere = new THREE.Mesh(geometry, material);
-sphere.position.set(sphereStruct.originX, 0, sphereStruct.originZ);
-scene.add(sphere);
+let projectile = new THREE.Mesh(geometry, material);
+projectile.position.set(sphereStruct.originX, 0, sphereStruct.originZ);
+scene.add(projectile);
 
 let d1 = Date.now();
 
+function getRandomInclusive(min, max) {
+  return Math.random() * (max - min + 1) + min;
+}
+
 function animate() {
-  let t = Date.now() - d1;
-
-  if (t > sphereStruct.lifeTime) {
-    t = 0;
-    d1 = Date.now();
-  }
-
   requestAnimationFrame(animate);
 
+  const t = Date.now() - d1;
   const x = sphereStruct.vi * sphereStruct.cosAngle * t + sphereStruct.originX;
   const z = g * t * t + sphereStruct.vi * sphereStruct.sinAngle * t + sphereStruct.originZ;
 
-  sphere.position.set(x, 0, z);
+  projectile.position.set(x, 0, z);
   renderer.render(scene, camera);
+
+  if (projectile.position.z < sphereStruct.originZ) {
+    d1 = Date.now();
+    projectile = projectile.clone();
+    projectile.position.set(sphereStruct.originX, 0, sphereStruct.originZ);
+    const angle = getRandomInclusive(10, 80);
+    console.log(angle);
+    sphereStruct = createSphereStruct(angle);
+    scene.add(projectile);
+  }
 }
 
 animate();
