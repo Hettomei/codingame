@@ -1,33 +1,42 @@
-; (ns clj-the-labyrinth2.core
-;   (:gen-class))
-(ns Player
-  (:gen-class))
+; (ns Player
+;   (:gen-class)
+(ns clj-the-labyrinth2.core
+  (:gen-class)
+  (:require [clojure.string :as str]))
 
 (defn p [& args]
   (binding [*out* *err*]
-    (println args)))
+    (apply prn args)))
 
-(defn mmap [row_n]
-  (loop [i rows_n]
-    (when (> i 0)
-      (let [ROW (read)]
-        (p (str ROW))
-        ; ROW: column of the characters in '#.TC?' (i.e. one line of the ASCII maze).
-        (recur (dec i))))))
+(defn p-world [args]
+  (run! p args))
+
+(defn p-place [world kr kc]
+  (p (nth (nth world kr) kc)))
+
+(defn can-see-commands? [world]
+  (some #(str/includes? % "C") world))
+
+(defn reach-command [world]
+  (p "reach-command"))
+
+(defn find-command [world]
+  (p "find-command"))
 
 (defn -main [& args]
-  (let [rows_n (read) column (read) A (read)]
-    ; R: number of rows.
-    ; C: number of columns.
-    ; A: number of rounds between the time the alarm countdown is activated and the time the alarm goes off.
-    (while true
-      (let [start_row (read)
-            start_column (read)
-            mmap (build-mmap rows_n)]
-        ; KR: row where Kirk is located.
-        ; KC: column where Kirk is located.
-        (p mmap)
-
-
+  (let [rows_n (read) _ (read) __ (read)]
+    ; (while true
+      (let [KR (read) ; row where Kirk is located.
+            KC (read) ; column where Kirk is located.
+            _  (read-line) ; needed to change line. Same on codingame ?
+            world (repeatedly rows_n read-line)]
+        (p KR KC)
+        (p-world world)
+        (p-place world KR KC)
+        (if (can-see-commands? world)
+            (reach-command world)
+            (find-command world))
         ; Kirk's next move (UP DOWN LEFT or RIGHT).
-        (println "RIGHT")))))
+        ; (println "RIGHT"))))
+        ; )
+        )))

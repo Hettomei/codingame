@@ -20,3 +20,13 @@ find . -name "*.clj"  | entr bash -c "echo;echo; lein test"
 #.........##......##.....#.C.#
 ##############################
 ```
+
+lein run < test01
+
+or
+
+find -name "*.clj" | entr bash -c "echo '---------run----------' && lein run < test01"
+
+or
+
+find -name "*.clj" | entr bash -c "echo '---------run----------' && lein test"
