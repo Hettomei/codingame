@@ -1,12 +1,11 @@
 # status
 
 todo : Save all the map in a var
+maybe this can help : https://clojure.org/reference/atoms
 
 # clj-the-labyrinth
 
 https://www.codingame.com/ide/puzzle/the-labyrinth
-
-find . -name "*.clj"  | entr bash -c "echo;echo; lein test"
 
 ```
 ??????????????????????????????
@@ -21,11 +20,11 @@ find . -name "*.clj"  | entr bash -c "echo;echo; lein test"
 ##############################
 ```
 
-lein run < test01
+lein run < map01
 
 or
 
-find -name "*.clj" | entr bash -c "echo '---------run----------' && lein run < test01"
+find -name "*.clj" | entr bash -c "echo '---------run----------' && lein run < map01"
 
 or
 

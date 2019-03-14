@@ -5,6 +5,6 @@
 (deftest test01
   (testing "can-see-commands?"
     (testing "when see commands"
-      (is (= 0 1)))
+      (is (= true (can-see-commands? '("aaa" "bbb" "eeC")))))
     (testing "when not see commands"
-      (is (= 0 1)))))
+      (is (nil? (can-see-commands? '("aaa" "bbb" "eee")))))))
