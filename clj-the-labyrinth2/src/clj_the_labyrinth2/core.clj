@@ -4,6 +4,8 @@
   (:gen-class)
   (:require [clojure.string :as str]))
 
+(def counter (atom ()))
+
 (defn p [& args]
   (binding [*out* *err*]
     (apply prn args)))
@@ -22,6 +24,11 @@
 
 (defn find-command [world]
   (p "find-command"))
+
+(defn toto [world]
+  (swap! counter conj world)
+  (prn @counter)
+  true)
 
 (defn -main [& args]
   (let [rows_n (read) _ (read) __ (read)]
