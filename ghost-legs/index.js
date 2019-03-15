@@ -1,5 +1,7 @@
-// const { data, solution } = require('./level1.js')
-const { data, solution } = require('./level100.js')
+const { data, solution } = require('./level1.js')
+// const { data, solution } = require('./level2.js')
+// const { data, solution } = require('./level3.js')
+// const { data, solution } = require('./level100.js')
 
 
 function algo(entry, path) {
