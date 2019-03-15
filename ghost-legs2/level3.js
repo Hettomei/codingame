@@ -21,6 +21,20 @@ const columns = [
     { C: [DOWN, DOWN , LEFT , LEFT , DOWN] }, //2
 ]
 
+const currentLine = 0;
+const currentColumn = 0;
+
+let deplacement = columns[currentColomn[currentLine];
+
+if(deplacement == "DOWN"){
+    currentLine++;
+}else if(deplacement == "LEFT"){
+    currentLine++;
+    currentColumn--;
+}else{
+    currentLine++;
+    currentColumn--; 
+}
 
 // Example
 // A0 --> DOWN = A1

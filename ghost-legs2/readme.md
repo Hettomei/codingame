@@ -34,3 +34,22 @@ On a choisie celle la (level1.js)
 On fournis la data.
 
 On veut savoir si ca atterrit en 0, 1 ou 2
+
+
+---------
+
+
+level 1 ok
+
+level 2 => on resoud le truc avec 
+A0
+B2
+C1
+
+
+
+Si temps :
+Montrer uniquement A ou B ou C (on retourne le tableau)
+
+Si temps : 
+Afficher le chemin exact du bonhome
