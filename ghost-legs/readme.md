@@ -10,3 +10,7 @@ finish at 12h03
 
 
 Need to break the exercice
+
+
+See solutions.js
+Hint : no way
