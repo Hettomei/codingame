@@ -14,3 +14,7 @@ Need to break the exercice
 
 See solutions.js
 Hint : no way
+
+
+
+TODO : Do a 'moving' mode

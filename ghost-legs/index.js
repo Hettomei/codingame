@@ -1,8 +1,10 @@
-const { data, solution } = require('./level1.js')
-// const { data, solution } = require('./level2.js')
+// const { data, solution } = require('./level1.js')
+const { data, solution } = require('./level2.js')
 // const { data, solution } = require('./level3.js')
 // const { data, solution } = require('./level100.js')
 
+
+const log = console.log
 
 function algo(entry, path) {
     let currentIndex = entry;
@@ -23,8 +25,8 @@ function algo(entry, path) {
 }
 
 function printSolution(mySolution) {
-    console.log();
-    console.log({
+    log();
+    log({
         mySolution,
         solution,
         same: solution.join(' ') === mySolution.join(' '),
@@ -76,24 +78,24 @@ const input = dataToArray[0].split('  ')
 const output = dataToArray[dataToArray.length - 1].split('  ')
 const legs = dataToArray.slice(1,dataToArray.length - 1)
 
-console.log('----- data -----');
-console.log(input.join('  '));
-console.log(legs.join('\n'));
-console.log(output.join('  '));
+log('----- data -----');
+log(input.join('  '));
+log(legs.join('\n'));
+log(output.join('  '));
 
-// console.log('');
-// console.log('new path :' );
+// log('');
+// log('new path :' );
 const newLegs = convert(legs);
-// console.log(newLegs.join('\n'));
+log(newLegs.join('\n'));
 
-console.log();
-console.log('solution');
+log();
+log('solution');
 const mySolution = input.map((char, index) => {
     const endIndex = algo(index, newLegs);
-    console.log(`${char}${output[endIndex]}`);
+    log(`${char}${output[endIndex]}`);
     return `${char}${output[endIndex]}`
 });
 
 printSolution(mySolution);
 
-console.log('----------------');
+log('----------------');
