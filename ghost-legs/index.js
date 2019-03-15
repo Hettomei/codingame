@@ -22,9 +22,11 @@ function algo(entry, path) {
 
 function printSolution(mySolution) {
     console.log();
-    console.log('----- result -----');
-    console.log({ mySolution, solution });
-    console.log('same result ?', solution.join(' ') === mySolution.join(' '));
+    console.log({
+        mySolution,
+        solution,
+        same: solution.join(' ') === mySolution.join(' '),
+    });
 }
 
 function guessVal(left, right) {
@@ -67,38 +69,29 @@ function convert(legs) {
     return convertLegs;
 }
 
-function start() {
-    // console.log(data);
-    // console.log(solution);
+const dataToArray = data.trim().split('\n')
+const input = dataToArray[0].split('  ')
+const output = dataToArray[dataToArray.length - 1].split('  ')
+const legs = dataToArray.slice(1,dataToArray.length - 1)
 
-    const dataToArray = data.trim().split('\n')
-    const input = dataToArray[0].split('  ')
-    const output = dataToArray[dataToArray.length - 1].split('  ')
-    const legs = dataToArray.slice(1,dataToArray.length - 1)
+console.log('----- data -----');
+console.log(input.join('  '));
+console.log(legs.join('\n'));
+console.log(output.join('  '));
 
-    console.log('----- data -----');
-    console.log(input.join('  '));
-    console.log(legs.join('\n'));
-    console.log(output.join('  '));
-    console.log('----------------');
+// console.log('');
+// console.log('new path :' );
+const newLegs = convert(legs);
+// console.log(newLegs.join('\n'));
 
-    const newLegs = convert(legs);
-    console.log('new path :' );
-    console.log(newLegs.join('\n'));
+console.log();
+console.log('solution');
+const mySolution = input.map((char, index) => {
+    const endIndex = algo(index, newLegs);
+    console.log(`${char}${output[endIndex]}`);
+    return `${char}${output[endIndex]}`
+});
 
-    const mySolution = input.map((char, index) => {
-        const mySolution = algo(index, newLegs);
-        console.log({index, mySolution});
-        return `${char}${output[mySolution]}`
-    });
+printSolution(mySolution);
 
-    printSolution(mySolution);
-}
-
-start();
-
-
-console.log('----------------');
-console.log('----------------');
-console.log('----------------');
 console.log('----------------');
