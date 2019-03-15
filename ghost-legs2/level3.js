@@ -1,29 +1,31 @@
-const DOWN = 'DOWN';
+// A  B  C
+// |  |  |
+// |--|  |
+// |  |--|
+// |  |--|
+// |  |  |
 
+// Rules
+// A0 --> DOWN = A1
+// A0 --> LEFT = ERROR
+// A1 --> RIGHT = B2
+// B2 --> LEFT = A3
+
+const DOWN = 'DOWN';
 const RIGHT = 'RIGHT';
 const LEFT = 'LEFT';
 
-const data = `
-ABC
-║║║
-╠╣║
-║╠╣
-║╠╣
-║║║
-`
-
-// Un retour à la ligne se traduit par "\n"
-// console.log("ligne 1\nbonjour\nligne2")
-// https://theasciicode.com.ar/extended-ascii-code/box-drawings-double-line-vertical-left-character-ascii-code-185.html
+const columns = [
+    { A: [DOWN, RIGHT, DOWN , DOWN , DOWN] }, //0
+    { B: [DOWN, LEFT , RIGHT, RIGHT, DOWN] }, //1
+    { C: [DOWN, DOWN , LEFT , LEFT , DOWN] }, //2
+]
 
 
-// On veut
-//
-// const representation = [
-//     ["A"   , "B"   , "C" ],
-//     [DOWN  , DOWN  , DOWN],
-//     [RIGHT , LEFT  , DOWN],
-//     [DOWN  , RIGHT , LEFT],
-//     [DOWN  , RIGHT , LEFT],
-//     [DOWN  , DOWN  , DOWN],
-// ]
+// Example
+// A0 --> DOWN = A1
+// A1 --> RIGHT = B2
+// B2 --> RIGHT = C3
+// C3 --> LEFT = B4
+// B4 --> DOWN = B5
+// B5 n'existe pas. Donc la réponse est B.

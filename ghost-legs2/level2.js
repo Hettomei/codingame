@@ -6,17 +6,13 @@
 // |  |  |
 //
 
-const A = 'A';
-const B = 'B';
-const C = 'C';
-
 const DOWN = 'DOWN';
 const RIGHT = 'RIGHT';
 const LEFT = 'LEFT';
 
 // On represente le dessin
 const representation = [
-    [A     , B     , C   ]
+    ["A"     , "B"    , "C"   ]
     [DOWN  , DOWN  , DOWN]
     [RIGHT , LEFT  , DOWN]
     [DOWN  , RIGHT , LEFT]
@@ -30,6 +26,4 @@ const representation = [
 //     { B: [DOWN, LEFT , RIGHT, RIGHT, DOWN] },
 //     { C: [DOWN, DOWN , LEFT , LEFT , DOWN] },
 // ]
-
-
 
