@@ -5,6 +5,9 @@ const { data, solution } = require('./level2.js')
 
 
 const log = console.log
+const D = '│';
+const R = '├';
+const L = '┤';
 
 function algo(entry, path) {
     let currentIndex = entry;
@@ -13,9 +16,9 @@ function algo(entry, path) {
         const line = path[i];
         const char = line[currentIndex];
 
-        if (char === 'R') {
+        if (char === R) {
             currentIndex++
-        } else if (char === 'L') {
+        } else if (char === L) {
             currentIndex--
         }
 
@@ -35,14 +38,14 @@ function printSolution(mySolution) {
 
 function guessVal(left, right) {
     if (left === '-') {
-        return 'L'
+        return L
     }
 
     if (right === '-') {
-        return 'R'
+        return R
     }
 
-    return '0';
+    return D;
 }
 
 function convert(legs) {
