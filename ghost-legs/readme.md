@@ -18,3 +18,6 @@ Hint : no way
 
 
 TODO : Do a 'moving' mode
+
+
+Autre jeux : https://www.codingame.com/training/easy/credit-card-verifier-luhns-algorithm
