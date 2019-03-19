@@ -22,8 +22,16 @@ function extractElegant(str, index, width) {
   ), '');
 }
 
+function extractFromArray(str, index, width) {
+  return [
+    'a-',
+    '1-',
+  ];
+}
+
 module.exports = {
   toto,
   extract,
   extractElegant,
+  extractFromArray,
 };

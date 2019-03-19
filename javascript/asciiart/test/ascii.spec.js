@@ -62,5 +62,46 @@ describe('Array', () => {
       const width = 4;
       expect(ascii.extract(str, index, width)).to.equal('fff-aaa-');
     });
+
+    it('cas reel : avec array', () => {
+      const str = 'aaa-bbb-ccc-ddd-eee-fff-ggg-hhh';
+      const index = [5, 0, 1];
+      const width = 4;
+      expect(ascii.extract(str, index, width)).to.equal('fff-aaa-bbb-');
+    });
+  });
+
+  describe('.extractFromArray', () => {
+    it('extract all lines', () => {
+      const lines = [
+        'a-b-c-d-e-f-',
+        '1-2-3-4-5-6-',
+      ];
+      const index = [0];
+      const width = 2;
+
+      const output = [
+        'a-',
+        '1-',
+      ];
+
+      expect(ascii.extractFromArray(lines, index, width)).to.deep.equal(output);
+    });
+
+    it('extract all lines', () => {
+      const lines = [
+        'a-b-c-d-e-f-',
+        '1-2-3-4-5-6-',
+      ];
+      const index = [1];
+      const width = 2;
+
+      const output = [
+        'b-',
+        '2-',
+      ];
+
+      expect(ascii.extractFromArray(lines, index, width)).to.deep.equal(output);
+    });
   });
 });
