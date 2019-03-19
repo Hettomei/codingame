@@ -20,7 +20,7 @@ function extractFromArray(lines, index, width) {
 }
 
 function indexOfLetter(letter) {
-  return 0;
+  return letter.toLowerCase().charCodeAt() - 97;
 }
 
 module.exports = {
