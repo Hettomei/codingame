@@ -15,16 +15,6 @@ function extract(str, index, width) {
   return output;
 }
 
-// utiliser 'reduce' c'est la élégant
-// 'reduce' reduit un tableau en moins d element
-//
-// function extractElegant(str, index, width) {
-//   return index.reduce((acc, i) => acc + str.slice(
-//       i * width,
-//       (i * width) + width,
-//     ) , '');
-// }
-
 function extractFromArray(lines, index, width) {
   return lines.map(line => extract(line, index, width));
 }
