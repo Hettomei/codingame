@@ -5,7 +5,8 @@ const ascii = require('./ascii');
 // const input = fs.readFileSync('./level2.txt', 'utf8')
 // const input = fs.readFileSync('./level3.txt', 'utf8')
 // const input = fs.readFileSync('./level4.txt', 'utf8')
-const input = fs.readFileSync('./level5.txt', 'utf8');
+// const input = fs.readFileSync('./level5.txt', 'utf8');
+const input = fs.readFileSync('./level6.txt', 'utf8');
 
 const toArray = input.split('\n').filter(e => e);
 const width = Number(toArray[0]);
