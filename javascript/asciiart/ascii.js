@@ -27,9 +27,14 @@ function indexOfLetter(letter) {
   return result;
 }
 
+function indexOfWord(word) {
+  return [...word].map(indexOfLetter);
+}
+
 module.exports = {
   toto,
   extract,
   extractFromArray,
   indexOfLetter,
+  indexOfWord,
 };
