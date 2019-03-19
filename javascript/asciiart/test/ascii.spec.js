@@ -103,5 +103,21 @@ describe('Array', () => {
 
       expect(ascii.extractFromArray(lines, index, width)).to.deep.equal(output);
     });
+
+    it('extract all lines', () => {
+      const lines = [
+        'a-b-c-d-e-f-',
+        '1-2-3-4-5-6-',
+      ];
+      const index = [1, 1, 3];
+      const width = 2;
+
+      const output = [
+        'b-b-d-',
+        '2-2-4-',
+      ];
+
+      expect(ascii.extractFromArray(lines, index, width)).to.deep.equal(output);
+    });
   });
 });

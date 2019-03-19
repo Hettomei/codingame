@@ -22,11 +22,8 @@ function extractElegant(str, index, width) {
   ), '');
 }
 
-function extractFromArray(str, index, width) {
-  return [
-    'a-',
-    '1-',
-  ];
+function extractFromArray(lines, index, width) {
+  return lines.map(line => extract(line, index, width));
 }
 
 module.exports = {
