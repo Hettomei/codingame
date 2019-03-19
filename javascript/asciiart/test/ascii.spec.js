@@ -136,6 +136,13 @@ describe('Array', () => {
 
     it('convert letter to its index', () => {
       expect(ascii.indexOfLetter('T')).to.equal(19);
+      expect(ascii.indexOfLetter('t')).to.equal(19);
+    });
+
+    it('convert unknown letter to 26', () => {
+      expect(ascii.indexOfLetter('#')).to.equal(26);
+      expect(ascii.indexOfLetter('(')).to.equal(26);
+      expect(ascii.indexOfLetter(' ')).to.equal(26);
     });
   });
 });
