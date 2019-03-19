@@ -11,6 +11,7 @@ const input = fs.readFileSync('./level1.txt', 'utf8');
 const a = input.split('\n');
 const width = Number(a[0]);
 const height = Number(a[1]);
+const toPrint = [...(a[2].toLowerCase())].map(e => e.charCodeAt() - 97);
 const mixedLetters = a.slice(3, height + 3);
 
 const letters = [];
@@ -31,4 +32,13 @@ mixedLetters.forEach((line) => {
   }
 });
 
-letters.forEach(l => console.log(l));
+letters.forEach(l => console.log(`${l}\n`));
+// console.log('toprin', toPrint);
+
+// toPrint.forEach((i) => {
+//   let j = i;
+//   if (i < 0 || i > 25) {
+//     j = 26;
+//   }
+//   console.log(letters[j]);
+// });
