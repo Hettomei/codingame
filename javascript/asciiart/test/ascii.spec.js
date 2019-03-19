@@ -120,4 +120,22 @@ describe('Array', () => {
       expect(ascii.extractFromArray(lines, index, width)).to.deep.equal(output);
     });
   });
+
+  describe('.indexOfLetter', () => {
+    it('convert letter to its index', () => {
+      expect(ascii.indexOfLetter('A')).to.equal(0);
+    });
+
+    it('convert letter to its index', () => {
+      expect(ascii.indexOfLetter('a')).to.equal(0);
+    });
+
+    it('convert letter to its index', () => {
+      expect(ascii.indexOfLetter('Z')).to.equal(25);
+    });
+
+    it('convert letter to its index', () => {
+      expect(ascii.indexOfLetter('T')).to.equal(19);
+    });
+  });
 });
