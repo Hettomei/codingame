@@ -142,7 +142,18 @@ describe('Array', () => {
     it('convert unknown letter to 26', () => {
       expect(ascii.indexOfLetter('#')).to.equal(26);
       expect(ascii.indexOfLetter('(')).to.equal(26);
-      expect(ascii.indexOfLetter(' ')).to.equal(26);
+      expect(ascii.indexOfLetter('<')).to.equal(26);
+      expect(ascii.indexOfLetter('}')).to.equal(26);
+    });
+  });
+
+  describe('.indexOfWord', () => {
+    it('convert word to multiple index', () => {
+      expect(ascii.indexOfWord('Hello')).to.deep.equal([7, 4, 11, 11, 14]);
+    });
+
+    it('convert word to multiple index', () => {
+      expect(ascii.indexOfWord('>Hello<')).to.deep.equal([26, 7, 4, 11, 11, 14, 26]);
     });
   });
 });
