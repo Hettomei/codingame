@@ -1,5 +1,17 @@
 Taken from : https://www.codingame.com/ide/puzzle/ascii-art
 
+# How to run
+
+```
+npm ci
+# run unit test :
+npx mocha
+# run an example :
+node index.js
+```
+
+
+# From codin game :
 
 Dans les gares et aéroports on croise souvent ce type d'écran :
 
