@@ -7,12 +7,13 @@ Vous êtes-vous demandé comment il serait possible de simuler cet affichage dan
  	Règles
 L'art ASCII permet de représenter des formes en utilisant des caractères. Dans notre cas, ces formes sont précisément des mots. Par exemple, le mot "MANHATTAN" pourra être affiché ainsi en art ASCII :
 
- 
+```
 # #  #  ### # #  #  ### ###  #  ###
 ### # # # # # # # #  #   #  # # # #
 ### ### # # ### ###  #   #  ### # #
 # # # # # # # # # #  #   #  # # # #
 # # # # # # # # # #  #   #  # # # #
+ ```
  
 ​Votre mission : Ecrire un programme capable d'afficher une ligne de texte en art ASCII dans un style qui vous est fourni en entrée.
 
@@ -31,6 +32,7 @@ Le texte T en art ASCII.
 Les caractères de a à z seront affichés en art ASCII par leur équivalent en majuscule.
 Les caractères qui ne sont pas dans les intervales [a-z] ou [A-Z], seront affichés par le point d'interrogation en art ASCII.
 Contraintes
+```
 0 < L < 30
 0 < H < 30
 0 < N < 200
@@ -66,3 +68,4 @@ Sortie
 ### ### # # ### ###  #   #  ### # #  
 # # # # # # # # # #  #   #  # # # #  
 # # # # # # # # # #  #   #  # # # # 
+```
