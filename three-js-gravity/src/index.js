@@ -18,17 +18,14 @@ const camera = new THREE.OrthographicCamera(
   1000,
 );
 
-function createLine() {
-  const materialLine = new THREE.LineBasicMaterial({ color: 0x0000ff });
-  const geometry = new THREE.Geometry();
-  geometry.vertices.push(new THREE.Vector3(-20, 0, 0));
-  geometry.vertices.push(new THREE.Vector3(0, 20, 0));
-  geometry.vertices.push(new THREE.Vector3(20, 0, 0));
-  return new THREE.Line(geometry, materialLine);
-}
-
-camera.position.set(0, -100, 0);
-camera.lookAt(0, 0, 0);
+// function createLine() {
+//   const materialLine = new THREE.LineBasicMaterial({ color: 0x0000ff });
+//   const geometry = new THREE.Geometry();
+//   geometry.vertices.push(new THREE.Vector3(-20, 0, 0));
+//   geometry.vertices.push(new THREE.Vector3(0, 20, 0));
+//   geometry.vertices.push(new THREE.Vector3(20, 0, 0));
+//   return new THREE.Line(geometry, materialLine);
+// }
 
 function createSphereStruct(angle) {
   const angleRad = THREE.Math.degToRad(angle);
@@ -44,49 +41,101 @@ function createSphereStruct(angle) {
   };
 }
 
-let sphereStruct = createSphereStruct(60);
+camera.position.set(0, -100, 0);
+camera.lookAt(0, 0, 0);
 
 const G = 9 * 1 / 10000;
 const g = -1 / 2 * G;
 
+const masterSphere = createSphereStruct(60);
 
 const hgeometry = new THREE.SphereGeometry(10, 10, 10, 200);
 const hmaterial = new THREE.MeshBasicMaterial({ color: 0x005fff });
 const home = new THREE.Mesh(hgeometry, hmaterial);
-home.position.set(sphereStruct.originX, 0, sphereStruct.originZ);
+home.position.set(masterSphere.originX, 0, masterSphere.originZ);
 scene.add(home);
 
 const geometry = new THREE.SphereGeometry(4, 4, 4, 200);
 const material = new THREE.MeshBasicMaterial({ color: 0xffff00 });
-let projectile = new THREE.Mesh(geometry, material);
-projectile.position.set(sphereStruct.originX, 0, sphereStruct.originZ);
-scene.add(projectile);
+const masterProjectile = new THREE.Mesh(geometry, material);
+masterProjectile.position.set(masterSphere.originX, 0, masterSphere.originZ);
 
-let d1 = Date.now();
+let throwProjectiles = [];
 
 function getRandomInclusive(min, max) {
   return Math.random() * (max - min + 1) + min;
 }
 
-function animate() {
-  requestAnimationFrame(animate);
+function generateI() {
+  let i = 0;
+  let direction = 1; // 1 up
 
+  function inc() {
+    if (direction) {
+      i += 1;
+      if (i > 90) {
+        direction = 0;
+      }
+      return;
+    }
+
+    i -= 1;
+    if (i < 40) {
+      direction = 1;
+    }
+  }
+
+  function getAngle() {
+    const a = i % 105;
+    return [a, a + 4];
+  }
+
+  return {
+    inc,
+    getAngle,
+  };
+}
+
+const genI = generateI();
+
+function createProjectile() {
+  const d1 = Date.now();
+  const projectile = masterProjectile.clone();
+  projectile.position.set(masterSphere.originX, 0, masterSphere.originZ);
+
+  const angle = getRandomInclusive(...genI.getAngle());
+  const sphereStruct = createSphereStruct(angle);
+
+  throwProjectiles.push([projectile, sphereStruct, d1]);
+  scene.add(projectile);
+}
+
+function moveProjectile([projectile, sphereStruct, d1]) {
   const t = Date.now() - d1;
   const x = sphereStruct.vi * sphereStruct.cosAngle * t + sphereStruct.originX;
   const z = g * t * t + sphereStruct.vi * sphereStruct.sinAngle * t + sphereStruct.originZ;
-
   projectile.position.set(x, 0, z);
+}
+
+function removeOldProjectile([projectile, sphereStruct]) {
+  const a = projectile.position.z > sphereStruct.originZ - 100;
+  if (!a) {
+    scene.remove(projectile);
+  }
+  return a;
+}
+
+function animate() {
+  requestAnimationFrame(animate);
+
+  throwProjectiles.forEach(moveProjectile);
+
   renderer.render(scene, camera);
 
-  if (projectile.position.z < sphereStruct.originZ) {
-    d1 = Date.now();
-    projectile = projectile.clone();
-    projectile.position.set(sphereStruct.originX, 0, sphereStruct.originZ);
-    const angle = getRandomInclusive(10, 80);
-    console.log(angle);
-    sphereStruct = createSphereStruct(angle);
-    scene.add(projectile);
-  }
+  throwProjectiles = throwProjectiles.filter(removeOldProjectile);
+
+  genI.inc();
+  createProjectile();
 }
 
 animate();
