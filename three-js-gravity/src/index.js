@@ -14,8 +14,8 @@ const camera = new THREE.OrthographicCamera(
   SCREEN_WIDTH / 2,
   SCREEN_HEIGHT / 2,
   SCREEN_HEIGHT / -2,
-  1,
-  1000,
+  -800,
+  3000,
 );
 
 // function createLine() {
@@ -31,8 +31,9 @@ function createSphereStruct(angle) {
   const angleRad = THREE.Math.degToRad(angle);
 
   return {
-    originX: -550,
-    originZ: -300,
+    originX: 0,
+    originY: 0,
+    originZ: 0,
     lifeTime: 1700, // ms
     angle,
     vi: 1, // vitesse initiale
@@ -41,7 +42,8 @@ function createSphereStruct(angle) {
   };
 }
 
-camera.position.set(0, -100, 0);
+const cameraPosition = [0, -500, 0];
+camera.position.set(...cameraPosition);
 camera.lookAt(0, 0, 0);
 
 const G = 9 * 1 / 10000;
@@ -52,13 +54,13 @@ const masterSphere = createSphereStruct(60);
 const hgeometry = new THREE.SphereGeometry(10, 10, 10, 200);
 const hmaterial = new THREE.MeshBasicMaterial({ color: 0x005fff });
 const home = new THREE.Mesh(hgeometry, hmaterial);
-home.position.set(masterSphere.originX, 0, masterSphere.originZ);
+home.position.set(masterSphere.originX, masterSphere.originY, masterSphere.originZ);
 scene.add(home);
 
 const geometry = new THREE.SphereGeometry(4, 4, 4, 200);
 const material = new THREE.MeshBasicMaterial({ color: 0xffff00 });
 const masterProjectile = new THREE.Mesh(geometry, material);
-masterProjectile.position.set(masterSphere.originX, 0, masterSphere.originZ);
+masterProjectile.position.set(masterSphere.originX, masterSphere.originY, masterSphere.originZ);
 
 let throwProjectiles = [];
 
@@ -125,17 +127,32 @@ function removeOldProjectile([projectile, sphereStruct]) {
   return a;
 }
 
+let round;
+
+function init() {
+  const rgeometry = new THREE.SphereGeometry(4, 4, 4, 200);
+  const rmaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+  round = new THREE.Mesh(rgeometry, rmaterial);
+  round.position.set(200, 0, 0);
+  scene.add(round);
+}
+
 function animate() {
   requestAnimationFrame(animate);
 
   throwProjectiles.forEach(moveProjectile);
 
   renderer.render(scene, camera);
+  const t = Date.now();
+  round.position.set(Math.cos(t / 500) * 200, 0, Math.sin(t / 500) * 200);
+  camera.position.set(Math.cos(t / 5000) * 500, Math.sin(t / 5000) * 500, 0);
 
   throwProjectiles = throwProjectiles.filter(removeOldProjectile);
 
   genI.inc();
   createProjectile();
 }
+
+init();
 
 animate();
