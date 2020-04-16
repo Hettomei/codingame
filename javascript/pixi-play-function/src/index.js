@@ -28,7 +28,7 @@ app.stage.addChild(graphics);
 addLineFunction((x) => x, 0, 4);
 addLineFunction((x) => x + 1, 0, 3);
 addLineFunction(() => 1 / 2, 1, 5);
-addPointFunction((x) => Math.sqrt(x), 0, 5);
+const b = addPointFunction((x) => Math.sqrt(x), 0, 5);
 addPointFunction((x) => 1 / x, 0, 5);
 
 function addLineFunction(f, min, max) {
@@ -76,6 +76,18 @@ function addPointFunction(f, min, max) {
   basicText.x = referent.x + max * referent.zoom;
   basicText.y = referent.y - f(max) * referent.zoom;
   app.stage.addChild(basicText);
+
+  return f;
 }
 
-app.ticker.add(() => {});
+const bob = new PIXI.Graphics();
+bob.lineStyle(2, 0x00ff00, 1);
+bob.drawRoundedRect(0, 0, 15, 40, 5);
+app.stage.addChild(bob);
+
+let x = 0;
+app.ticker.add(() => {
+  x += 0.001;
+  bob.x = referent.x + x * referent.zoom;
+  bob.y = referent.y - b(x) * referent.zoom;
+});
