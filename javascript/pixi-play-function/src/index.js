@@ -15,57 +15,67 @@ app.renderer.resize(window.innerWidth, window.innerHeight);
 const referent = {
   x: 40,
   y: window.innerHeight - 50,
+  zoom: 200,
 };
 
 app.stage.addChild(plan.render(referent));
 
-const littleShapeMove = new PIXI.Graphics();
-littleShapeMove.lineStyle(2, 0xffffff, 1);
-littleShapeMove.moveTo(0, 0);
-littleShapeMove.lineTo(20, 0);
-littleShapeMove.lineTo(20, 20);
-littleShapeMove.lineTo(0, 20);
-littleShapeMove.closePath();
-
-littleShapeMove.pivot.x = 10;
-littleShapeMove.pivot.y = 10;
-
-littleShapeMove.position.x = 20;
-littleShapeMove.position.y = 20;
-
-app.stage.addChild(littleShapeMove);
-
 const graphics = new PIXI.Graphics();
+graphics.lineStyle(2, 0xffffff, 1);
 
 app.stage.addChild(graphics);
 
-add_function((x) => x, 0, 200);
-add_function(() => 200, 200, 400);
-add_function((x) => -x + 600, 200, 500);
-add_function_n((x) => Math.sqrt(x * 100), 0, 1000, 2);
-add_function_n((x) => (1 / x) * 10000, 1, 1000, 2);
+addLineFunction((x) => x, 0, 4);
+addLineFunction((x) => x + 1, 0, 3);
+addLineFunction(() => 1 / 2, 1, 5);
+addPointFunction((x) => Math.sqrt(x), 0, 5);
+addPointFunction((x) => 1 / x, 0, 5);
 
-function add_function(f, min, max) {
-  graphics.lineStyle(2, 0xffffff, 1);
+function addLineFunction(f, min, max) {
+  graphics.moveTo(
+    referent.x + min * referent.zoom,
+    referent.y - f(min) * referent.zoom
+  );
+  graphics.lineTo(
+    referent.x + max * referent.zoom,
+    referent.y - f(max) * referent.zoom
+  );
 
-  graphics.moveTo(referent.x + min, referent.y - f(min));
-  graphics.lineTo(referent.x + max, referent.y - f(max));
+  const basicText = new PIXI.Text(f.toString(), { fill: 0xffffff });
+  basicText.x = referent.x + max * referent.zoom;
+  basicText.y = referent.y - f(max) * referent.zoom;
+  app.stage.addChild(basicText);
 }
 
-function add_function_n(f, min, max, step) {
-  graphics.lineStyle(2, 0xffffff, 1);
+function addPointFunction(f, min, max) {
+  const step = 0.05;
 
-  graphics.moveTo(referent.x + min, referent.y - f(min));
+  graphics.moveTo(
+    referent.x + min * referent.zoom,
+    referent.y - f(min) * referent.zoom
+  );
 
-  for (let i = min + 1; i < max; i += step) {
-    graphics.lineTo(referent.x + i, referent.y - f(i));
+  let i = min;
+  while (
+    referent.x + (i + step) * referent.zoom <
+    referent.x + max * referent.zoom
+  ) {
+    i = i + step;
+    graphics.lineTo(
+      referent.x + i * referent.zoom,
+      referent.y - f(i) * referent.zoom
+    );
   }
 
-  graphics.lineTo(referent.x + max, referent.y - f(max));
+  graphics.lineTo(
+    referent.x + max * referent.zoom,
+    referent.y - f(max) * referent.zoom
+  );
+
+  const basicText = new PIXI.Text(f.toString(), { fill: 0xffffff });
+  basicText.x = referent.x + max * referent.zoom;
+  basicText.y = referent.y - f(max) * referent.zoom;
+  app.stage.addChild(basicText);
 }
 
-let count = 0;
-app.ticker.add(() => {
-  count += 0.001;
-  littleShapeMove.rotation = count;
-});
+app.ticker.add(() => {});
