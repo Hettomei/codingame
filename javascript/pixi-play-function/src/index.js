@@ -25,11 +25,13 @@ graphics.lineStyle(2, 0xffffff, 1);
 
 app.stage.addChild(graphics);
 
-addLineFunction((x) => x, 0, 4);
-addLineFunction((x) => x + 1, 0, 3);
-addLineFunction(() => 1 / 2, 1, 5);
-const b = addPointFunction((x) => Math.sqrt(x), 0, 5);
-addPointFunction((x) => 1 / x, 0, 5);
+const all = [
+  addLineFunction((x) => x, 0, 4),
+  addLineFunction((x) => x + 1, 0, 3),
+  addLineFunction(() => 1 / 2, 1, 5),
+  addPointFunction((x) => Math.sqrt(x), 0, 5),
+  addPointFunction((x) => 1 / x, 0, 5),
+];
 
 function addLineFunction(f, min, max) {
   graphics.moveTo(
@@ -45,6 +47,8 @@ function addLineFunction(f, min, max) {
   basicText.x = referent.x + max * referent.zoom;
   basicText.y = referent.y - f(max) * referent.zoom;
   app.stage.addChild(basicText);
+
+  return f;
 }
 
 function addPointFunction(f, min, max) {
@@ -86,8 +90,31 @@ bob.drawRoundedRect(0, 0, 15, 40, 5);
 app.stage.addChild(bob);
 
 let x = 0;
-app.ticker.add(() => {
-  x += 0.001;
-  bob.x = referent.x + x * referent.zoom;
-  bob.y = referent.y - b(x) * referent.zoom;
-});
+let i = 0;
+let f = all[i];
+let vx = 0.005;
+app.ticker.add(() => {});
+
+console.log(all);
+
+function downListener(event) {
+  vx += 0.001;
+  if (event.key === "ArrowLeft") {
+    x -= vx;
+  } else if (event.key === "ArrowRight") {
+    x += vx;
+  } else if (event.key === "ArrowUp") {
+    i = i + 1;
+    f = all[i % all.length];
+  }
+
+  bob.x = referent.x + x * referent.zoom - 15;
+  bob.y = referent.y - f(x) * referent.zoom - 40;
+}
+
+function upListener() {
+  vx = 0.005;
+}
+
+window.addEventListener("keydown", downListener, false);
+window.addEventListener("keyup", upListener, false);

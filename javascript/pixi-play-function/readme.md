@@ -16,6 +16,8 @@ npm ci
 
 ````
 npm start
+# then in the browser
+# press left right up
 ````
 
 All bootstraped from https://webpack.js.org/guides
