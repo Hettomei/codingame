@@ -1,5 +1,6 @@
 import * as PIXI from "pixi.js";
 import * as plan from "./plan";
+import { debug } from "./tools";
 
 const app = new PIXI.Application();
 document.body.appendChild(app.view);
@@ -95,7 +96,7 @@ let f = all[i];
 let vx = 0.005;
 app.ticker.add(() => {});
 
-console.log(all);
+debug(all);
 
 function downListener(event) {
   vx += 0.001;
@@ -105,6 +106,12 @@ function downListener(event) {
     x += vx;
   } else if (event.key === "ArrowUp") {
     i = i + 1;
+    f = all[i % all.length];
+  } else if (event.key === "ArrowDown") {
+    i = i - 1;
+    if (i < 0) {
+      i = all.length - 1;
+    }
     f = all[i % all.length];
   }
 
