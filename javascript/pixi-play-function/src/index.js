@@ -1,5 +1,6 @@
 import * as PIXI from "pixi.js";
 import * as plan from "./plan";
+import * as referent from "./referent";
 import { debug } from "./tools";
 
 const app = new PIXI.Application();
@@ -12,12 +13,6 @@ app.renderer.view.style.position = "absolute";
 app.renderer.view.style.display = "block";
 app.renderer.autoResize = true;
 app.renderer.resize(window.innerWidth, window.innerHeight);
-
-const referent = {
-  x: 40,
-  y: window.innerHeight - 50,
-  zoom: 200,
-};
 
 app.stage.addChild(plan.render(referent));
 
@@ -35,51 +30,24 @@ const all = [
 ];
 
 function addLineFunction(f, min, max) {
-  graphics.moveTo(
-    referent.x + min * referent.zoom,
-    referent.y - f(min) * referent.zoom
-  );
-  graphics.lineTo(
-    referent.x + max * referent.zoom,
-    referent.y - f(max) * referent.zoom
-  );
-
-  const basicText = new PIXI.Text(f.toString(), { fill: 0xffffff });
-  basicText.x = referent.x + max * referent.zoom;
-  basicText.y = referent.y - f(max) * referent.zoom;
-  app.stage.addChild(basicText);
-
-  return f;
+  // Put a big step so it writes only one line
+  return addPointFunction(f, min, max, max);
 }
 
-function addPointFunction(f, min, max) {
-  const step = 0.05;
-
-  graphics.moveTo(
-    referent.x + min * referent.zoom,
-    referent.y - f(min) * referent.zoom
-  );
+function addPointFunction(f, min, max, step = 0.05) {
+  graphics.moveTo(referent.placeX(min), referent.placeY(f(min)));
 
   let i = min;
-  while (
-    referent.x + (i + step) * referent.zoom <
-    referent.x + max * referent.zoom
-  ) {
+  while (i + step < max) {
     i = i + step;
-    graphics.lineTo(
-      referent.x + i * referent.zoom,
-      referent.y - f(i) * referent.zoom
-    );
+    graphics.lineTo(referent.placeX(i), referent.placeY(f(i)));
   }
 
-  graphics.lineTo(
-    referent.x + max * referent.zoom,
-    referent.y - f(max) * referent.zoom
-  );
+  graphics.lineTo(referent.placeX(max), referent.placeY(f(max)));
 
   const basicText = new PIXI.Text(f.toString(), { fill: 0xffffff });
-  basicText.x = referent.x + max * referent.zoom;
-  basicText.y = referent.y - f(max) * referent.zoom;
+  basicText.x = referent.placeX(max);
+  basicText.y = referent.placeY(f(max));
   app.stage.addChild(basicText);
 
   return f;
@@ -115,8 +83,8 @@ function downListener(event) {
     f = all[i % all.length];
   }
 
-  bob.x = referent.x + x * referent.zoom - 15;
-  bob.y = referent.y - f(x) * referent.zoom - 40;
+  bob.x = referent.placeX(x) - 15;
+  bob.y = referent.placeY(f(x)) - 40;
 }
 
 function upListener() {
