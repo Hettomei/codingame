@@ -61,13 +61,12 @@ app.stage.addChild(bob);
 let x = 0;
 let i = 0;
 let f = all[i];
-let vx = 0.005;
+let vx = 0.020;
 app.ticker.add(() => {});
 
 debug(all);
 
 function downListener(event) {
-  vx += 0.001;
   if (event.key === "ArrowLeft") {
     x -= vx;
   } else if (event.key === "ArrowRight") {
@@ -88,7 +87,6 @@ function downListener(event) {
 }
 
 function upListener() {
-  vx = 0.005;
 }
 
 window.addEventListener("keydown", downListener, false);
