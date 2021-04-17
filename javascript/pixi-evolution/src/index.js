@@ -21,69 +21,17 @@ graphics.lineStyle(2, 0xffffff, 1);
 
 app.stage.addChild(graphics);
 
-const all = [
-  addLineFunction((x) => x, 0, 4),
-  addLineFunction((x) => x + 1, 0, 3),
-  addLineFunction(() => 1 / 2, 1, 5),
-  addPointFunction((x) => Math.sqrt(x), 0, 5),
-  addPointFunction((x) => 1 / x, 0, 5),
-];
-
-function addLineFunction(f, min, max) {
-  // Put a big step so it writes only one line
-  return addPointFunction(f, min, max, max);
-}
-
-function addPointFunction(f, min, max, step = 0.05) {
-  graphics.moveTo(referent.placeX(min), referent.placeY(f(min)));
-
-  let i = min;
-  while (i + step < max) {
-    i = i + step;
-    graphics.lineTo(referent.placeX(i), referent.placeY(f(i)));
-  }
-
-  graphics.lineTo(referent.placeX(max), referent.placeY(f(max)));
-
-  const basicText = new PIXI.Text(f.toString(), { fill: 0xffffff });
-  basicText.x = referent.placeX(max);
-  basicText.y = referent.placeY(f(max));
-  app.stage.addChild(basicText);
-
-  return f;
-}
-
-const bob = new PIXI.Graphics();
-bob.lineStyle(2, 0x00ff00, 1);
-bob.drawRoundedRect(0, 0, 15, 40, 5);
-app.stage.addChild(bob);
-
 let x = 0;
 let i = 0;
-let f = all[i];
 let vx = 0.020;
-app.ticker.add(() => {});
-
-debug(all);
+// app.ticker.add((a) => { console.log(a);});
 
 function downListener(event) {
   if (event.key === "ArrowLeft") {
-    x -= vx;
   } else if (event.key === "ArrowRight") {
-    x += vx;
   } else if (event.key === "ArrowUp") {
-    i = i + 1;
-    f = all[i % all.length];
   } else if (event.key === "ArrowDown") {
-    i = i - 1;
-    if (i < 0) {
-      i = all.length - 1;
-    }
-    f = all[i % all.length];
   }
-
-  bob.x = referent.placeX(x) - 15;
-  bob.y = referent.placeY(f(x)) - 40;
 }
 
 function upListener() {

@@ -1,6 +1,6 @@
 const initX = 40;
 const initY = window.innerHeight - 50;
-const zoom = 200;
+const zoom = 50;
 
 function placeX(x) {
   return initX + x * zoom;
