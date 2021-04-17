@@ -119,19 +119,20 @@ function junctionListener(event) {
 }
 
 function steelBarListener(event) {
-  let speed = 5;
+  let speed = 3;
   if (event.shiftKey) {
-    speed += 15;
+    speed += 10;
   }
   const line = state.steelBar;
-  // if (event.key === "ArrowLeft") {
-  if (event.keyCode === 37) {
-    line.width = line.width + 3;
-    // line.x = line.x - speed;
-    // line.rotation = line.rotation - 0.1;
-    // } else if (event.key === "ArrowRight") {
-  } else if (event.keyCode === 39) {
-    line.x = line.x + speed;
+  // if (event.key === "ArrowUP") {
+  if (event.keyCode === 38) {
+    line.width = line.width + speed;
+    // } else if (event.key === "ArrowDown") {
+  } else if (event.keyCode === 40) {
+    line.width = line.width - speed;
+    if (line.width < 25) {
+      line.width = 25;
+    }
     // SPACE
   } else if (event.keyCode === 32) {
     nextState(state);
