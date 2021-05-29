@@ -84,16 +84,21 @@ function main() {
   points = [point(1, 1), point(3, 1), point(5, 1)];
 
   lines = [
-    line(5, 5, 30, 10),
-    line(6, 10, 22, 3),
+    // line(5, 5, 30, 10),
+    // line(6, 10, 22, 3),
     // aaaaaaaaaaaaaaaaaaaaaaaaa
-    // line(2, 58, 100, 5),
-    // line(100, 5, 200, 50),
+    line(2, 58, 100, 5),
+    line(100, 5, 200, 50),
   ];
 
-  l1 = line(2, 58, 100, 5);
-  l2 = line(100, 5, 200, 50);
-  drawPoints(points.concat(linestoPoints(lines)).concat(bezierToPoint(l1, l2)));
+  let l1 = line(2, 58, 100, 5);
+  let l2 = line(100, 5, 200, 50);
+  let b1 = bezierToPoint(l1, l2);
+
+  l1 = line(2, 2, 100, 50);
+  l2 = line(100, 50, 200, 0);
+  let b2 = bezierToPoint(l1, l2);
+  drawPoints(points.concat(linestoPoints(lines), b1, b2));
 }
 
 main();
