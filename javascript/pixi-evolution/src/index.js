@@ -126,7 +126,8 @@ function steelBarListener(event) {
   const line = state.steelBar;
   // if (event.key === "ArrowUP") {
   if (event.keyCode === 38) {
-    line.width = line.width + speed;
+    line.rotation = line.rotation + 0.2;
+    // line.width = line.width + speed;
     // } else if (event.key === "ArrowDown") {
   } else if (event.keyCode === 40) {
     line.width = line.width - speed;
