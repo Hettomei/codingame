@@ -1,9 +1,11 @@
 #include <iostream>
+#include <cstdlib> // for EXIT_SUCCESS and EXIT_FAILURE
 
-using std::cout;
-using std::endl;
-
+int returnFive()
+{
+    return 5;
+}
 int main() {
-  cout << "Hello World!" << endl;
-  return 0;
+  std::cout << "ok" << returnFive <<   '\n';
+  return EXIT_SUCCESS;
 }
