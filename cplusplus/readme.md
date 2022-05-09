@@ -2,10 +2,7 @@ Try https://www.learncpp.com/cpp-tutorial/configuring-your-compiler-choosing-a-l
 
 ```
 g++    -Werror main.cpp -o main
-g++-11 -Werror main.cpp -o main
+g++-11 -Werror -o main *.cpp
 ./main
 ```
 
-TODO ADD 
-
--I/source/includes
