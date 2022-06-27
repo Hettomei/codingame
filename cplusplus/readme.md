@@ -2,9 +2,10 @@ https://devopssec.fr/article/bases-fondamentales-de-laffichage-graphique-sdl2
 
 ```
 sudo apt-get install libsdl2-dev
+sudo apt-get install libsdl2-ttf-dev
+sudo apt-get install libsdl2-image-dev
 
-./build.sh
-./main
+./build.sh && ./main
 ```
 
 
