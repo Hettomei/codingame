@@ -1,4 +1,4 @@
-https://devopssec.fr/article/bases-fondamentales-de-laffichage-graphique-sdl2
+j'en suis à https://devopssec.fr/article/gestion-des-differents-evenements-sdl-2
 
 ```
 sudo apt-get install libsdl2-dev
