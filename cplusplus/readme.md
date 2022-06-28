@@ -1,9 +1,9 @@
 j'en suis à https://devopssec.fr/article/gestion-des-differents-evenements-sdl-2
 
 ```
-sudo apt-get install libsdl2-dev
-sudo apt-get install libsdl2-ttf-dev
-sudo apt-get install libsdl2-image-dev
+sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+sudo apt install -y g++-11
+sudo apt-get install -y libsdl2-dev libsdl2-ttf-dev libsdl2-image-dev
 
 ./build.sh && ./main
 ```
