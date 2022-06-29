@@ -1,6 +1,3 @@
 #include "tools.h"
 
-int returnFive()
-{
-    return 5;
-}
+int returnFive() { return 5; }
