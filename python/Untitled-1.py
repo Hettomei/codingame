@@ -34,15 +34,13 @@ def run():
     sp_paddle1 = factory.from_color(WHITE, size=(20, 100))
     sp_paddle2 = factory.from_color(WHITE, size=(20, 100))
 
-    player1 = Player(world, sp_paddle1, 0, 250)
-    player2 = Player(world, sp_paddle2, 780, 250)
-
     for i in range(10, 1100, 20):
         for j in range(10, 900, 20):
             a = factory.from_color(WHITE, size=(1, 1))
-            player2 = Player(world, a, i, j)
+            Player(world, a, i, j)
 
     running = True
+    painting = False
     while running:
         for event in sdl2.ext.get_events():
             # print(event, event.type)
@@ -53,10 +51,13 @@ def run():
                 if event.key.keysym.sym in (sdl2.SDLK_ESCAPE, sdl2.SDLK_q) :
                     running = False
                     break
-            if event.type == sdl2.SDL_MOUSEMOTION:
+            if event.type == sdl2.SDL_MOUSEBUTTONUP:
+                painting = not painting
+                break
+            if painting and event.type == sdl2.SDL_MOUSEMOTION:
                 motion = event.motion
                 print(motion.x, motion.xrel, motion.y, motion.yrel)
-                a = factory.from_color(WHITE, size=(abs(motion.xrel), abs(motion.yrel)))
+                a = factory.from_color(WHITE, size=(abs(motion.xrel)+2, abs(motion.yrel)+2))
                 player2 = Player(world, a, motion.x, motion.y)
 
         world.process()
