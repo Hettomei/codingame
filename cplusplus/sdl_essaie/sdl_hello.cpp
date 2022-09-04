@@ -51,13 +51,12 @@ int main(int argc, char *args[]) {
         break;
       }
       if (event.type == SDL_KEYDOWN ) {
-          SDL_Log("Physical %s key acting as %s key",
+          SDL_Log("scancode: <<%s>> - keycode: <<%s>>",
             SDL_GetScancodeName(event.key.keysym.scancode),
             SDL_GetKeyName(event.key.keysym.sym));
       }
 
-      if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_q) {
-        SDL_Log("You pressed q");
+      if (event.type == SDL_KEYDOWN && (event.key.keysym.sym == SDLK_q || event.key.keysym.sym == SDLK_ESCAPE)) {
         break;
       }
     }
