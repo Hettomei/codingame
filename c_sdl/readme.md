@@ -22,6 +22,6 @@ https://www.libsdl.org/ > release > SDL2-devel-2.24.0-mingw.zip
 Copier : x86_64-w64-mingw32 à la racine du projet.
 
 ```
-gcc simple_sdl_hello.c -I/home/tim/cpp_sdl/x86_64-w64-mingw32/include/SDL2 -Dmain=SDL_main -L/home/tim/cpp_sdl/x86_64-w64-mingw32/lib -lmingw32 -lSDL2main -lSDL2 -mwindows -msse3 -o x86_64-w64-mingw32/bin/main
+gcc simple_sdl_hello.c -Ix86_64-w64-mingw32/include/SDL2 -Dmain=SDL_main -Lx86_64-w64-mingw32/lib -lmingw32 -lSDL2main -lSDL2 -mwindows -msse3 -o x86_64-w64-mingw32/bin/main
 ./x86_64-w64-mingw32/bin/main.exe
 ```
