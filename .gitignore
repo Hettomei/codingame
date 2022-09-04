@@ -1,6 +1,5 @@
 .DS_Store
 
-
 node_modules/
+x86_64-w64-mingw32/
 /cplusplus/main
-/c_sdl/x86_64-w64-mingw32
