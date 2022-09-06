@@ -67,7 +67,7 @@ int main(int argc, char *argv[]) {
   }
 
   SDL_Surface *text = TTF_RenderText_Blended(
-      font, "Hello, World",
+      font, "esc, q: quitter     espace: les etoiles bougent",
       SDL_Color{0, 255, 0, 255}); // Crée un surface qui contient le texte
 
   if (text == nullptr) {
@@ -83,7 +83,6 @@ int main(int argc, char *argv[]) {
   }
 
   SDL_Event events;
-  bool isOpen{true};
 
   // Gestion de l'aléatoire
   std::default_random_engine generator{
@@ -115,6 +114,7 @@ int main(int argc, char *argv[]) {
   TTF_CloseFont(font);
 
   // Game loop
+  bool isOpen{true};
   while (isOpen) {
     // Input
     while (SDL_PollEvent(&events)) {
@@ -122,6 +122,23 @@ int main(int argc, char *argv[]) {
       case SDL_QUIT:
         isOpen = false;
         break;
+      case SDL_KEYDOWN:
+        if (events.key.keysym.sym == SDLK_q ||
+            events.key.keysym.sym == SDLK_ESCAPE) {
+          isOpen = false;
+          break;
+        }
+
+        for (auto &point : points)
+          point = {distribution(generator), distribution(generator)};
+        SDL_SetRenderDrawColor(pRenderer, 255, 255, 255,
+                               255); // Choisir la couleur blanche
+        SDL_RenderDrawPoints(
+            pRenderer, &points[0],
+            points.size()); // Dessiner mon tableau de SDL_Point en
+                            // tous en couleur blanche.
+
+        SDL_RenderPresent(pRenderer); // Mise à jour de la fenêtre
       }
     }
 
@@ -129,18 +146,18 @@ int main(int argc, char *argv[]) {
     SDL_SetRenderDrawColor(pRenderer, 0, 0, 0, 255); // Choisir la couleur noir
     SDL_RenderClear(pRenderer); // Colorier en noir toutes la fenêtre
 
-    SDL_SetRenderDrawColor(pRenderer, 255, 255, 255,
-                           255); // Choisir la couleur blanche
-
-    SDL_RenderDrawPoints(pRenderer, &points[0],
-                         points.size()); // Dessiner mon tableau de SDL_Point en
-                                         // tous en couleur blanche.
-    SDL_SetRenderDrawColor(pRenderer, 255, 255, 0, 0);
+    SDL_SetRenderDrawColor(pRenderer, 255, 255, 0, 0); // jaune
     SDL_RenderFillRect(pRenderer, &rectangle1);
 
     SDL_RenderDrawLine(pRenderer, 100, 200, 300, 400);
     SDL_RenderDrawLines(pRenderer, lines, POINTS_COUNT);
     SDL_RenderCopy(pRenderer, texture, nullptr, &position);
+
+    SDL_SetRenderDrawColor(pRenderer, 255, 255, 255,
+                           255); // Choisir la couleur blanche
+    SDL_RenderDrawPoints(pRenderer, &points[0],
+                         points.size()); // Dessiner mon tableau de SDL_Point en
+                                         // tous en couleur blanche.
 
     SDL_RenderPresent(pRenderer); // Mise à jour de la fenêtre
   }
