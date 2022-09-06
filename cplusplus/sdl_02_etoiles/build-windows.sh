@@ -2,7 +2,6 @@ set -eux
 
 PATH=/mingw64/bin/:$PATH
 
-rm -f main
 cp Miglia.ttf x86_64-w64-mingw32/bin/
 
 g++ main.cpp -std=c++20 -g \
