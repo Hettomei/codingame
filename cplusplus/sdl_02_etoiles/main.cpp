@@ -90,14 +90,20 @@ int main(int argc, char *argv[]) {
                                     .time_since_epoch()
                                     .count())}; // Générateur
 
-  std::uniform_int_distribution distribution{
+  std::uniform_int_distribution distribution_x{
       0, WIDTHSCREEN<int>}; // Selon la loi mathématique Uniform
+                            //
+  std::uniform_int_distribution distribution_y{
+      0, HEIGHTSCREEN<int>}; // Selon la loi mathématique Uniform
+
+  std::uniform_int_distribution distribution_move{
+      0, 2}; // Selon la loi mathématique Uniform
 
   std::array<SDL_Point, TOTAL_POINTS<int>> points;
 
   // Création des SDL_Point avec des coordonnée aléatoire
   for (auto &point : points)
-    point = {distribution(generator), distribution(generator)};
+    point = {distribution_x(generator), distribution_y(generator)};
 
   SDL_Rect rectangle1{20, 20, 100, 50};
 
@@ -108,11 +114,13 @@ int main(int argc, char *argv[]) {
 
   // Centre la texture sur l'écran
   position.x = WIDTHSCREEN<int> / 2 - position.w / 2;
-  position.y = HEIGHTSCREEN<int> / 2 - position.h / 2;
+  position.y = 50;
 
   SDL_FreeSurface(text);
   TTF_CloseFont(font);
 
+  int x;
+  int y;
   // Game loop
   bool isOpen{true};
   while (isOpen) {
@@ -129,8 +137,15 @@ int main(int argc, char *argv[]) {
           break;
         }
 
-        for (auto &point : points)
-          point = {distribution(generator), distribution(generator)};
+        for (auto &point : points) {
+          x = point.x + distribution_move(generator);
+          y = point.y + distribution_move(generator);
+          if (x > WIDTHSCREEN<int>)
+            x = 0;
+          if (y > HEIGHTSCREEN<int>)
+            y = 0;
+          point = {x, y};
+        }
         SDL_SetRenderDrawColor(pRenderer, 255, 255, 255,
                                255); // Choisir la couleur blanche
         SDL_RenderDrawPoints(
