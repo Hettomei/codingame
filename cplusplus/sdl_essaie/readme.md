@@ -24,5 +24,5 @@ Copier : x86_64-w64-mingw32 à la racine du projet.
 # Pour compiler du C++ sous windows : 
 
 ```
-g++ sdl_hello.cpp  -std=c++14 -g -Wall -Wextra -m64 -Ix86_64-w64-mingw32/include/SDL2 -Dmain=SDL_main -Lx86_64-w64-mingw32/lib -lmingw32 -lSDL2main -lSDL2 -mwindows -msse3 -o x86_64-w64-mingw32/bin/main && ./x86_64-w64-mingw32/bin/main.exe
+./build-windows.sh
 ```
