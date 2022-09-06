@@ -1,13 +1,11 @@
-#include "tools.h"
-
 #include <array>
 #include <chrono>
 #include <cstdlib> // for EXIT_SUCCESS and EXIT_FAILURE
 #include <iostream>
 #include <random>
 
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_ttf.h>
+#include <SDL.h>
+#include <SDL_ttf.h>
 
 // Définition des constante
 template <typename T> constexpr T WIDTHSCREEN{900};
@@ -92,6 +90,7 @@ int main(int argc, char *argv[]) {
       static_cast<unsigned int>(std::chrono::system_clock::now()
                                     .time_since_epoch()
                                     .count())}; // Générateur
+
   std::uniform_int_distribution distribution{
       0, WIDTHSCREEN<int>}; // Selon la loi mathématique Uniform
 
