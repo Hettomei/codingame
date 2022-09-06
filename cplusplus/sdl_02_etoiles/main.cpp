@@ -65,7 +65,8 @@ int main(int argc, char *argv[]) {
   if (font == nullptr) {
     SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "[DEBUG] > %s", TTF_GetError());
   }
-
+  //passage en full screen
+  //SDL_SetWindowFullscreen(pWindow, SDL_WINDOW_FULLSCREEN);
   SDL_Surface *text = TTF_RenderText_Blended(
       font, "esc, q: quitter     espace: les etoiles bougent",
       SDL_Color{0, 255, 0, 255}); // Crée un surface qui contient le texte
