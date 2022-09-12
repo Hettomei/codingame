@@ -1,26 +1,9 @@
 # Pour compiler sous windows : 
 
-installer myngw via https://www.msys2.org/
+installer myngw, lire ../readme.md
 
-apres faire
-```
-pacman -Syu
-pacman -S base-devel gcc vim cmake git
-pacman -S --needed mingw-w64-x86_64-toolchain
-pacman -S mingw64/mingw-w64-x86_64-cmake
-```
 
-```
-g++  --version
-g++ (GCC) 11.3.0
-```
-
-Ensuite, telecharger SDL pour mingw : 
-https://www.libsdl.org/ > release > SDL2-devel-2.24.0-mingw.zip
-
-Copier : x86_64-w64-mingw32 à la racine du projet.
-
-# Pour compiler du C++ sous windows : 
+# Pour compiler sous windows : 
 
 ```
 ./build-windows.sh
