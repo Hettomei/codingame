@@ -52,7 +52,6 @@ int main(int argc, char *argv[]) {
   if (infoRenderer.flags & SDL_RENDERER_SOFTWARE) {
     SDL_Log("Le rendu est gérer par SDL_RENDERER_SOFTWARE.");
   }
-
   if (infoRenderer.flags & SDL_RENDERER_TARGETTEXTURE) {
     SDL_Log("Le rendu est autorisé sur des textures.");
   }
@@ -63,15 +62,19 @@ int main(int argc, char *argv[]) {
 
   if (font == nullptr) {
     SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "[DEBUG] > %s", TTF_GetError());
+    SDL_Quit();
+    return EXIT_FAILURE;
   }
   // passage en full screen
   // SDL_SetWindowFullscreen(pWindow, SDL_WINDOW_FULLSCREEN);
   SDL_Surface *text = TTF_RenderText_Blended(
-      font, "esc: quitter, q: quitter, espace: il neige",
+      font, "esc: quitter, q: quitter, espace: tirer",
       SDL_Color{255, 255, 255, 255}); // Crée un surface qui contient le texte
 
   if (text == nullptr) {
     SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "[DEBUG] > %s", TTF_GetError());
+    SDL_Quit();
+    return EXIT_FAILURE;
   }
 
   SDL_Texture *texture = SDL_CreateTextureFromSurface(
@@ -80,36 +83,20 @@ int main(int argc, char *argv[]) {
 
   if (texture == nullptr) {
     SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "[DEBUG] > %s", TTF_GetError());
+    SDL_Quit();
+    return EXIT_FAILURE;
   }
 
-  SDL_Event events;
-
-  // Gestion de l'aléatoire
-  std::default_random_engine generator{
-      static_cast<unsigned int>(std::chrono::system_clock::now()
-                                    .time_since_epoch()
-                                    .count())}; // Générateur
-
-  std::uniform_int_distribution distribution_x{
-      0, WIDTHSCREEN<int>}; // Selon la loi mathématique Uniform
-                            //
-  std::uniform_int_distribution distribution_y{
-      0, HEIGHTSCREEN<int>}; // Selon la loi mathématique Uniform
-
-  std::uniform_int_distribution distribution_move{
-      0, 5}; // Selon la loi mathématique Uniform
-
-
   SDL_Rect position;
-
   SDL_QueryTexture(texture, nullptr, nullptr, &position.w,
                    &position.h); // Récupere la dimension de la texture
-
   position.x = 10;
   position.y = 10;
 
   SDL_FreeSurface(text);
   TTF_CloseFont(font);
+
+  SDL_Event events;
 
   // Game loop
   bool isOpen{true};
