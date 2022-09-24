@@ -13,4 +13,4 @@ g++ main.cpp -std=c++20 -g \
     -mwindows -msse3 \
     -o x86_64-w64-mingw32/bin/main
     
- ./x86_64-w64-mingw32/bin/main.exe
+ ./x86_64-w64-mingw32/bin/main.exe $@

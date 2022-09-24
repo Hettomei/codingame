@@ -8,18 +8,18 @@
 #include <SDL_ttf.h>
 
 // Définition des constante
-template <typename T> constexpr T WIDTHSCREEN{900};
-
+template <typename T> constexpr T WIDTHSCREEN{1300};
 template <typename T> constexpr T HEIGHTSCREEN{700};
-
 template <typename T> constexpr T TOTAL_POINTS{1000};
 
-#define POINTS_COUNT 4
-
-static SDL_Point lines[POINTS_COUNT] = {
-    {320, 200}, {300, 240}, {340, 240}, {320, 200}};
-
 int main(int argc, char *argv[]) {
+  SDL_Log("Params :");
+
+  for (int i = 0; i < argc; ++i) {
+    SDL_Log("%s", argv[i]);
+  }
+  SDL_Log("------");
+
   // Chargement du module vidéo de la SDL
   if (SDL_Init(SDL_INIT_VIDEO) < 0) {
     SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "[DEBUG] > %s", SDL_GetError());
@@ -60,16 +60,16 @@ int main(int argc, char *argv[]) {
 
   TTF_Font *font = TTF_OpenFont(
       "Miglia.ttf",
-      18); // Crée un police avec la police "ariali.ttf" et de taille 18 pixels
+      15); // Crée un police avec la police "ariali.ttf" et de taille 18 pixels
 
   if (font == nullptr) {
     SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "[DEBUG] > %s", TTF_GetError());
   }
-  //passage en full screen
-  //SDL_SetWindowFullscreen(pWindow, SDL_WINDOW_FULLSCREEN);
+  // passage en full screen
+  // SDL_SetWindowFullscreen(pWindow, SDL_WINDOW_FULLSCREEN);
   SDL_Surface *text = TTF_RenderText_Blended(
-      font, "esc, q: quitter     espace: les etoiles bougent",
-      SDL_Color{0, 255, 0, 255}); // Crée un surface qui contient le texte
+      font, "esc: quitter, q: quitter, espace: il neige",
+      SDL_Color{255, 255, 255, 255}); // Crée un surface qui contient le texte
 
   if (text == nullptr) {
     SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "[DEBUG] > %s", TTF_GetError());
@@ -98,7 +98,7 @@ int main(int argc, char *argv[]) {
       0, HEIGHTSCREEN<int>}; // Selon la loi mathématique Uniform
 
   std::uniform_int_distribution distribution_move{
-      0, 2}; // Selon la loi mathématique Uniform
+      0, 5}; // Selon la loi mathématique Uniform
 
   std::array<SDL_Point, TOTAL_POINTS<int>> points;
 
@@ -106,16 +106,13 @@ int main(int argc, char *argv[]) {
   for (auto &point : points)
     point = {distribution_x(generator), distribution_y(generator)};
 
-  SDL_Rect rectangle1{20, 20, 100, 50};
-
   SDL_Rect position;
 
   SDL_QueryTexture(texture, nullptr, nullptr, &position.w,
                    &position.h); // Récupere la dimension de la texture
 
-  // Centre la texture sur l'écran
-  position.x = WIDTHSCREEN<int> / 2 - position.w / 2;
-  position.y = 50;
+  position.x = 10;
+  position.y = 10;
 
   SDL_FreeSurface(text);
   TTF_CloseFont(font);
@@ -147,14 +144,6 @@ int main(int argc, char *argv[]) {
             y = 0;
           point = {x, y};
         }
-        SDL_SetRenderDrawColor(pRenderer, 255, 255, 255,
-                               255); // Choisir la couleur blanche
-        SDL_RenderDrawPoints(
-            pRenderer, &points[0],
-            points.size()); // Dessiner mon tableau de SDL_Point en
-                            // tous en couleur blanche.
-
-        SDL_RenderPresent(pRenderer); // Mise à jour de la fenêtre
       }
     }
 
@@ -162,11 +151,6 @@ int main(int argc, char *argv[]) {
     SDL_SetRenderDrawColor(pRenderer, 0, 0, 0, 255); // Choisir la couleur noir
     SDL_RenderClear(pRenderer); // Colorier en noir toutes la fenêtre
 
-    SDL_SetRenderDrawColor(pRenderer, 255, 255, 0, 0); // jaune
-    SDL_RenderFillRect(pRenderer, &rectangle1);
-
-    SDL_RenderDrawLine(pRenderer, 100, 200, 300, 400);
-    SDL_RenderDrawLines(pRenderer, lines, POINTS_COUNT);
     SDL_RenderCopy(pRenderer, texture, nullptr, &position);
 
     SDL_SetRenderDrawColor(pRenderer, 255, 255, 255,
@@ -174,8 +158,7 @@ int main(int argc, char *argv[]) {
     SDL_RenderDrawPoints(pRenderer, &points[0],
                          points.size()); // Dessiner mon tableau de SDL_Point en
                                          // tous en couleur blanche.
-
-    SDL_RenderPresent(pRenderer); // Mise à jour de la fenêtre
+    SDL_RenderPresent(pRenderer);        // Mise à jour de la fenêtre
   }
 
   // Libération des ressource en mémoire
