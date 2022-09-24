@@ -148,7 +148,7 @@ int main(int argc, char *argv[]) {
 
     SDL_SetRenderDrawColor(pRenderer, 255, 255, 255,
                            255); // Choisir la couleur blanche
-    tim_sdl::DrawCircle(pRenderer, 200, 200, 200);
+    tim_sdl::RenderDrawCircle(pRenderer, 200, 200, 200);
     SDL_RenderGeometry(pRenderer, NULL, vert, 3, NULL, 0);
 
     SDL_RenderPresent(pRenderer);
