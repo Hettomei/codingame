@@ -2,10 +2,10 @@
 #include <iostream>
 #include <random>
 
+#include "tim_obj.h"
 #include "tim_sdl.h"
 #include <SDL.h>
 #include <SDL_ttf.h>
-
 
 // Définition des constante
 template <typename T> constexpr T WIDTHSCREEN{1300};
@@ -97,29 +97,8 @@ int main(int argc, char *argv[]) {
   TTF_CloseFont(font);
 
   SDL_Vertex vert[3];
-
-  // center
-  vert[0].position.x = 400;
-  vert[0].position.y = 150;
-  vert[0].color.r = 255;
-  vert[0].color.g = 255;
-  vert[0].color.b = 255;
-  vert[0].color.a = 255;
-  // left
-  vert[1].position.x = 200;
-  vert[1].position.y = 450;
-  vert[1].color.r = 0;
-  vert[1].color.g = 0;
-  vert[1].color.b = 255;
-  vert[1].color.a = 255;
-
-  // right
-  vert[2].position.x = 600;
-  vert[2].position.y = 450;
-  vert[2].color.r = 0;
-  vert[2].color.g = 255;
-  vert[2].color.b = 0;
-  vert[2].color.a = 255;
+  tim_obj::getTriangle(vert)
+;
 
   // Game loop
   SDL_Event events;
