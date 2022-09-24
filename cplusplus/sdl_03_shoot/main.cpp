@@ -2,10 +2,10 @@
 #include <iostream>
 #include <random>
 
+#include "tim_sdl.h"
 #include <SDL.h>
 #include <SDL_ttf.h>
 
-void DrawCircle(SDL_Renderer *renderer, int32_t x, int32_t y, int32_t r);
 
 // Définition des constante
 template <typename T> constexpr T WIDTHSCREEN{1300};
@@ -102,8 +102,8 @@ int main(int argc, char *argv[]) {
   vert[0].position.x = 400;
   vert[0].position.y = 150;
   vert[0].color.r = 255;
-  vert[0].color.g = 0;
-  vert[0].color.b = 0;
+  vert[0].color.g = 255;
+  vert[0].color.b = 255;
   vert[0].color.a = 255;
   // left
   vert[1].position.x = 200;
@@ -113,7 +113,7 @@ int main(int argc, char *argv[]) {
   vert[1].color.b = 255;
   vert[1].color.a = 255;
 
-  // right 
+  // right
   vert[2].position.x = 600;
   vert[2].position.y = 450;
   vert[2].color.r = 0;
@@ -148,7 +148,7 @@ int main(int argc, char *argv[]) {
 
     SDL_SetRenderDrawColor(pRenderer, 255, 255, 255,
                            255); // Choisir la couleur blanche
-    DrawCircle(pRenderer, 200, 200, 200);
+    tim_sdl::DrawCircle(pRenderer, 200, 200, 200);
     SDL_RenderGeometry(pRenderer, NULL, vert, 3, NULL, 0);
 
     SDL_RenderPresent(pRenderer);
@@ -162,41 +162,4 @@ int main(int argc, char *argv[]) {
   SDL_Quit();
 
   return EXIT_SUCCESS;
-}
-
-// Thanks to
-// https://stackoverflow.com/questions/38334081/howto-draw-circles-arcs-and-vector-graphics-in-sdl
-void DrawCircle(SDL_Renderer *renderer, int32_t centreX, int32_t centreY,
-                int32_t radius) {
-  const int32_t diameter = (radius * 2);
-
-  int32_t x = (radius - 1);
-  int32_t y = 0;
-  int32_t tx = 1;
-  int32_t ty = 1;
-  int32_t error = (tx - diameter);
-
-  while (x >= y) {
-    //  Each of the following renders an octant of the circle
-    SDL_RenderDrawPoint(renderer, centreX + x, centreY - y);
-    SDL_RenderDrawPoint(renderer, centreX + x, centreY + y);
-    SDL_RenderDrawPoint(renderer, centreX - x, centreY - y);
-    SDL_RenderDrawPoint(renderer, centreX - x, centreY + y);
-    SDL_RenderDrawPoint(renderer, centreX + y, centreY - x);
-    SDL_RenderDrawPoint(renderer, centreX + y, centreY + x);
-    SDL_RenderDrawPoint(renderer, centreX - y, centreY - x);
-    SDL_RenderDrawPoint(renderer, centreX - y, centreY + x);
-
-    if (error <= 0) {
-      ++y;
-      error += ty;
-      ty += 2;
-    }
-
-    if (error > 0) {
-      --x;
-      tx += 2;
-      error += (tx - diameter);
-    }
-  }
 }

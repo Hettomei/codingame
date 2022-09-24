@@ -4,7 +4,8 @@ PATH=/mingw64/bin/:$PATH
 
 cp Miglia.ttf x86_64-w64-mingw32/bin/
 
-g++ main.cpp -std=c++20 -g \
+g++ main.cpp tim_sdl.cpp \
+    -std=c++20 -g \
     -Wall -Wextra \
     -m64 \
     -Ix86_64-w64-mingw32/include/SDL2 -Dmain=SDL_main \
