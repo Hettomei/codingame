@@ -1,5 +1,3 @@
-#include <array>
-#include <chrono>
 #include <cstdlib> // for EXIT_SUCCESS and EXIT_FAILURE
 #include <iostream>
 #include <random>
@@ -98,9 +96,33 @@ int main(int argc, char *argv[]) {
   SDL_FreeSurface(text);
   TTF_CloseFont(font);
 
-  SDL_Event events;
+  SDL_Vertex vert[3];
+
+  // center
+  vert[0].position.x = 400;
+  vert[0].position.y = 150;
+  vert[0].color.r = 255;
+  vert[0].color.g = 0;
+  vert[0].color.b = 0;
+  vert[0].color.a = 255;
+  // left
+  vert[1].position.x = 200;
+  vert[1].position.y = 450;
+  vert[1].color.r = 0;
+  vert[1].color.g = 0;
+  vert[1].color.b = 255;
+  vert[1].color.a = 255;
+
+  // right 
+  vert[2].position.x = 600;
+  vert[2].position.y = 450;
+  vert[2].color.r = 0;
+  vert[2].color.g = 255;
+  vert[2].color.b = 0;
+  vert[2].color.a = 255;
 
   // Game loop
+  SDL_Event events;
   bool isOpen{true};
   while (isOpen) {
     // Input
@@ -127,6 +149,7 @@ int main(int argc, char *argv[]) {
     SDL_SetRenderDrawColor(pRenderer, 255, 255, 255,
                            255); // Choisir la couleur blanche
     DrawCircle(pRenderer, 200, 200, 200);
+    SDL_RenderGeometry(pRenderer, NULL, vert, 3, NULL, 0);
 
     SDL_RenderPresent(pRenderer);
   }
@@ -141,6 +164,8 @@ int main(int argc, char *argv[]) {
   return EXIT_SUCCESS;
 }
 
+// Thanks to
+// https://stackoverflow.com/questions/38334081/howto-draw-circles-arcs-and-vector-graphics-in-sdl
 void DrawCircle(SDL_Renderer *renderer, int32_t centreX, int32_t centreY,
                 int32_t radius) {
   const int32_t diameter = (radius * 2);
