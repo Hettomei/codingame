@@ -4,8 +4,8 @@
 
 #include "tim_obj.h"
 #include "tim_sdl.h"
-#include <SDL.h>
-#include <SDL_ttf.h>
+#include "SDL.h"
+#include "SDL_ttf.h"
 
 // Définition des constante
 template <typename T> constexpr T WIDTHSCREEN{1300};

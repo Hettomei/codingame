@@ -1,15 +1,11 @@
-#include <SDL.h>
+#include "SDL.h"
 
 namespace tim_obj {
 
 void getTriangle(SDL_Vertex *vert) {
   // center
-  vert[0].position.x = 400;
-  vert[0].position.y = 150;
-  vert[0].color.r = 255;
-  vert[0].color.g = 255;
-  vert[0].color.b = 255;
-  vert[0].color.a = 255;
+  vert[0].position = SDL_FPoint{400, 150};
+  vert[0].color = SDL_Color{0, 0, 0, 255};
   // left
   vert[1].position.x = 200;
   vert[1].position.y = 450;
