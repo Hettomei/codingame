@@ -2,10 +2,10 @@
 #include <iostream>
 #include <random>
 
-#include "tim_obj.h"
-#include "tim_sdl.h"
 #include "SDL.h"
 #include "SDL_ttf.h"
+#include "tim_obj.h"
+#include "tim_sdl.h"
 
 // Définition des constante
 template <typename T> constexpr T WIDTHSCREEN{1300};
@@ -97,8 +97,7 @@ int main(int argc, char *argv[]) {
   TTF_CloseFont(font);
 
   SDL_Vertex vert[3];
-  tim_obj::getTriangle(vert)
-;
+  tim_obj::getTriangle(vert);
 
   // Game loop
   SDL_Event events;
@@ -114,8 +113,11 @@ int main(int argc, char *argv[]) {
         if (events.key.keysym.sym == SDLK_q ||
             events.key.keysym.sym == SDLK_ESCAPE) {
           isOpen = false;
-          break;
         }
+        break;
+      case SDL_MOUSEMOTION:
+        SDL_Log("mouse x %d, mouse y %d", events.motion.x, events.motion.y);
+        break;
       }
     }
 
