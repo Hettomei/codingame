@@ -98,7 +98,6 @@ int main(int argc, char *argv[]) {
 
   SDL_Vertex vert[300];
   int i{0};
-  //  tim_obj::getTriangle(vert);
 
   // Game loop
   SDL_Event event;
@@ -118,8 +117,14 @@ int main(int argc, char *argv[]) {
         break;
       case SDL_MOUSEBUTTONDOWN:
         SDL_Log("mouse x %d, mouse y %d", event.motion.x, event.motion.y);
-        tim_obj::addVert(vert, i, &event);
-        i++;
+
+        if (i == 0) {
+          tim_obj::getTriangle(vert, &event);
+          i += 3;
+        } else {
+          tim_obj::addVert(vert, i, &event);
+          i += 3;
+        }
         SDL_Log("i %d  %d", i % 3, i - i % 3);
 
         break;
