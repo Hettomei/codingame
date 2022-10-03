@@ -2,5 +2,5 @@
 #include "SDL.h"
 
 namespace tim_obj {
-void getTriangle(SDL_Vertex *vert);
+void getTriangle(SDL_Vertex *vert, int i);
 }
