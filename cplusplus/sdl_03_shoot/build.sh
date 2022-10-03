@@ -8,6 +8,8 @@ if [ "$OSTYPE" = "msys" ]; then
     
     cp Miglia.ttf x86_64-w64-mingw32/bin/
     
+    clang-format.exe -i *.cpp *.h
+
     g++ main.cpp tim_sdl.cpp tim_obj.cpp \
         -std=c++20 -g \
         -Wall -Wextra \

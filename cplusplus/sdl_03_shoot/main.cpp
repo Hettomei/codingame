@@ -97,29 +97,31 @@ int main(int argc, char *argv[]) {
   TTF_CloseFont(font);
 
   SDL_Vertex vert[300];
-  int i {3};
-  tim_obj::getTriangle(vert,i);
+  int i{0};
+  //  tim_obj::getTriangle(vert);
 
   // Game loop
-  SDL_Event events;
+  SDL_Event event;
   bool isOpen{true};
   while (isOpen) {
     // Input
-    while (SDL_PollEvent(&events)) {
-      switch (events.type) {
+    while (SDL_PollEvent(&event)) {
+      switch (event.type) {
       case SDL_QUIT:
         isOpen = false;
         break;
       case SDL_KEYDOWN:
-        if (events.key.keysym.sym == SDLK_q ||
-            events.key.keysym.sym == SDLK_ESCAPE) {
+        if (event.key.keysym.sym == SDLK_q ||
+            event.key.keysym.sym == SDLK_ESCAPE) {
           isOpen = false;
         }
         break;
       case SDL_MOUSEBUTTONDOWN:
-        SDL_Log("mouse x %d, mouse y %d",              events.motion.x, events.motion.y);
+        SDL_Log("mouse x %d, mouse y %d", event.motion.x, event.motion.y);
+        tim_obj::addVert(vert, i, &event);
         i++;
-        tim_obj::addVert(vert,i);
+        SDL_Log("i %d  %d", i % 3, i - i % 3);
+
         break;
       }
     }
@@ -133,7 +135,8 @@ int main(int argc, char *argv[]) {
     SDL_SetRenderDrawColor(pRenderer, 255, 255, 255,
                            255); // Choisir la couleur blanche
     tim_sdl::RenderDrawCircle(pRenderer, 200, 200, 200);
-    SDL_RenderGeometry(pRenderer, NULL, vert, i, NULL, 0);
+
+    SDL_RenderGeometry(pRenderer, NULL, vert, i - i % 3, NULL, 0);
 
     SDL_RenderPresent(pRenderer);
   }

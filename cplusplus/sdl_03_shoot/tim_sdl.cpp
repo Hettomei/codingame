@@ -4,7 +4,7 @@ namespace tim_sdl {
 // Thanks to
 // https://stackoverflow.com/questions/38334081/howto-draw-circles-arcs-and-vector-graphics-in-sdl
 void RenderDrawCircle(SDL_Renderer *renderer, int32_t centreX, int32_t centreY,
-                int32_t radius) {
+                      int32_t radius) {
   const int32_t diameter = (radius * 2);
 
   int32_t x = (radius - 1);
