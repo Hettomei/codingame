@@ -1,3 +1,4 @@
+#include <cmath>
 #include <cstdlib> // for EXIT_SUCCESS and EXIT_FAILURE
 #include <iostream>
 #include <random>
@@ -96,7 +97,7 @@ int main(int argc, char *argv[]) {
   SDL_FreeSurface(text);
   TTF_CloseFont(font);
 
-  SDL_Vertex vert[300];
+  SDL_Vertex vert[3000];
   int i{0};
 
   // Game loop
@@ -126,6 +127,21 @@ int main(int argc, char *argv[]) {
           i += 3;
         }
         SDL_Log("i %d  %d", i % 3, i - i % 3);
+
+        break;
+      case SDL_MOUSEMOTION:
+        if (i == 0)
+          break;
+
+        int x = vert[i - 1].position.x - event.motion.x;
+        int y = vert[i - 1].position.y - event.motion.y;
+
+        if (x * x + y * y > 5000) {
+          SDL_Log("dist %d ", x * x + y * y);
+
+          tim_obj::addVert(vert, i, &event);
+          i += 3;
+        }
 
         break;
       }
