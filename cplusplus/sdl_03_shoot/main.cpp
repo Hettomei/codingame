@@ -69,7 +69,9 @@ int main(int argc, char *argv[]) {
   // passage en full screen
   // SDL_SetWindowFullscreen(pWindow, SDL_WINDOW_FULLSCREEN);
   SDL_Surface *text = TTF_RenderText_Blended(
-      font, "esc: quitter, q: quitter, espace: tirer",
+      font,
+      "esc: quitter, q: quitter, cliquer une premiere fois, puis bouger la "
+      "souris",
       SDL_Color{255, 255, 255, 255}); // Crée un surface qui contient le texte
 
   if (text == nullptr) {
