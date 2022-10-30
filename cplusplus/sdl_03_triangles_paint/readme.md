@@ -1,6 +1,6 @@
 # Install
 
-voir readme 1 cran plus haut
+voir readme un cran plus haut
 
 # Autre
 
@@ -9,5 +9,5 @@ j'en suis à https://devopssec.fr/article/gestion-des-differents-evenements-sdl-
 # compile under windows : 
 
 ```
-./build-windows.sh
+./build.sh
 ```
