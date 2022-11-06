@@ -33,6 +33,24 @@ function install_sdl_ttf {
   cp lib/libSDL2* $current_path/x86_64-w64-mingw32/lib
 }
 
+function install_sdl_image {
+  cd $(mktemp -d)
+
+  echo "Installation de SDL image"
+  pwd
+  echo
+  
+  curl -OL 'https://github.com/libsdl-org/SDL_image/releases/download/release-2.6.2/SDL2_image-devel-2.6.2-mingw.tar.gz'
+  tar -xzf 'SDL2_image-devel-2.6.2-mingw.tar.gz'
+
+  cd SDL2_image-2.6.2/x86_64-w64-mingw32
+
+  ls -al
+  cp bin/* $current_path/x86_64-w64-mingw32/bin
+  cp include/SDL2/* $current_path/x86_64-w64-mingw32/include/SDL2
+  cp lib/libSDL2* $current_path/x86_64-w64-mingw32/lib
+}
+
 function install_sdl_gfx {
 cd $(mktemp -d)
 
@@ -52,4 +70,5 @@ pwd
 
 install_sdl
 install_sdl_ttf
+install_sdl_image
 #install_sdl_gfx
