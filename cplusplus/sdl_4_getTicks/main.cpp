@@ -9,6 +9,7 @@
 #include "SDL_ttf.h"
 
 using namespace std;
+// thanks to https://en.cppreference.com/w/cpp/numeric/math/round
 
 // Gravity in pixels per second squared
 const float GRAVITY = 750.0f;
