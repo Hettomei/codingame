@@ -139,7 +139,7 @@ int main(int argc, char *argv[]) {
         int y = vert[i - 1].position.y - event.motion.y;
 
         if (x * x + y * y > 5000) {
-          SDL_Log("dist %d ", x * x + y * y);
+          SDL_Log("dist %d i: %d", x * x + y * y, i);
 
           tim_obj::addVert(vert, i, &event);
           i += 3;
