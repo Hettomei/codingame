@@ -9,5 +9,6 @@ j'en suis à https://devopssec.fr/article/gestion-des-differents-evenements-sdl-
 # compile under windows : 
 
 ```
+./../install-sdl-on-windows-mingw.sh
 ./build.sh
 ```
