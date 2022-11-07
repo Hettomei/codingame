@@ -118,7 +118,7 @@ void loop() {
 
     // Delay for a random number of ticks - this makes the frame rate variable,
     // demonstrating that the physics is independent of the frame rate.
-    SDL_Delay(rand() % 25);
+    SDL_Delay(15);
 
     // End frame timing
     Uint32 endTicks = SDL_GetTicks();
