@@ -13,6 +13,7 @@ using namespace std;
 
 // Gravity in pixels per second squared
 const float GRAVITY = 750.0f;
+const int BOTTOM = 800;
 
 bool init();
 void kill();
@@ -48,6 +49,7 @@ void loop() {
 
   // Physics squares
   vector<square> squares;
+  vector<square> squaresNoMoves;
 
   bool running = true;
   Uint32 totalFrameTicks = 0;
@@ -71,16 +73,20 @@ void loop() {
         running = false;
         break;
       case SDL_MOUSEBUTTONDOWN:
-        square s;
-        s.x = e.button.x;
-        s.y = e.button.y;
-        s.w = rand() % 50 + 25;
-        s.h = rand() % 50 + 25;
-        s.yvelocity = -500;
-        s.xvelocity = rand() % 500 - 250;
-        s.lastUpdate = SDL_GetTicks();
-        s.born = SDL_GetTicks();
-        squares.push_back(s);
+      case SDL_MOUSEMOTION:
+
+        for (int i = 0; i < 100; i++) {
+          square s;
+          s.x = e.button.x;
+          s.y = e.button.y;
+          s.w = rand() % 50 + 25;
+          s.h = rand() % 50 + 25;
+          s.yvelocity = -500;
+          s.xvelocity = rand() % 500 - 250;
+          s.lastUpdate = SDL_GetTicks();
+          s.born = SDL_GetTicks();
+          squares.push_back(s);
+        }
         break;
       }
     }
@@ -96,8 +102,8 @@ void loop() {
       s.y += s.yvelocity * dT;
       s.x += s.xvelocity * dT;
 
-      if (s.y > 480 - s.h) {
-        s.y = 480 - s.h;
+      if (s.y > BOTTOM - s.h) {
+        s.y = BOTTOM - s.h;
         s.xvelocity = 0;
         s.yvelocity = 0;
       }
@@ -106,6 +112,7 @@ void loop() {
       if (s.lastUpdate > s.born + 5000) {
         squares.erase(squares.begin() + index);
         index--;
+        squaresNoMoves.push_back(s);
       }
     }
 
@@ -115,10 +122,16 @@ void loop() {
                        std::round(s.h)};
       SDL_RenderCopy(renderer, box, NULL, &dest);
     }
+    for (const square &s : squaresNoMoves) {
+      SDL_Rect dest = {std::round(s.x), std::round(s.y), std::round(s.w),
+                       std::round(s.h)};
+      SDL_RenderCopy(renderer, box, NULL, &dest);
+    }
 
-    // Delay for a random number of ticks - this makes the frame rate variable,
-    // demonstrating that the physics is independent of the frame rate.
-    SDL_Delay(15);
+    // Delay for a random number of ticks - this makes the frame rate
+    // variable, demonstrating that the physics is independent of the frame
+    // rate.
+    SDL_Delay(30);
 
     // End frame timing
     Uint32 endTicks = SDL_GetTicks();
@@ -140,6 +153,10 @@ void loop() {
     renderText(avg, dest);
     dest.y += 24;
     renderText(perf, dest);
+    dest.y += 24;
+    renderText(to_string(squares.size()), dest);
+    dest.y += 24;
+    renderText(to_string(squaresNoMoves.size()), dest);
 
     // Display window
     SDL_RenderPresent(renderer);
@@ -178,7 +195,7 @@ bool init() {
 
   window =
       SDL_CreateWindow("Example", SDL_WINDOWPOS_UNDEFINED,
-                       SDL_WINDOWPOS_UNDEFINED, 640, 480, SDL_WINDOW_SHOWN);
+                       SDL_WINDOWPOS_UNDEFINED, 1800, BOTTOM, SDL_WINDOW_SHOWN);
   if (!window) {
     cout << "Error creating window: " << SDL_GetError() << endl;
     return false;
