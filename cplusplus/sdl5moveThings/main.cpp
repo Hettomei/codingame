@@ -190,7 +190,7 @@ bool init() {
     return false;
   }
 
-  SDL_Surface *buffer = IMG_Load("box.jpg");
+  SDL_Surface *buffer = IMG_Load("resources/images/box.jpg");
   if (!buffer) {
     cout << "Error loading image box.jpg: " << SDL_GetError() << endl;
     return false;
@@ -204,7 +204,7 @@ bool init() {
     return false;
   }
 
-  font = TTF_OpenFont("font.ttf", 24);
+  font = TTF_OpenFont("resources/fonts/font.ttf", 24);
   if (!font) {
     cout << "Error loading font: " << TTF_GetError() << endl;
     return false;

@@ -6,7 +6,7 @@ if [ "$OSTYPE" = "msys" ]; then
     
     PATH=/mingw64/bin/:$PATH
     
-    cp font.ttf x86_64-w64-mingw32/bin/
+    cp -rv ../resources ./
     
     clang-format.exe -i *.cpp
 
