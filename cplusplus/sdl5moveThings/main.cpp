@@ -1,4 +1,5 @@
 #include <cmath>
+#include <filesystem>
 #include <iostream>
 #include <string>
 #include <time.h>
@@ -32,6 +33,8 @@ struct square {
 };
 
 int main(int argc, char **args) {
+  cout << "phrase test cout" << endl;
+  cerr << "phrase test cerr" << endl;
 
   if (!init()) {
     system("pause");
@@ -161,6 +164,17 @@ void renderText(string text, SDL_Rect dest) {
 }
 
 bool init() {
+  std::string projectPath;
+  char *charPath = SDL_GetBasePath();
+  projectPath = charPath;
+  SDL_free(charPath);
+
+  cout << "bin dans : " << projectPath << endl;
+  const std::filesystem::path project_path = projectPath;
+  const std::filesystem::path resources_path = project_path / "resources";
+  cout << "bin in : " << project_path << endl;
+  cout << "resources in : " << resources_path << endl;
+
   if (SDL_Init(SDL_INIT_EVERYTHING) < 0) {
     cout << "Error initializing SDL: " << SDL_GetError() << endl;
     return false;
@@ -190,7 +204,9 @@ bool init() {
     return false;
   }
 
-  SDL_Surface *buffer = IMG_Load("resources/images/box.jpg");
+  // SDL_Surface *buffer = IMG_Load(projectPath + "resources/images/box.jpg");
+  SDL_Surface *buffer = IMG_Load(
+      (resources_path / "images" / "box.jpg").generic_string().c_str());
   if (!buffer) {
     cout << "Error loading image box.jpg: " << SDL_GetError() << endl;
     return false;
@@ -204,7 +220,8 @@ bool init() {
     return false;
   }
 
-  font = TTF_OpenFont("resources/fonts/font.ttf", 24);
+  font = TTF_OpenFont(
+      (resources_path / "fonts" / "font.ttf").generic_string().c_str(), 24);
   if (!font) {
     cout << "Error loading font: " << TTF_GetError() << endl;
     return false;
