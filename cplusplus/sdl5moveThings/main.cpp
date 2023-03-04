@@ -35,6 +35,7 @@ struct square {
 int main(int argc, char **args) {
   cout << "phrase test cout" << endl;
   cerr << "phrase test cerr" << endl;
+  cout << "argc: " << argc << " args: " << args << endl;
 
   if (!init()) {
     system("pause");
@@ -89,7 +90,7 @@ void loop() {
     }
 
     // Physics loop
-    for (int index = 0; index < squares.size(); index++) {
+    for (long long unsigned int index = 0; index < squares.size(); index++) {
       square &s = squares[index];
 
       Uint64 time = SDL_GetTicks64();
@@ -115,13 +116,13 @@ void loop() {
 
     // Render loop
     for (const square &s : squaresNoMoves) {
-      SDL_Rect dest = {std::round(s.x), std::round(s.y), std::round(s.w),
-                       std::round(s.h)};
+      SDL_Rect dest = {(int)std::round(s.x), (int)std::round(s.y),
+                       (int)std::round(s.w), (int)std::round(s.h)};
       SDL_RenderCopy(renderer, box, NULL, &dest);
     }
     for (const square &s : squares) {
-      SDL_Rect dest = {std::round(s.x), std::round(s.y), std::round(s.w),
-                       std::round(s.h)};
+      SDL_Rect dest = {(int)std::round(s.x), (int)std::round(s.y),
+                       (int)std::round(s.w), (int)std::round(s.h)};
       SDL_RenderCopy(renderer, box, NULL, &dest);
     }
 
@@ -137,7 +138,6 @@ void debug(Uint64 startTicks) {
 
   // End frame timing
   Uint64 endTicks = SDL_GetTicks64();
-  Uint64 endPerf = SDL_GetPerformanceCounter();
   float frameTime = (endTicks - startTicks) / 1000.0f;
 
   // Strings to display
@@ -150,7 +150,7 @@ void debug(Uint64 startTicks) {
 }
 
 void renderText(string text, SDL_Rect dest) {
-  SDL_Color fg = {0, 0, 0};
+  SDL_Color fg = {0, 0, 0, 0};
   SDL_Surface *surf = TTF_RenderText_Solid(font, text.c_str(), fg);
 
   dest.w = surf->w;

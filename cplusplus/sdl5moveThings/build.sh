@@ -12,7 +12,7 @@ if [ "$OSTYPE" = "msys" ]; then
 
   g++ main.cpp \
     -std=c++20 -g \
-    -Wall -Wextra \
+    -Wall -Wextra -Werror -pedantic-errors \
     -m64 \
     -Ix86_64-w64-mingw32/include/SDL2 -Dmain=SDL_main \
     -Lx86_64-w64-mingw32/lib \
@@ -20,6 +20,9 @@ if [ "$OSTYPE" = "msys" ]; then
     -mwindows -msse3 \
     -o x86_64-w64-mingw32/bin/main
 
+  set +x
+  echo ""
+  echo ""
   ./x86_64-w64-mingw32/bin/main.exe $@
 
 else
