@@ -8,6 +8,7 @@
 #include "SDL.h"
 #include "SDL_image.h"
 #include "SDL_ttf.h"
+#include "tim_debug.h"
 
 using namespace std;
 // thanks to https://en.cppreference.com/w/cpp/numeric/math/round
@@ -19,8 +20,6 @@ const int BOTTOM = 800;
 bool init();
 void kill();
 void loop();
-void debug(Uint64);
-void renderText(string text, SDL_Rect dest);
 
 SDL_Window *window;
 SDL_Renderer *renderer;
@@ -128,39 +127,10 @@ void loop() {
 
     SDL_Delay(20);
 
-    debug(startTicks);
+    tim_debug::display_fps(renderer, startTicks, font);
     // Display window
     SDL_RenderPresent(renderer);
   }
-}
-
-void debug(Uint64 startTicks) {
-
-  // End frame timing
-  Uint64 endTicks = SDL_GetTicks64();
-  float frameTime = (endTicks - startTicks) / 1000.0f;
-
-  // Strings to display
-  string fps = "Current FPS: " + to_string(1.0f / frameTime);
-
-  // Display strings
-  SDL_Rect dest = {10, 10, 0, 0};
-  renderText(fps, dest);
-  dest.y += 24;
-}
-
-void renderText(string text, SDL_Rect dest) {
-  SDL_Color fg = {0, 0, 0, 0};
-  SDL_Surface *surf = TTF_RenderText_Solid(font, text.c_str(), fg);
-
-  dest.w = surf->w;
-  dest.h = surf->h;
-
-  SDL_Texture *tex = SDL_CreateTextureFromSurface(renderer, surf);
-
-  SDL_RenderCopy(renderer, tex, NULL, &dest);
-  SDL_DestroyTexture(tex);
-  SDL_FreeSurface(surf);
 }
 
 bool init() {
@@ -238,8 +208,8 @@ void kill() {
 
   SDL_DestroyRenderer(renderer);
   SDL_DestroyWindow(window);
-  window = NULL;
   renderer = NULL;
+  window = NULL;
 
   TTF_Quit();
   IMG_Quit();
