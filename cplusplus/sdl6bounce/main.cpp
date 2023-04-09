@@ -16,6 +16,8 @@ using namespace std;
 // Gravity in pixels per second squared
 const float GRAVITY = 750.0f;
 const int BOTTOM = 800;
+const int WINDOW_WIDTH = 800;
+const int WINDOW_HEIGHT = 500;
 
 bool init();
 void kill();
@@ -85,6 +87,11 @@ void loop() {
           squares.push_back(s);
         }
         break;
+      case SDL_KEYDOWN:
+        if (e.key.keysym.sym == SDLK_q || e.key.keysym.sym == SDLK_ESCAPE) {
+          running = false;
+          break;
+        }
       }
     }
 
@@ -160,9 +167,9 @@ bool init() {
     return false;
   }
 
-  window =
-      SDL_CreateWindow("Example", SDL_WINDOWPOS_UNDEFINED,
-                       SDL_WINDOWPOS_UNDEFINED, 1800, BOTTOM, SDL_WINDOW_SHOWN);
+  window = SDL_CreateWindow("Example", SDL_WINDOWPOS_UNDEFINED,
+                            SDL_WINDOWPOS_UNDEFINED, WINDOW_WIDTH,
+                            WINDOW_HEIGHT, SDL_WINDOW_SHOWN);
   if (!window) {
     cout << "Error creating window: " << SDL_GetError() << endl;
     return false;
