@@ -43,6 +43,8 @@ int main(int argc, char **args) {
     return 1;
   }
 
+  srand(time(NULL));
+
   loop();
 
   kill();
@@ -50,42 +52,35 @@ int main(int argc, char **args) {
 }
 
 void loop() {
-
-  srand(time(NULL));
-
   // Physics squares
   vector<square> squares;
   vector<square> squaresNoMoves;
 
   bool running = true;
+  SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
   while (running) {
     Uint64 startTicks = SDL_GetTicks64();
-
-    SDL_Event e;
-
-    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
     SDL_RenderClear(renderer);
 
     // Event loop
+    SDL_Event e;
     while (SDL_PollEvent(&e) != 0) {
       switch (e.type) {
       case SDL_QUIT:
         running = false;
         break;
       case SDL_MOUSEBUTTONDOWN:
-        for (int i = 0; i < 5; i++) {
-          square s;
-          s.x = e.button.x;
-          s.y = e.button.y;
-          s.w = rand() % 50 + 25;
-          s.h = rand() % 50 + 25;
-          s.yvelocity = -500;
-          s.xvelocity = rand() % 500 - 250;
-          s.lastUpdate = SDL_GetTicks64();
-          s.born = SDL_GetTicks64();
+        square s;
+        s.x = e.button.x;
+        s.y = e.button.y;
+        s.w = rand() % 50 + 25;
+        s.h = rand() % 50 + 25;
+        s.yvelocity = -500;
+        s.xvelocity = rand() % 500 - 250;
+        s.lastUpdate = SDL_GetTicks64();
+        s.born = SDL_GetTicks64();
 
-          squares.push_back(s);
-        }
+        squares.push_back(s);
         break;
       case SDL_KEYDOWN:
         if (e.key.keysym.sym == SDLK_q || e.key.keysym.sym == SDLK_ESCAPE) {
