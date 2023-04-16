@@ -10,14 +10,15 @@
 #include "SDL_ttf.h"
 #include "tim_debug.h"
 
-using namespace std;
+using namespace std; // todo remove this
 // thanks to https://en.cppreference.com/w/cpp/numeric/math/round
 
-// Gravity in pixels per ms squared
-const float GRAVITY = 0.750f;
-const int BOTTOM = 500;
-const int WINDOW_WIDTH = 800;
-const int WINDOW_HEIGHT = 500;
+const int WINDOW_WIDTH = 1200;
+const int WINDOW_HEIGHT = 780;
+
+const float GRAVITY = 0.08f;
+
+const int BOTTOM = WINDOW_HEIGHT;
 
 bool init();
 void loop();
@@ -74,12 +75,15 @@ void loop() {
       case SDL_MOUSEBUTTONDOWN:
         SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Click");
         square s;
-        s.x = e.button.x;
-        s.y = e.button.y;
         s.w = rand() % 50 + 25;
         s.h = rand() % 50 + 25;
-        s.yvelocity = -500;
-        s.xvelocity = rand() % 10 - 5;
+
+        s.x = e.button.x - s.w / 2;
+        s.y = e.button.y - s.h / 2;
+
+        s.yvelocity = -40;
+        s.xvelocity = rand() % 10; // rand % 20 + 5 => de 5 à 20+5;
+
         s.is_moving = true;
         tiles[0] = {s.x, s.y, s.w, s.h};
 
@@ -103,11 +107,11 @@ void loop() {
       s.yvelocity += dTms * GRAVITY;
       s.y += s.yvelocity;
       s.x += s.xvelocity;
-      SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "moves dTms: %f, s.y: %f",
-                   dTms, s.y);
+      SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION,
+                   "moves dTms: %f, s.y: %f, yvel: %f", dTms, s.y, s.yvelocity);
 
       if (s.y + s.h > BOTTOM) {
-        s.y = BOTTOM;
+        s.y = BOTTOM - s.h;
         s.is_moving = false;
         SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "stop moves s.y: %f", s.y);
       }
