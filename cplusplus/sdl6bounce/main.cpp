@@ -21,6 +21,7 @@ const float GRAVITY = 0.08f;
 const int BOTTOM = WINDOW_HEIGHT;
 
 const int MAX_TILES = 200;
+const int MAX_BOUNCE = 25;
 
 int current_tile;
 
@@ -86,7 +87,7 @@ void loop() {
         s.y = e.button.y - s.h / 2;
 
         s.yvelocity = -40;
-        s.xvelocity = rand() % 6; // rand % 20 + 5 => de 5 à 20+5;
+        s.xvelocity = rand() % 20; // rand % 20 + 5 => de 5 à 20+5;
 
         s.bounce = 0;
         s.is_moving = true;
@@ -124,13 +125,21 @@ void loop() {
       //             "moves dTms: %f, s.y: %f, yvel: %f", dTms, s.y,
       //             s.yvelocity);
 
-      if (s.y + s.h > BOTTOM) {
-        s.yvelocity = -s.yvelocity / 1.3;
+      if (s.y > BOTTOM - s.h) {
+        s.yvelocity = -s.yvelocity / 1.15;
         s.y = BOTTOM - s.h;
         s.bounce += 1;
       }
 
-      if (s.bounce > 15 || s.x > WINDOW_WIDTH) {
+      if (s.x < 0) {
+        s.x = 0;
+        s.xvelocity = abs(s.xvelocity) / 1.25;
+      }
+      if (s.x > WINDOW_WIDTH - s.w) {
+        s.x = WINDOW_WIDTH - s.w;
+        s.xvelocity = -abs(s.xvelocity) / 1.25;
+      }
+      if (s.bounce > MAX_BOUNCE) {
         s.is_moving = false;
         SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION,
                      "[%d] stop moves s.x: %f, s.y: %f, s.yvelocity: %f",
