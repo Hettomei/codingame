@@ -176,22 +176,6 @@ bool init() {
     return false;
   }
 
-  // SDL_Surface *buffer = IMG_Load(projectPath + "resources/images/box.jpg");
-  SDL_Surface *buffer = IMG_Load(
-      (resources_path / "images" / "box.jpg").generic_string().c_str());
-  if (!buffer) {
-    cout << "Error loading image box.jpg: " << SDL_GetError() << endl;
-    return false;
-  }
-
-  box = SDL_CreateTextureFromSurface(renderer, buffer);
-  SDL_FreeSurface(buffer);
-  buffer = NULL;
-  if (!box) {
-    cout << "Error creating texture: " << SDL_GetError() << endl;
-    return false;
-  }
-
   font = TTF_OpenFont(
       (resources_path / "fonts" / "font.ttf").generic_string().c_str(), 24);
   if (!font) {
