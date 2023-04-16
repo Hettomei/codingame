@@ -20,6 +20,10 @@ const float GRAVITY = 0.08f;
 
 const int BOTTOM = WINDOW_HEIGHT;
 
+const int MAX_TILES = 200;
+
+int current_tile;
+
 bool init();
 void loop();
 void cleanup_before_exit();
@@ -52,14 +56,13 @@ int main(int argc, char **args) {
 }
 
 void loop() {
-  // Physics squares
-  vector<square> squares;
 
   bool running = true;
   SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
   Uint64 loop_last_ticks = SDL_GetTicks64();
   Uint64 loop_start_ticks;
-  SDL_FRect tiles[2];
+  SDL_FRect tiles[MAX_TILES];
+  square squares[MAX_TILES];
 
   while (running) {
     loop_start_ticks = SDL_GetTicks64();
@@ -74,7 +77,7 @@ void loop() {
         running = false;
         break;
       case SDL_MOUSEBUTTONDOWN:
-        SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Click");
+        SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[%d] click", current_tile);
         square s;
         s.w = rand() % 50 + 25;
         s.h = rand() % 50 + 25;
@@ -87,9 +90,15 @@ void loop() {
 
         s.bounce = 0;
         s.is_moving = true;
-        tiles[0] = {s.x, s.y, s.w, s.h};
+        tiles[current_tile] = {s.x, s.y, s.w, s.h};
+        squares[current_tile] = s;
 
-        squares.push_back(s);
+        current_tile++;
+        if (current_tile > MAX_TILES - 1) {
+          current_tile = 0;
+          SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "reset current tile to %d",
+                       current_tile);
+        }
         break;
       case SDL_KEYDOWN:
         if (e.key.keysym.sym == SDLK_q || e.key.keysym.sym == SDLK_ESCAPE) {
@@ -102,37 +111,38 @@ void loop() {
     float dTms = loop_start_ticks - loop_last_ticks;
 
     // Physics loop
+    int i_tile = 0;
     for (square &s : squares) {
       if (!s.is_moving) {
+        i_tile++;
         continue;
       }
       s.yvelocity += dTms * GRAVITY;
       s.y += s.yvelocity;
       s.x += s.xvelocity;
-      SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION,
-                   "moves dTms: %f, s.y: %f, yvel: %f", dTms, s.y, s.yvelocity);
+      // SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION,
+      //             "moves dTms: %f, s.y: %f, yvel: %f", dTms, s.y,
+      //             s.yvelocity);
 
       if (s.y + s.h > BOTTOM) {
         s.yvelocity = -s.yvelocity / 1.3;
         s.y = BOTTOM - s.h;
         s.bounce += 1;
-        SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "stop moves s.y: %f", s.y);
       }
 
-      if (s.bounce > 15) {
+      if (s.bounce > 15 || s.x > WINDOW_WIDTH) {
         s.is_moving = false;
+        SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION,
+                     "[%d] stop moves s.x: %f, s.y: %f, s.yvelocity: %f",
+                     i_tile, s.x, s.y, s.yvelocity);
       }
-
-      if (s.x > WINDOW_WIDTH) {
-        s.is_moving = false;
-        SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "stop moves s.y: %f", s.y);
-      }
-      tiles[0].x = s.x;
-      tiles[0].y = s.y;
+      tiles[i_tile].x = s.x;
+      tiles[i_tile].y = s.y;
+      i_tile++;
     }
 
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-    SDL_RenderDrawRectsF(renderer, tiles, 1 /* tiles size */);
+    SDL_RenderDrawRectsF(renderer, tiles, MAX_TILES);
     tim_debug::display_fps(renderer, loop_last_ticks, font);
     // Display window
     SDL_RenderPresent(renderer);
@@ -143,6 +153,7 @@ void loop() {
 
 bool init() {
   srand(time(NULL));
+  current_tile = 0;
   SDL_LogSetAllPriority(SDL_LOG_PRIORITY_DEBUG);
 
   std::string projectPath;
