@@ -15,13 +15,13 @@ using namespace std;
 
 // Gravity in pixels per second squared
 const float GRAVITY = 750.0f;
-const int BOTTOM = 800;
+const int BOTTOM = 500;
 const int WINDOW_WIDTH = 800;
 const int WINDOW_HEIGHT = 500;
 
 bool init();
-void kill();
 void loop();
+void cleanup_before_exit();
 
 SDL_Window *window;
 SDL_Renderer *renderer;
@@ -43,11 +43,9 @@ int main(int argc, char **args) {
     return 1;
   }
 
-  srand(time(NULL));
-
   loop();
 
-  kill();
+  cleanup_before_exit();
   return 0;
 }
 
@@ -136,6 +134,8 @@ void loop() {
 }
 
 bool init() {
+  srand(time(NULL));
+
   std::string projectPath;
   char *charPath = SDL_GetBasePath();
   projectPath = charPath;
@@ -202,7 +202,7 @@ bool init() {
   return true;
 }
 
-void kill() {
+void cleanup_before_exit() {
   TTF_CloseFont(font);
   SDL_DestroyTexture(box);
   font = NULL;
