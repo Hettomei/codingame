@@ -13,8 +13,8 @@
 using namespace std;
 // thanks to https://en.cppreference.com/w/cpp/numeric/math/round
 
-// Gravity in pixels per second squared
-const float GRAVITY = 750.0f;
+// Gravity in pixels per ms squared
+const float GRAVITY = 0.750f;
 const int BOTTOM = 500;
 const int WINDOW_WIDTH = 800;
 const int WINDOW_HEIGHT = 500;
@@ -30,7 +30,7 @@ TTF_Font *font;
 
 struct square {
   float x, y, w, h, xvelocity, yvelocity;
-  Uint32 born, lastUpdate;
+  bool is_moving;
 };
 
 int main(int argc, char **args) {
@@ -52,12 +52,16 @@ int main(int argc, char **args) {
 void loop() {
   // Physics squares
   vector<square> squares;
-  vector<square> squaresNoMoves;
 
   bool running = true;
   SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+  Uint64 loop_last_ticks = SDL_GetTicks64();
+  Uint64 loop_start_ticks;
+  SDL_FRect tiles[2];
+
   while (running) {
-    Uint64 startTicks = SDL_GetTicks64();
+    loop_start_ticks = SDL_GetTicks64();
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
     SDL_RenderClear(renderer);
 
     // Event loop
@@ -68,15 +72,16 @@ void loop() {
         running = false;
         break;
       case SDL_MOUSEBUTTONDOWN:
+        SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Click");
         square s;
         s.x = e.button.x;
         s.y = e.button.y;
         s.w = rand() % 50 + 25;
         s.h = rand() % 50 + 25;
         s.yvelocity = -500;
-        s.xvelocity = rand() % 500 - 250;
-        s.lastUpdate = SDL_GetTicks64();
-        s.born = SDL_GetTicks64();
+        s.xvelocity = rand() % 10 - 5;
+        s.is_moving = true;
+        tiles[0] = {s.x, s.y, s.w, s.h};
 
         squares.push_back(s);
         break;
@@ -88,53 +93,41 @@ void loop() {
       }
     }
 
+    float dTms = loop_start_ticks - loop_last_ticks;
+
     // Physics loop
-    for (long long unsigned int index = 0; index < squares.size(); index++) {
-      square &s = squares[index];
-
-      Uint64 time = SDL_GetTicks64();
-      float dT = (time - s.lastUpdate) / 1000.0f;
-
-      s.yvelocity += dT * GRAVITY;
-      s.y += s.yvelocity * dT;
-      s.x += s.xvelocity * dT;
-
-      if (s.y > BOTTOM - s.h) {
-        s.y = BOTTOM - s.h;
-        s.xvelocity = 0;
-        s.yvelocity = 0;
+    for (square &s : squares) {
+      if (!s.is_moving) {
+        continue;
       }
+      s.yvelocity += dTms * GRAVITY;
+      s.y += s.yvelocity;
+      s.x += s.xvelocity;
+      SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "moves dTms: %f, s.y: %f",
+                   dTms, s.y);
 
-      s.lastUpdate = time;
-      if (s.lastUpdate > s.born + 5000) {
-        squares.erase(squares.begin() + index);
-        index--;
-        squaresNoMoves.push_back(s);
+      if (s.y + s.h > BOTTOM) {
+        s.y = BOTTOM;
+        s.is_moving = false;
+        SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "stop moves s.y: %f", s.y);
       }
+      tiles[0].x = s.x;
+      tiles[0].y = s.y;
     }
 
-    // Render loop
-    for (const square &s : squaresNoMoves) {
-      SDL_Rect dest = {(int)std::round(s.x), (int)std::round(s.y),
-                       (int)std::round(s.w), (int)std::round(s.h)};
-      SDL_RenderCopy(renderer, box, NULL, &dest);
-    }
-    for (const square &s : squares) {
-      SDL_Rect dest = {(int)std::round(s.x), (int)std::round(s.y),
-                       (int)std::round(s.w), (int)std::round(s.h)};
-      SDL_RenderCopy(renderer, box, NULL, &dest);
-    }
-
-    SDL_Delay(20);
-
-    tim_debug::display_fps(renderer, startTicks, font);
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+    SDL_RenderDrawRectsF(renderer, tiles, 1 /* tiles size */);
+    tim_debug::display_fps(renderer, loop_last_ticks, font);
     // Display window
     SDL_RenderPresent(renderer);
+    loop_last_ticks = loop_start_ticks;
+    SDL_Delay(20);
   }
 }
 
 bool init() {
   srand(time(NULL));
+  SDL_LogSetAllPriority(SDL_LOG_PRIORITY_DEBUG);
 
   std::string projectPath;
   char *charPath = SDL_GetBasePath();
