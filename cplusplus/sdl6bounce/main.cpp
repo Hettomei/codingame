@@ -31,6 +31,7 @@ TTF_Font *font;
 
 struct square {
   float x, y, w, h, xvelocity, yvelocity;
+  int bounce;
   bool is_moving;
 };
 
@@ -82,8 +83,9 @@ void loop() {
         s.y = e.button.y - s.h / 2;
 
         s.yvelocity = -40;
-        s.xvelocity = rand() % 10; // rand % 20 + 5 => de 5 à 20+5;
+        s.xvelocity = rand() % 6; // rand % 20 + 5 => de 5 à 20+5;
 
+        s.bounce = 0;
         s.is_moving = true;
         tiles[0] = {s.x, s.y, s.w, s.h};
 
@@ -111,7 +113,17 @@ void loop() {
                    "moves dTms: %f, s.y: %f, yvel: %f", dTms, s.y, s.yvelocity);
 
       if (s.y + s.h > BOTTOM) {
+        s.yvelocity = -s.yvelocity / 1.3;
         s.y = BOTTOM - s.h;
+        s.bounce += 1;
+        SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "stop moves s.y: %f", s.y);
+      }
+
+      if (s.bounce > 15) {
+        s.is_moving = false;
+      }
+
+      if (s.x > WINDOW_WIDTH) {
         s.is_moving = false;
         SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "stop moves s.y: %f", s.y);
       }
