@@ -16,7 +16,7 @@ using namespace std; // todo remove this
 const int WINDOW_WIDTH = 1200;
 const int WINDOW_HEIGHT = 780;
 
-const float GRAVITY = 0.08f;
+const float GRAVITY = 0.05f;
 
 const int BOTTOM = WINDOW_HEIGHT;
 
@@ -40,6 +40,9 @@ struct square {
   bool is_moving;
 };
 
+SDL_FRect tiles[MAX_TILES];
+square squares[MAX_TILES];
+
 int main(int argc, char **args) {
   cout << "phrase test cout" << endl;
   cerr << "phrase test cerr" << endl;
@@ -62,8 +65,6 @@ void loop() {
   SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
   Uint64 loop_last_ticks = SDL_GetTicks64();
   Uint64 loop_start_ticks;
-  SDL_FRect tiles[MAX_TILES];
-  square squares[MAX_TILES];
 
   while (running) {
     loop_start_ticks = SDL_GetTicks64();
@@ -121,9 +122,6 @@ void loop() {
       s.yvelocity += dTms * GRAVITY;
       s.y += s.yvelocity;
       s.x += s.xvelocity;
-      // SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION,
-      //             "moves dTms: %f, s.y: %f, yvel: %f", dTms, s.y,
-      //             s.yvelocity);
 
       if (s.y > BOTTOM - s.h) {
         s.yvelocity = -s.yvelocity / 1.15;
@@ -156,7 +154,7 @@ void loop() {
     // Display window
     SDL_RenderPresent(renderer);
     loop_last_ticks = loop_start_ticks;
-    SDL_Delay(20);
+    SDL_Delay(15);
   }
 }
 
