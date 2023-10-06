@@ -1,20 +1,16 @@
-
-node index.js
-
-Continuous Output with something like :
-
 ```
-{ winIfKeep: 1308346392, winIfChange: 2616653608 }
-{ freqKeep: '33.33367', freqChange: '66.66633' }
-{ winIfKeep: 1310012447, winIfChange: 2619987553 }
-{ freqKeep: '33.33365', freqChange: '66.66635' }
-{ winIfKeep: 1311681014, winIfChange: 2623318986 }
-{ freqKeep: '33.33370', freqChange: '66.66630' }
-{ winIfKeep: 1313348195, winIfChange: 2626651805 }
-{ freqKeep: '33.33371', freqChange: '66.66629' }
+npm start
 ```
 
-It means that people had more chance to win the Car
-if they change door
+Continuous output gives something like :
 
-I would say 1/3 to win if keep and 2/3 to win if change
+```
+Si maintient 33.312%, 1665579 | Si change 66.688%, 3334421
+Si maintient 33.316%, 3331599 | Si change 66.684%, 6668401
+Si maintient 33.321%, 4998129 | Si change 66.679%, 10001871
+Si maintient 33.324%, 6664891 | Si change 66.676%, 13335109
+Si maintient 33.334%, 8333521 | Si change 66.666%, 16666479
+```
+
+It means that people have more chance
+to win the car (66.66%) when they change door.
