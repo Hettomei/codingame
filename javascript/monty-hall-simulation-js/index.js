@@ -17,12 +17,12 @@ const getRandomInt = (max) => Math.floor(Math.random() * max);
 const freq = (total, n) => ((n * 100) / total).toFixed(3);
 const chooseSession = () => possibilities[getRandomInt(3)];
 
-function sessionKeepWin(game, firstChoice) {
+function whenKeepWin(game, firstChoice) {
   // Comme il ne va pas changer, si il prend la voiture, il gagne
   return game[firstChoice] == "V";
 }
 
-function sessionChangeWin(game, firstChoice) {
+function whenChangeWin(game, firstChoice) {
   // Pourquoi ?
   // Si le premier choix c est la voiture
   // l animateur montre une chevre
@@ -55,10 +55,10 @@ function run(total, steps) {
   for (let i = 1; i <= total; i++) {
     game = chooseSession();
     firstChoice = getRandomInt(3);
-    if (sessionKeepWin(game, firstChoice)) {
+    if (whenKeepWin(game, firstChoice)) {
       winIfKeep++;
     }
-    if (sessionChangeWin(game, firstChoice)) {
+    if (whenChangeWin(game, firstChoice)) {
       winIfChange++;
     }
 
