@@ -7,5 +7,5 @@ npm ci
 # Start
 
 ```
-npx vite
+npm start
 ```
