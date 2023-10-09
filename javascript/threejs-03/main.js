@@ -26,6 +26,7 @@ const points = [
   new THREE.Vector3(-15, 0, 0),
   new THREE.Vector3(0, 15, 0),
   new THREE.Vector3(15, 0, 0),
+  new THREE.Vector3(15, 0, 20),
 ];
 
 const buffer_geometry = new THREE.BufferGeometry().setFromPoints(points);
@@ -37,11 +38,11 @@ scene.add(line);
 function animate() {
   requestAnimationFrame(animate);
 
-  cube.rotation.x += 0.01;
+  // cube.rotation.x += 0.01;
   cube.rotation.y += 0.01;
 
-  line.rotation.x += 0.01;
-  line.rotation.y += 0.01;
+  // line.rotation.x += 0.01;
+  line.rotation.y += 0.05;
 
   renderer.render(scene, camera);
 }
