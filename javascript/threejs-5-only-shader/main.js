@@ -33,12 +33,12 @@ function fragmentShader() {
 
 function addExperimentalCube() {
   let uniforms = {
-    colorB: { type: "vec3", value: new THREE.Color(0x00ff00) },
-    colorA: { type: "vec3", value: new THREE.Color(0xffffff) },
+    colorB: { type: "vec3", value: new THREE.Color(0xffff00) },
+    colorA: { type: "vec3", value: new THREE.Color(0x000000) },
     u_time: { type: "f", value: 0.5 },
   };
 
-  let geometry = new THREE.BoxGeometry(25, 25, 25);
+  let geometry = new THREE.BoxGeometry(140, 50, 25);
   let _material = new THREE.ShaderMaterial({
     uniforms,
     fragmentShader: fragmentShader(),
@@ -47,6 +47,8 @@ function addExperimentalCube() {
 
   let mesh = new THREE.Mesh(geometry, _material);
   mesh.position.x = 0;
+  mesh.rotation.x = Math.PI / 4;
+  mesh.rotation.y = Math.PI / 4;
   scene.add(mesh);
   return _material;
 }
