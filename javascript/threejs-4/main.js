@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { ArcballControls } from "three/addons/controls/ArcballControls.js";
 
 import { set_renderer } from "./renderer";
 import { build_camera } from "./camera";
@@ -13,6 +14,13 @@ const camera = build_camera();
 //   return new THREE.Line(geometry, material);
 // }
 
+const controls = new ArcballControls(camera, renderer.domElement, scene);
+
+controls.addEventListener("change", function () {
+  renderer.render(scene, camera);
+});
+controls.update();
+
 function create_line(vectors) {
   const points = vectors.map(([x, y, z]) => new THREE.Vector3(x, y, z));
   const buffer_geometry = new THREE.BufferGeometry().setFromPoints(points);
@@ -21,6 +29,8 @@ function create_line(vectors) {
 }
 
 function build_scene() {
+  const axes_helper = new THREE.AxesHelper(16);
+  scene.add(axes_helper);
   const line_x = create_line([
     [-300, 0, 0],
     [300, 0, 0],
@@ -48,8 +58,49 @@ function build_scene() {
   const material = new THREE.PointsMaterial({ color: 0xff00ff });
   const points = new THREE.Points(geometry, material);
   scene.add(points);
+  addExperimentalCube();
+}
+function vertexShader() {
+  return `
+    varying vec3 vUv;
+
+    void main() {
+      vUv = position;
+
+      vec4 modelViewPosition = modelViewMatrix * vec4(position.x, position.y, position.z, 1.0);
+      gl_Position = projectionMatrix * modelViewPosition;
+    }
+  `;
+}
+function fragmentShader() {
+  return `
+      uniform vec3 colorA;
+      uniform vec3 colorB;
+      varying vec3 vUv;
+
+      void main() {
+        gl_FragColor = vec4(mix(colorA, colorB, vUv.z), 1.0);
+      }
+  `;
 }
 
+function addExperimentalCube() {
+  let uniforms = {
+    colorB: { type: "vec3", value: new THREE.Color(0x00ff00) },
+    colorA: { type: "vec3", value: new THREE.Color(0xffffff) },
+  };
+
+  let geometry = new THREE.BoxGeometry(25, 25, 25);
+  let material = new THREE.ShaderMaterial({
+    uniforms: uniforms,
+    fragmentShader: fragmentShader(),
+    vertexShader: vertexShader(),
+  });
+
+  let mesh = new THREE.Mesh(geometry, material);
+  mesh.position.x = 0;
+  scene.add(mesh);
+}
 function animate() {
   requestAnimationFrame(animate);
   renderer.render(scene, camera);
