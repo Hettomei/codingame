@@ -1,4 +1,4 @@
-const THREE = require('three');
+import * as THREE from "three";
 
 const SCREEN_WIDTH = window.innerWidth;
 const SCREEN_HEIGHT = window.innerHeight;
@@ -28,7 +28,7 @@ const camera = new THREE.OrthographicCamera(
 // }
 
 function createSphereStruct(angle) {
-  const angleRad = THREE.Math.degToRad(angle);
+  const angleRad = THREE.MathUtils.degToRad(angle);
 
   return {
     originX: 0,
@@ -46,21 +46,29 @@ const cameraPosition = [0, -500, 0];
 camera.position.set(...cameraPosition);
 camera.lookAt(0, 0, 0);
 
-const G = 9 * 1 / 10000;
-const g = -1 / 2 * G;
+const G = (9 * 1) / 10000;
+const g = (-1 / 2) * G;
 
 const masterSphere = createSphereStruct(60);
 
 const hgeometry = new THREE.SphereGeometry(10, 10, 10, 200);
 const hmaterial = new THREE.MeshBasicMaterial({ color: 0x005fff });
 const home = new THREE.Mesh(hgeometry, hmaterial);
-home.position.set(masterSphere.originX, masterSphere.originY, masterSphere.originZ);
+home.position.set(
+  masterSphere.originX,
+  masterSphere.originY,
+  masterSphere.originZ,
+);
 scene.add(home);
 
 const geometry = new THREE.SphereGeometry(4, 4, 4, 200);
 const material = new THREE.MeshBasicMaterial({ color: 0xffff00 });
 const masterProjectile = new THREE.Mesh(geometry, material);
-masterProjectile.position.set(masterSphere.originX, masterSphere.originY, masterSphere.originZ);
+masterProjectile.position.set(
+  masterSphere.originX,
+  masterSphere.originY,
+  masterSphere.originZ,
+);
 
 let throwProjectiles = [];
 
@@ -115,7 +123,10 @@ function createProjectile() {
 function moveProjectile([projectile, sphereStruct, d1]) {
   const t = Date.now() - d1;
   const x = sphereStruct.vi * sphereStruct.cosAngle * t + sphereStruct.originX;
-  const z = g * t * t + sphereStruct.vi * sphereStruct.sinAngle * t + sphereStruct.originZ;
+  const z =
+    g * t * t +
+    sphereStruct.vi * sphereStruct.sinAngle * t +
+    sphereStruct.originZ;
   projectile.position.set(x, 0, z);
 }
 
