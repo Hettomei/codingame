@@ -14,4 +14,5 @@ go to http://localhost:5173/
 
 # Screenshots
 
+![24oclock](screenshots/24oclock.png)
 ![gravity](screenshots/gravity.png)
