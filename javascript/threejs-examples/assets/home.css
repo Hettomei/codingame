@@ -1,0 +1,15 @@
+div {
+  margin: 2rem;
+}
+li {
+  line-height: 3rem;
+  list-style-type: "🔧";
+  padding-left: 1rem;
+}
+
+a:visited {
+  color: #dedede;
+}
+a {
+  text-decoration: none;
+}
