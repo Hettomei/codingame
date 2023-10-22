@@ -2,7 +2,7 @@ import * as THREE from "three";
 import { ArcballControls } from "three/addons/controls/ArcballControls.js";
 
 import { set_renderer } from "./renderer";
-import { build_camera_pers, build_camera_ortho } from "./camera";
+import { build_camera_ortho } from "./camera";
 
 function animate() {
   requestAnimationFrame(animate);
@@ -17,7 +17,7 @@ function create_cube(size) {
 }
 
 function build_nonograme(scene, number_cases_x, number_cases_y) {
-  const cube_size = 5;
+  const cube_size = 10;
   const espace = 2;
   for (let j = 0; j < number_cases_y; j++) {
     for (let i = 0; i < number_cases_x; i++) {
@@ -29,7 +29,7 @@ function build_nonograme(scene, number_cases_x, number_cases_y) {
   }
 }
 function build_scene(scene) {
-  build_nonograme(scene, 15, 15);
+  build_nonograme(scene, 30, 30);
 }
 
 // const clock = new THREE.Clock();
@@ -38,11 +38,16 @@ const scene = new THREE.Scene();
 const camera = build_camera_ortho(scene);
 
 const controls = new ArcballControls(camera, renderer.domElement, scene);
-controls.enableGrid = false;
-controls.setGizmosVisible = false;
+console.log(controls.dampingFactor);
+controls.dampingFactor = 1000;
+controls.enableRotate = false;
+controls.setGizmosVisible(false);
+// controls.maxZoom = false;
+// controls.minZoom = false;
 
 controls.addEventListener("change", function () {
   renderer.render(scene, camera);
+  console.log(controls.zoom);
 });
 controls.update();
 

@@ -12,9 +12,9 @@ export function build_camera_pers() {
   return camera;
 }
 
-export function build_camera_ortho(scene) {
-  const width = 1600;
-  const height = 1000;
+export function build_camera_ortho() {
+  const width = window.innerWidth;
+  const height = window.innerHeight;
   const camera = new THREE.OrthographicCamera(
     width / -2,
     width / 2,
@@ -23,9 +23,7 @@ export function build_camera_ortho(scene) {
     1,
     1000,
   );
-  camera.position.set(0, 0, 1000);
-  camera.lookAt(0, 0, 0);
-  const helper = new THREE.CameraHelper(camera);
-  scene.add(helper);
+  camera.position.set(0, 0, 500);
+  camera.zoom = 3;
   return camera;
 }
