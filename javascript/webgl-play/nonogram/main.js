@@ -22,11 +22,13 @@ function create_cube(size) {
 function build_nonograme(scene, number_cases_x, number_cases_y) {
   const cube_size = 10;
   const espace = 2;
+  const init_x = (number_cases_x * cube_size + espace * number_cases_x) / 2;
+  const init_y = (number_cases_y * cube_size + espace * number_cases_y) / 2;
   for (let j = 0; j < number_cases_y; j++) {
     for (let i = 0; i < number_cases_x; i++) {
       const cube = create_cube(cube_size);
-      cube.position.x = i * cube_size + espace * i;
-      cube.position.y = j * cube_size + espace * j;
+      cube.position.x = i * cube_size + espace * i - init_x;
+      cube.position.y = j * cube_size + espace * j - init_y;
       scene.add(cube);
     }
   }
