@@ -24,6 +24,6 @@ export function build_camera_ortho() {
     1000,
   );
   camera.position.set(0, 0, 500);
-  camera.zoom = 3;
+  camera.zoom = 2;
   return camera;
 }
