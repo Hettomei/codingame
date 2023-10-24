@@ -1,13 +1,16 @@
 import * as THREE from "three";
 import { ArcballControls } from "three/addons/controls/ArcballControls.js";
+import Stats from "three/addons/libs/stats.module.js";
 
 import { set_renderer } from "./renderer";
 import { build_camera_ortho } from "./camera";
 
+let stats;
 function animate() {
   requestAnimationFrame(animate);
   renderer.render(scene, camera);
   // material.uniforms.u_time.value = clock.getElapsedTime();
+  stats.update();
 }
 
 function create_cube(size) {
@@ -36,6 +39,9 @@ function build_scene(scene) {
 const renderer = set_renderer();
 const scene = new THREE.Scene();
 const camera = build_camera_ortho(scene);
+
+stats = new Stats();
+document.body.appendChild(stats.dom);
 
 const controls = new ArcballControls(camera, renderer.domElement, scene);
 console.log(controls.dampingFactor);
