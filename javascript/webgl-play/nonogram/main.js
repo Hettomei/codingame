@@ -6,6 +6,7 @@ import { set_renderer } from "./renderer";
 import { build_camera_ortho } from "./camera";
 
 let stats;
+performance.mark("start");
 function animate() {
   requestAnimationFrame(animate);
   renderer.render(scene, camera);
@@ -62,3 +63,5 @@ controls.update();
 build_scene(scene);
 
 animate();
+performance.mark("end");
+console.log(performance.measure("Measurement", "start", "end"));
