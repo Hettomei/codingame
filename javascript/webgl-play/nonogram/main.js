@@ -50,12 +50,12 @@ console.log(controls.dampingFactor);
 controls.dampingFactor = 1000;
 controls.enableRotate = false;
 controls.setGizmosVisible(false);
-// controls.maxZoom = false;
-// controls.minZoom = false;
+controls.minZoom = 1.5;
+controls.maxZoom = 9.0;
 
 controls.addEventListener("change", function () {
   renderer.render(scene, camera);
-  console.log(controls.zoom);
+  // console.log(camera.position);
 });
 controls.update();
 
