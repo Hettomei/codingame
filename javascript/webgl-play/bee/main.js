@@ -41,8 +41,8 @@ function addExperimentalCube() {
   let geometry = new THREE.BoxGeometry(140, 50, 25);
   let _material = new THREE.ShaderMaterial({
     uniforms,
-    fragmentShader: fragmentShader(),
     vertexShader: vertexShader(),
+    fragmentShader: fragmentShader(),
   });
 
   let mesh = new THREE.Mesh(geometry, _material);

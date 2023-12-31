@@ -1,4 +1,5 @@
 window.Horloge = window.Horloge || {};
+const Horloge = window.Horloge;
 
 window.onload = function () {
   Horloge.init();
@@ -79,7 +80,7 @@ Horloge.init = function () {
     Horloge.aiguille_hours = new AiguilleHour(
       Horloge.canvas.width / 2,
       Horloge.canvas.height / 2,
-      Horloge.rayon(),
+      Horloge.rayon() - Horloge.rayon() / 4,
       Horloge.context,
     );
   };

@@ -2,14 +2,19 @@ div {
   margin: 2rem;
 }
 li {
-  line-height: 3rem;
+  margin: 2rem;
   list-style-type: "🔧";
   padding-left: 1rem;
+}
+li p {
+  color: #aaa;
 }
 
 a:visited {
   color: #dedede;
 }
 a {
+  color: #dedede;
+  font-weight: bold;
   text-decoration: none;
 }
