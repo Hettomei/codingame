@@ -1,18 +1,12 @@
 import * as THREE from "three";
-import { ArcballControls } from "three/addons/controls/ArcballControls.js";
 import Stats from "three/addons/libs/stats.module.js";
 
+import { setControls } from "./my_controls";
 import { set_renderer } from "./renderer";
 import { build_camera_ortho } from "./camera";
+// import { material, update_time } from "./my_materials/red_sin";
 
-let stats;
 performance.mark("start");
-function animate() {
-  requestAnimationFrame(animate);
-  renderer.render(scene, camera);
-  // material.uniforms.u_time.value = clock.getElapsedTime();
-  stats.update();
-}
 
 function build_nonograme(scene, number_cases_x, number_cases_y) {
   const cube_size = 10;
@@ -33,34 +27,31 @@ function build_nonograme(scene, number_cases_x, number_cases_y) {
     }
   }
 }
+
 function build_scene(scene) {
-  build_nonograme(scene, 30, 30);
+  build_nonograme(scene, 20, 20);
 }
 
-// const clock = new THREE.Clock();
+function animate() {
+  requestAnimationFrame(animate);
+  renderer.render(scene, camera);
+  // update_time();
+  stats.update();
+}
+
 const renderer = set_renderer();
 const scene = new THREE.Scene();
 const camera = build_camera_ortho(scene);
 
-stats = new Stats();
+const stats = new Stats();
 document.body.appendChild(stats.dom);
 
-const controls = new ArcballControls(camera, renderer.domElement, scene);
-console.log(controls.dampingFactor);
-controls.dampingFactor = 1000;
-controls.enableRotate = false;
-controls.setGizmosVisible(false);
-controls.minZoom = 1.5;
-controls.maxZoom = 9.0;
-
-controls.addEventListener("change", function () {
-  renderer.render(scene, camera);
-  // console.log(camera.position);
-});
-controls.update();
+setControls(camera, renderer, scene);
 
 build_scene(scene);
 
 animate();
+
 performance.mark("end");
+
 console.log(performance.measure("Measurement", "start", "end"));
