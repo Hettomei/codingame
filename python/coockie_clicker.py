@@ -3,11 +3,16 @@ cookie clicker
 """
 # pylint: disable=global-statement
 
+import sys
 import time
 
 import pyautogui
 
 CURRENT_MODE = None
+
+TOTAL_CLICK_BEFORE_BUY = 1000
+# TOTAL_CLICK = 900
+TOTAL_CLICK = 0
 
 T_1_SECONDS = 1
 T_5_SECONDS = 5
@@ -89,12 +94,41 @@ def mode_click():
     """
     mode click
     """
+    global TOTAL_CLICK
     # time.sleep(T_20_MILLI_SECONDS)
     pyautogui.click()  # Click the mouse at its current location.
+    TOTAL_CLICK += 1
 
     mx, my = pos()
     if mx < 20 and my < 1000:
         set_mode(mode_before_wait)
+
+    if TOTAL_CLICK >= TOTAL_CLICK_BEFORE_BUY:
+        TOTAL_CLICK = 0
+        set_mode(mode_buy)
+
+
+def mode_buy():
+    """
+    buy upgrade
+    """
+    wait_time = 0.2
+    mx, my = pos()
+
+    pyautogui.moveTo(1800, 1000)
+    pyautogui.click()
+    for _ in range(9):
+        wait(wait_time)
+        pyautogui.move(0, -80)
+        pyautogui.click()
+
+    wait(wait_time)
+    pyautogui.moveTo(1565, 140)
+    pyautogui.click()
+
+    # reset
+    pyautogui.moveTo(mx, my)
+    set_mode(mode_click)
 
 
 def run():
@@ -108,4 +142,20 @@ def run():
     print("done")
 
 
-run()
+def runtest():
+    """
+    run test
+    """
+    pyautogui.moveTo(1800, 1000)  # Move the mouse to the x, y coordinates 100, 150.
+    for _ in range(9):
+        wait(0.2)
+        pyautogui.move(0, -80)
+
+    wait(1)
+    pyautogui.moveTo(1565, 140)
+
+
+if sys.argv[-1] == "test":
+    runtest()
+else:
+    run()
