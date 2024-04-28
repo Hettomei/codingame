@@ -1,8 +1,9 @@
+# pylint: disable=global-statement
 """
 cookie clicker
 """
-# pylint: disable=global-statement
 
+import argparse
 import sys
 import time
 
@@ -11,7 +12,6 @@ import pyautogui
 CURRENT_MODE = None
 
 TOTAL_CLICK_BEFORE_BUY = 1000
-# TOTAL_CLICK = 900
 TOTAL_CLICK = 0
 
 T_1_SECONDS = 1
@@ -19,6 +19,23 @@ T_5_SECONDS = 5
 T_10_SECONDS = 10
 T_20_MILLI_SECONDS = 0.02
 T_500_MILLI_SECONDS = 0.5
+
+# pylint: disable=invalid-name
+_args = None
+
+def parse_args(sysargs):
+    """
+    parse args
+    """
+    parser = argparse.ArgumentParser(
+        prog="Cookie Clicker Clicker",
+        description="Click and buy",
+        epilog="epilog.",
+    )
+    parser.add_argument("--test", action="store_true")
+    parser.add_argument("--onlyclick", action="store_true")
+
+    return parser.parse_args(sysargs)
 
 
 def set_mode(mode):
@@ -49,12 +66,6 @@ def pos(silent=True):
     if not silent:
         print(f"x: {x} - y: {y}")
     return x, y
-
-
-def mode_nothing():
-    """
-    do nothing
-    """
 
 
 def mode_before_wait():
@@ -112,6 +123,10 @@ def mode_buy():
     """
     buy upgrade
     """
+    if _args.onlyclick:
+        set_mode(mode_click)
+        return
+
     wait_time = 0.2
     mx, my = pos()
 
@@ -131,10 +146,11 @@ def mode_buy():
     set_mode(mode_click)
 
 
-def run():
+def run(args):
     """
     run
     """
+    print(args)
     set_mode(mode_before_click)
     while CURRENT_MODE:
         CURRENT_MODE()
@@ -142,10 +158,11 @@ def run():
     print("done")
 
 
-def runtest():
+def runtest(args):
     """
     run test
     """
+    print(args)
     pyautogui.moveTo(1800, 1000)  # Move the mouse to the x, y coordinates 100, 150.
     for _ in range(9):
         wait(0.2)
@@ -155,7 +172,9 @@ def runtest():
     pyautogui.moveTo(1565, 140)
 
 
-if sys.argv[-1] == "test":
-    runtest()
-else:
-    run()
+if __name__ == "__main__":
+    _args = parse_args(sys.argv[1:])
+    if _args.test:
+        runtest(_args)
+    else:
+        run(_args)
