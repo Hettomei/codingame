@@ -23,6 +23,9 @@ T_500_MILLI_SECONDS = 0.5
 # pylint: disable=invalid-name
 _args = None
 
+# Creer des truc comme [cycle]
+# avec du .next
+
 def parse_args(sysargs):
     """
     parse args
