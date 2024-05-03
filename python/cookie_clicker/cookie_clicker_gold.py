@@ -41,8 +41,7 @@ def set_mode(mode):
     set mode
     """
     global CURRENT_MODE
-    if CURRENT_MODE:
-        print(f"{CURRENT_MODE.__name__}  ->  {mode.__name__}")
+    print(f"->  {mode.__name__}")
     CURRENT_MODE = mode
 
 
