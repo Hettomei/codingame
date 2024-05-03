@@ -1,9 +1,8 @@
-# 656 billions; 736 b ; 821b
-
+656b
 865b
-1.01t
-1.08t
-1.33t
-1.57t
-1.76t
-1.89t
+1.0t
+1.8t
+2.3t
+3.8t
+6.3t
++12t -> quand on combine x7 et + luck

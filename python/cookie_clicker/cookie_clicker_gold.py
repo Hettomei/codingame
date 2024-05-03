@@ -8,25 +8,17 @@ import sys
 import time
 
 import pyautogui
+from pyautogui import ImageNotFoundException
 
 CURRENT_MODE = None
 START_TIME = time.time()
-SECOND_BEFORE_CLICKING_EVERYWHERE = 25
+SECONDS_BEFORE_FIND_GOLD = 120
 
-TOTAL_CLICK_BEFORE_BUY = 1000
-
-T_1_SECONDS = 1
-T_3_SECONDS = 3
-T_5_SECONDS = 5
-T_10_SECONDS = 10
-T_20_MILLI_SECONDS = 0.02
+T_2_SECONDS = 2
 T_500_MILLI_SECONDS = 0.5
 
 # pylint: disable=invalid-name
 _args = None
-
-# Creer des truc comme [cycle]
-# avec du .next
 
 
 def parse_args(sysargs):
@@ -49,7 +41,8 @@ def set_mode(mode):
     set mode
     """
     global CURRENT_MODE
-    print(f"change mode {mode}")
+    if CURRENT_MODE:
+        print(f"{CURRENT_MODE.__name__}  ->  {mode.__name__}")
     CURRENT_MODE = mode
 
 
@@ -78,7 +71,7 @@ def mode_before_wait():
     """
     mode before wait
     """
-    wait(T_3_SECONDS)
+    wait(T_2_SECONDS)
     set_mode(mode_wait)
 
 
@@ -103,7 +96,7 @@ def mode_before_click():
     """
     mode before click
     """
-    wait(T_3_SECONDS)
+    wait(T_2_SECONDS)
     set_mode(mode_click)
 
 
@@ -112,7 +105,6 @@ def mode_click():
     mode click
     """
     global START_TIME
-    # time.sleep(T_20_MILLI_SECONDS)
     pyautogui.click()  # Click the mouse at its current location.
 
     mx, _ = pos()
@@ -122,14 +114,14 @@ def mode_click():
 
     final_time = time.time() - START_TIME
 
-    if final_time > SECOND_BEFORE_CLICKING_EVERYWHERE:
+    if final_time > SECONDS_BEFORE_FIND_GOLD:
         START_TIME = time.time()
-        set_mode(mode_click_partout)
+        set_mode(mode_click_golden)
 
 
-def mode_click_partout():
+def mode_click_golden():
     """
-    buy click partout
+    click golden
     """
     global START_TIME
     if _args.onlyclick:
@@ -137,23 +129,16 @@ def mode_click_partout():
         set_mode(mode_click)
         return
 
-    # wait_time = 0.1
     mx, my = pos()
-    INITIALX = 20
-    INITIALY = 170
 
-    pyautogui.moveTo(INITIALX, INITIALY)
-    # pyautogui.click()
-    for __ in range(13):
-        for _ in range(9):
-            pyautogui.click()
-            pyautogui.move(60, 0)
-            newx, __ = pos()
-            if newx < 20 :
-                START_TIME = time.time()
-                set_mode(mode_before_wait)
-                return
-        pyautogui.move(-9 * 60, 65)
+    for i in range(1, 10):
+        try:
+            a = pyautogui.locateOnScreen("img/centre.png", region=(0, 0, 610, 900))
+            print(i, a)
+            pyautogui.click(a)
+            break
+        except ImageNotFoundException:
+            pass
 
     # reset
     pyautogui.moveTo(mx, my)
@@ -196,7 +181,6 @@ def run(args):
     set_mode(mode_before_click)
     while CURRENT_MODE:
         CURRENT_MODE()
-    # pyautogui.moveTo(285, 471) # Move the mouse to the x, y coordinates 100, 150.
     print("done")
 
 
@@ -205,7 +189,7 @@ def runtest(args):
     run test
     """
     print(args)
-    pyautogui.moveTo(1800, 1000)  # Move the mouse to the x, y coordinates 100, 150.
+    pyautogui.moveTo(1800, 1000)
     for _ in range(9):
         wait(0.2)
         pyautogui.move(0, -80)

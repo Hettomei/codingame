@@ -117,6 +117,7 @@ def mode_click():
     mx, my = pos()
     if mx < 20 and my < 1000:
         set_mode(mode_before_wait)
+        return
 
     if TOTAL_CLICK >= TOTAL_CLICK_BEFORE_BUY:
         TOTAL_CLICK = 0
