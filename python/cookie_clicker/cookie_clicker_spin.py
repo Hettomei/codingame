@@ -120,7 +120,32 @@ def mode_click():
 
     if TOTAL_CLICK >= TOTAL_CLICK_BEFORE_BUY:
         TOTAL_CLICK = 0
-        set_mode(mode_buy)
+        set_mode(mode_click_partout)
+
+
+def mode_click_partout():
+    """
+    buy click partout
+    """
+    if _args.onlyclick:
+        set_mode(mode_click)
+        return
+
+    wait_time = 0.2
+    mx, my = pos()
+    INITIALX = 20
+    INITIALY = 50
+
+    pyautogui.moveTo(1800, 1000)
+    # pyautogui.click()
+    for _ in range(9):
+        wait(wait_time)
+        pyautogui.move(0, -80)
+        # pyautogui.click()
+
+    # reset
+    pyautogui.moveTo(mx, my)
+    set_mode(mode_click)
 
 
 def mode_buy():
