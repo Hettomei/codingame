@@ -10,9 +10,10 @@ import time
 import pyautogui
 
 CURRENT_MODE = None
+START_TIME = time.time()
+SECOND_BEFORE_CLICKING_EVERYWHERE = 25
 
 TOTAL_CLICK_BEFORE_BUY = 1000
-TOTAL_CLICK = 0
 
 T_1_SECONDS = 1
 T_3_SECONDS = 3
@@ -26,6 +27,7 @@ _args = None
 
 # Creer des truc comme [cycle]
 # avec du .next
+
 
 def parse_args(sysargs):
     """
@@ -109,17 +111,19 @@ def mode_click():
     """
     mode click
     """
-    global TOTAL_CLICK
+    global START_TIME
     # time.sleep(T_20_MILLI_SECONDS)
     pyautogui.click()  # Click the mouse at its current location.
-    TOTAL_CLICK += 1
 
-    mx, my = pos()
-    if mx < 20 and my < 1000:
+    mx, _ = pos()
+    if mx < 20:
         set_mode(mode_before_wait)
+        return
 
-    if TOTAL_CLICK >= TOTAL_CLICK_BEFORE_BUY:
-        TOTAL_CLICK = 0
+    final_time = time.time() - START_TIME
+
+    if final_time > SECOND_BEFORE_CLICKING_EVERYWHERE:
+        START_TIME = time.time()
         set_mode(mode_click_partout)
 
 
@@ -127,24 +131,33 @@ def mode_click_partout():
     """
     buy click partout
     """
+    global START_TIME
     if _args.onlyclick:
+        START_TIME = time.time()
         set_mode(mode_click)
         return
 
-    wait_time = 0.2
+    # wait_time = 0.1
     mx, my = pos()
     INITIALX = 20
-    INITIALY = 50
+    INITIALY = 170
 
-    pyautogui.moveTo(1800, 1000)
+    pyautogui.moveTo(INITIALX, INITIALY)
     # pyautogui.click()
-    for _ in range(9):
-        wait(wait_time)
-        pyautogui.move(0, -80)
-        # pyautogui.click()
+    for __ in range(13):
+        for _ in range(9):
+            pyautogui.click()
+            pyautogui.move(60, 0)
+            newx, __ = pos()
+            if newx < 20 :
+                START_TIME = time.time()
+                set_mode(mode_before_wait)
+                return
+        pyautogui.move(-9 * 60, 65)
 
     # reset
     pyautogui.moveTo(mx, my)
+    START_TIME = time.time()
     set_mode(mode_click)
 
 
