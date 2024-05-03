@@ -15,6 +15,7 @@ TOTAL_CLICK_BEFORE_BUY = 1000
 TOTAL_CLICK = 0
 
 T_1_SECONDS = 1
+T_3_SECONDS = 3
 T_5_SECONDS = 5
 T_10_SECONDS = 10
 T_20_MILLI_SECONDS = 0.02
@@ -75,7 +76,7 @@ def mode_before_wait():
     """
     mode before wait
     """
-    wait(T_5_SECONDS)
+    wait(T_3_SECONDS)
     set_mode(mode_wait)
 
 
@@ -100,7 +101,7 @@ def mode_before_click():
     """
     mode before click
     """
-    wait(T_5_SECONDS)
+    wait(T_3_SECONDS)
     set_mode(mode_click)
 
 
