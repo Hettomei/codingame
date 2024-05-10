@@ -114,15 +114,17 @@ def run():
     xx, yy = (85, 240)
     ctypes.windll.user32.SetCursorPos(xx, yy)
 
-    for i in range(100):
-        _sendMouseEvent(MOUSEEVENTF_LEFTCLICK, xx, yy, count=700)
+    while True:
+        _sendMouseEvent(MOUSEEVENTF_LEFTCLICK, xx, yy, count=100)
         killx, killy = _position()
-        if killx <= 1 or killy > 500:
-            print("")
+        if killy <= 80:
             print("STOP")
             sys.exit(0)
-        print(f"{i} ", end="", flush=True)
-        time.sleep(1)
+        if killx <= 15:
+            print("STOP")
+            sys.exit(0)
+        # print(f"{killx}.{killy} ", end="", flush=True)
+        time.sleep(0.2)
 
 
 run()

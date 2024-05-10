@@ -27,6 +27,15 @@ _args = None
 # Creer des truc comme [cycle]
 # avec du .next
 
+
+class State:
+    """
+    state
+    """
+    def _init_(self, states):
+        pass
+
+
 def parse_args(sysargs):
     """
     parse args
