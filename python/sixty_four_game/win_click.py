@@ -1,16 +1,26 @@
 """
 taken directly from https://github.com/asweigart/pyautogui/blob/master/pyautogui/_pyautogui_win.py
+
+quand tu bouge, ca clique 20 fois
+quand tu ne bouge pas, ca ne clique pas
+donc tu peux alt tab pour arreter
+
+Si tu va tout en haut ou tout a gauche, ca stoppe
+
+Si tu vas presque tout en haut mais pas completement, ca fait pause,
+Si tu vas presque tout en haut mais pas completement, ca redemarre apres 3 sec,
+
+pour demarrer il faut aller en haut
 """
 
 import time
-import math
 import ctypes
-import msvcrt
+# import msvcrt
 import ctypes.wintypes
 
 import sys
 
-# pylint: disable=invalid-name, missing-class-docstring, too-few-public-methods
+# pylint: disable=invalid-name, missing-class-docstring, too-few-public-methods, global-statement
 
 if sys.platform != "win32":
     # pylint: disable-next=broad-exception-raised
@@ -29,6 +39,8 @@ except AttributeError:
 MOUSEEVENTF_LEFTDOWN = 0x0002
 MOUSEEVENTF_LEFTUP = 0x0004
 MOUSEEVENTF_LEFTCLICK = MOUSEEVENTF_LEFTDOWN + MOUSEEVENTF_LEFTUP
+LAST_X = 0
+LAST_Y = 0
 
 
 # These ctypes structures are for Win32 INPUT, MOUSEINPUT, KEYBDINPUT, and HARDWAREINPUT structures,
@@ -109,7 +121,7 @@ def _sendMouseEvent(ev, x, y, count=1000):
         ctypes.windll.user32.mouse_event(ev, cx, cy, dwData, 0)
 
 
-def exit_if(killx, killy):
+def exit_if_up_left(killx, killy):
     """
     l
     """
@@ -118,38 +130,96 @@ def exit_if(killx, killy):
         sys.exit(0)
 
 
+def has_moved_in(seconds=0.3):
+    """
+    si il a bougé dans les x seconds, alors renvoie true
+    """
+    global LAST_X
+    global LAST_Y
+    movex, movey = _position()
+    # print(f"{movex}.{movey} ", end="", flush=True)
+
+    # on a 0.5 second pour bouger la sourie
+    time.sleep(seconds)
+    newx, newy = _position()
+    LAST_X = newx
+    LAST_Y = newy
+    exit_if_up_left(newx, newy)
+    return newy != movey or newx != movex
+
 def wait():
     """
     w
     """
     print("wait mode")
     while True:
-        movex, movey = _position()
-        # print(f"{movex}.{movey} ", end="", flush=True)
+        print(".", end="", flush=True)
 
-        time.sleep(0.2)
-        newx, newy = _position()
-        exit_if(newx, newy)
-
-        if newy != movey or newx != movex:
+        # si le curseur bouge, on arrete l etat d attente
+        if has_moved_in(seconds=0.3):
+            print()
             return
+
+def in_break_zone(_posx, posy):
+    """
+    w
+    """
+    # On est en dehors de la zone de break, il se passe rien
+    ZONE_Y = 200
+    START_BREAK = 0
+    EXIT_ZONE = 1
+    STOP_BREAK = 2
+
+    if posy > ZONE_Y:
+        return
+
+    print("break mode")
+    state = START_BREAK
+    # state = EXIT_ZONE
+    # state = STOP_BREAK
+
+    while True:
+        print(".", end="", flush=True)
+        time.sleep(0.3)
+        newx, newy = _position()
+
+        if state == STOP_BREAK:
+            global LAST_X
+            global LAST_Y
+
+            LAST_X = newx
+            LAST_Y = newy
+            print("")
+            print("stop break mode in 3 sec")
+            time.sleep(3)
+            return
+
+        if newy > ZONE_Y and state == START_BREAK:
+            print("exit zone")
+            state = EXIT_ZONE
+            continue
+
+        if newy <= ZONE_Y and state == EXIT_ZONE:
+            print("stop break")
+            state = STOP_BREAK
+            continue
 
 
 def click():
     """
     run
     """
-    while True:
-        movex, movey = _position()
+    in_break_zone(100, 100)
 
-        time.sleep(0.3)
-        newx, newy = _position()
-        exit_if(newx, newy)
-        if newy == movey or newx == movex:
-            wait()
-            print("click mode")
-        else:
-            _sendMouseEvent(MOUSEEVENTF_LEFTCLICK, newx, newy, count=20)
+    while True:
+        if has_moved_in(seconds=0.5):
+            _sendMouseEvent(MOUSEEVENTF_LEFTCLICK, LAST_X, LAST_Y, count=35)
+            continue
+
+        in_break_zone(LAST_X, LAST_Y)
+
+        wait()
+        print("click mode")
 
         # go back to previous place
         # ctypes.windll.user32.SetCursorPos(movex, movey)
@@ -164,6 +234,4 @@ def click():
 #     kp = msvcrt.getch()
 #     print(kp, end="", flush=True)
 
-print("sleep 3")
-time.sleep(3)
 click()
