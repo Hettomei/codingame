@@ -8,7 +8,6 @@ import ctypes.wintypes
 
 import sys
 
-STATE_SLEEP = False
 # pylint: disable=invalid-name, missing-class-docstring, too-few-public-methods
 
 if sys.platform != "win32":
@@ -112,23 +111,10 @@ def run():
     """
     run
     """
-    global STATE_SLEEP
-    # ecran principal
-    xx, yy = (115, 440)
-    # ecran gauche
-    # xx, yy = (-1800, 240)
-    ctypes.windll.user32.SetCursorPos(xx, yy)
-
     while True:
         killx, killy = _position()
-        if killy <= 80 or killx <= 90:
-        # if killy <= 80 or killx <= -1919:
-            STATE_SLEEP = True
-            print("SLEEP")
-            sys.exit(0)
-        # print(f"{killx}.{killy} ", end="", flush=True)
-        _sendMouseEvent(MOUSEEVENTF_LEFTCLICK, xx, yy, count=110)
-        time.sleep(0.2)
+        print(killx, killy)
+        time.sleep(1)
 
 
 run()
