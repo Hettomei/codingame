@@ -3,6 +3,10 @@
 This is the readme for ThrowBananas, try to keep it up to date with any information future-you will wish past-you
 remembered to write down
 
+run : 
+
+./gradlew run
+
 ## Project set up
 This is a gradle project using JMonkey Engine and other java libraries
 
@@ -61,7 +65,3 @@ You may wish to commit your project to a git repository to keep track of your ch
 ## Adding more libraries
 During the JMonkey Initializer you chose from a small subset of the available java libraries.
 You can add more by editing the dependencies section in the build.gradle file
-
-## txt vs md
-
-This readme is provided as a .txt as that is a common format openable on any machine. However, it would more normally be a .md, this will allow it to be nicely formatted by most git repositories (assuming you commit it to git). Just change the extension from .txt to .md, the syntax is already correct for an md file
