@@ -39,8 +39,8 @@ except AttributeError:
 MOUSEEVENTF_LEFTDOWN = 0x0002
 MOUSEEVENTF_LEFTUP = 0x0004
 MOUSEEVENTF_LEFTCLICK = MOUSEEVENTF_LEFTDOWN + MOUSEEVENTF_LEFTUP
-LAST_X = 0
-LAST_Y = 0
+LAST_X = 500
+LAST_Y = 500
 
 
 # These ctypes structures are for Win32 INPUT, MOUSEINPUT, KEYBDINPUT, and HARDWAREINPUT structures,
@@ -125,7 +125,7 @@ def exit_if_up_left(killx, killy):
     """
     l
     """
-    if killx <= 15 or killy <= 15:
+    if killx <= 100 and killy <= 15:
         print("STOP")
         sys.exit(0)
 
@@ -165,7 +165,7 @@ def in_break_zone(_posx, posy):
     w
     """
     # On est en dehors de la zone de break, il se passe rien
-    ZONE_Y = 200
+    ZONE_Y = 50
     START_BREAK = 0
     EXIT_ZONE = 1
     STOP_BREAK = 2
@@ -182,6 +182,7 @@ def in_break_zone(_posx, posy):
         print(".", end="", flush=True)
         time.sleep(0.3)
         newx, newy = _position()
+        exit_if_up_left(newx, newy)
 
         if state == STOP_BREAK:
             global LAST_X
@@ -209,14 +210,13 @@ def click():
     """
     run
     """
-    in_break_zone(100, 100)
-
     while True:
-        if has_moved_in(seconds=0.5):
-            _sendMouseEvent(MOUSEEVENTF_LEFTCLICK, LAST_X, LAST_Y, count=35)
+        in_break_zone(LAST_X, LAST_Y)
+
+        if has_moved_in(seconds=0.2):
+            _sendMouseEvent(MOUSEEVENTF_LEFTCLICK, LAST_X, LAST_Y, count=50)
             continue
 
-        in_break_zone(LAST_X, LAST_Y)
 
         wait()
         print("click mode")
@@ -234,4 +234,6 @@ def click():
 #     kp = msvcrt.getch()
 #     print(kp, end="", flush=True)
 
+print('sleep 3')
+time.sleep(3)
 click()
