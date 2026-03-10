@@ -1,0 +1,35 @@
+0    # mon id de joueur
+20   # width
+11   # height
+....................   # 20 caractere de large et donc 11 de haut
+##................##   # . je peux bouger, #  plateforme dure
+.....##.####.##.....
+....................
+.........##.........
+......#......#......
+#.....#.#..#.#.....#
+##...#..#..#..#...##
+##.....######.....##
+##..############..##
+####################
+3  # nombre de snake par joueur
+0  # id joueur 1
+1  # id joueur 1
+2  # id joueur 1
+3  #  id joueur 2
+4  #  id joueur 2
+5  #  id joueur 2
+6     # a partir d ici, envoye a chaque tour. nombre de power up
+0 4   # coordonne (0, 4) du premier power up
+19 4  #
+3 2   #
+16 2  #
+3 4   #
+16 4  # coordonne (16, 4) du dernier power up
+6     # nombre de snake vivant
+0 5,4:5,5:5,6  # id du snake, puis coordonnée
+1 1,4:1,5:1,6
+2 8,3:8,4:8,5
+3 14,4:14,5:14,6
+4 18,4:18,5:18,6
+5 11,3:11,4:11,5
