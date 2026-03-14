@@ -6,7 +6,7 @@ import java.math.*;
 // Tools
 class T {
 	// debug
-	public static void d(Object o) {
+	static void d(Object o) {
 		System.err.println("" + o);
 	}
 }
@@ -65,6 +65,45 @@ class Board {
 	}
 }
 
+class Snake {
+	int id;
+	Snake(int id) {
+		this.id = id;
+	}
+	public String toString() {
+		return "Snake:" + id;
+	}
+
+	static Snake[] builds(int n, Scanner in) {
+		Snake[] snakes = new Snake[n];
+		for (int i = 0; i < n; i++) {
+			snakes[i] = new Snake(in.nextInt());
+		}
+		return snakes;
+	}
+}
+
+class PowerUp {
+	int x;
+	int y;
+	PowerUp(int x, int y) {
+		this.x = x;
+		this.y = y;
+	}
+	public String toString() {
+		return "Power:" + x + "," + y;
+	}
+
+	static PowerUp[] builds(Scanner in) {
+		int powerSourceCount = in.nextInt();
+		PowerUp[] powerups = new PowerUp[powerSourceCount];
+		for (int i = 0; i < powerSourceCount; i++) {
+			powerups[i] = new PowerUp(in.nextInt(), in.nextInt());
+		}
+		return powerups;
+	}
+}
+
 class Player {
 
 	public static void main(String args[]) {
@@ -73,25 +112,30 @@ class Player {
 		Board board = Board.build(in);
 		T.d(board);
 
-		int snakebotsPerPlayer = in.nextInt();
-		for (int i = 0; i < snakebotsPerPlayer; i++) {
-			int mySnakebotId = in.nextInt();
+		int snakePerPlayer = in.nextInt();
+		Snake[] mySnakes;
+		Snake[] opponentSnakes;
+
+		if (myId == 0) {
+			mySnakes = Snake.builds(snakePerPlayer, in);
+			opponentSnakes = Snake.builds(snakePerPlayer, in);
+		} else {
+			opponentSnakes = Snake.builds(snakePerPlayer, in);
+			mySnakes = Snake.builds(snakePerPlayer, in);
 		}
-		for (int i = 0; i < snakebotsPerPlayer; i++) {
-			int oppSnakebotId = in.nextInt();
+
+		for (Snake a : mySnakes) {
+			T.d(a);
 		}
 
 		int loop = 0;
 		while (loop<300) {
-			int powerSourceCount = in.nextInt();
-			for (int i = 0; i < powerSourceCount; i++) {
-				int x = in.nextInt();
-				int y = in.nextInt();
-			}
+			PowerUp[] powerups = PowerUp.builds(in);
 			int snakebotCount = in.nextInt();
 			for (int i = 0; i < snakebotCount; i++) {
 				int snakebotId = in.nextInt();
 				String body = in.next();
+				T.d("snake: " + snakebotId + ", " + body);
 			}
 
 			System.out.println("WAIT");
