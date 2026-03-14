@@ -1,4 +1,4 @@
-0    # mon id de joueur
+0    # myId de joueur
 20   # width
 11   # height
 ....................   # 20 caractere de large et donc 11 de haut
@@ -12,14 +12,15 @@
 ##.....######.....##
 ##..############..##
 ####################
-3  # nombre de snake par joueur
-0  # id joueur 1
-1  # id joueur 1
-2  # id joueur 1
-3  #  id joueur 2
-4  #  id joueur 2
-5  #  id joueur 2
-6     # a partir d ici, envoye a chaque tour. nombre de power up
+3    # nombre de snake par joueur
+0     # id joueur 1 (le myId = 0)
+1     # id joueur 1
+2     # id joueur 1
+3     #  id joueur 2 (le myId = 1)
+4     #  id joueur 2
+5     #  id joueur 2
+# a partir d ici, envoye a chaque tour
+6     # nombre de power up
 0 4   # coordonne (0, 4) du premier power up
 19 4  #
 3 2   #

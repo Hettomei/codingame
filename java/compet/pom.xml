@@ -27,7 +27,7 @@
 					<manifest>
 						<addClasspath>true</addClasspath>
 						<classpathPrefix>lib/</classpathPrefix>
-						<mainClass>com.timit.compet.Main</mainClass>
+						<mainClass>com.timit.compet.Player</mainClass>
 					</manifest>
 				</archive>
 			</configuration>
