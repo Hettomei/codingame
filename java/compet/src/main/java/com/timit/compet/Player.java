@@ -84,10 +84,15 @@ class Point {
   int x;
   int y;
 
-  Point(String p) {
-    String[] a = p.split(",");
-    x = Integer.valueOf(a[0]);
-    y = Integer.valueOf(a[1]);
+  Point(Point a, Point relative) {
+    x = a.x + relative.x;
+    y = a.y + relative.y;
+  }
+
+  Point(String coord) {
+    String[] coords = coord.split(",");
+    x = Integer.valueOf(coords[0]);
+    y = Integer.valueOf(coords[1]);
   }
 
   Point(int x, int y) {
@@ -95,29 +100,40 @@ class Point {
     this.y = y;
   }
 
+  static int distance(Point a, Point b) {
+    return (a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y);
+  }
+
   public String toString() {
     return "(" + x + "," + y + ")";
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (o == this) return true;
+    if (!(o instanceof Point)) return false;
+    Point other = (Point) o;
+    return this.x == other.x && this.y == other.y;
   }
 }
 
 class Snake {
   int id;
   Point head;
-  // Point[] parts;
-  String[] parts;
+  Point[] parts;
   Point tail;
 
   boolean isMine;
 
-  Snake(int id, String bodyRaw, boolean isMine) {
+  Snake(int id, boolean isMine, Point head, Point[] parts, Point tail) {
     this.id = id;
     this.isMine = isMine;
-    String[] body = bodyRaw.split(":");
-    this.head = new Point(body[0]);
-    this.tail = new Point(body[body.length - 1]);
-
+    // la tete
+    this.head = head;
     // Tout sauf la tete et la queue
-    this.parts = Arrays.copyOfRange(body, 1, body.length - 1);
+    this.parts = parts;
+    // la queue
+    this.tail = tail;
   }
 
   public String toString() {
@@ -127,11 +143,14 @@ class Snake {
 
   // utilisé pour savoir si la tete
   // peut se deplacer relativement dans cette direction
-  boolean canGo(int relativeX, int relativeY) {
+  boolean canGo(Point relative) {
     // TOUS sauf la premiere qui bouge et sauf la derniere qui va disparaitre lors du mouvement
     // SAUF si on vient de gober un truc // TODO peut etre a code peut etre non pertinent
-    int newX = head.x + relativeX;
-    int newY = head.y + relativeY;
+    Point nextPosition = new Point(head, relative);
+    for (Point part : parts) {
+      if (part.equals(nextPosition)) return false;
+    }
+
     return true;
   }
 
@@ -147,25 +166,41 @@ class Snake {
     Snake[] snakes = new Snake[count];
     for (int i = 0; i < count; i++) {
       int id = in.nextInt();
-      snakes[i] = new Snake(id, in.next(), myIds.contains(id));
+
+      String[] body = in.next().split(":");
+      Point head = new Point(body[0]);
+      // Tout sauf la tete et la queue
+      Point[] parts = new Point[body.length - 2];
+      for (int j = 0; j < body.length - 2; j++) {
+        parts[j] = new Point(body[j + 1]);
+      }
+      Point tail = new Point(body[body.length - 1]);
+
+      snakes[i] = new Snake(id, myIds.contains(id), head, parts, tail);
     }
     return snakes;
   }
 }
 
 class Computer {
+
+  // Point relatif
+  static Point RELATIF_LEFT = new Point(-1, 0);
+  static Point RELATIF_RIGHT = new Point(1, 0);
+  static Point RELATIF_UP = new Point(0, -1);
+  static Point RELATIF_DOWN = new Point(0, 1);
+
   static PowerUp closestPowerUp(PowerUp[] powerups, Snake snake) {
-    float max_distance = 1000 * 1000;
+    int max_distance = 1000 * 1000;
     PowerUp closest = powerups[0];
-    for (PowerUp p : powerups) {
+    for (PowerUp powerup : powerups) {
       // sqrt((sx-px)²+(sy-py)²) // sx = snake.x ; px = powerup.x
-      float d =
-          (snake.head.x - p.x) * (snake.head.x - p.x) + (snake.head.y - p.y) * (snake.head.y - p.y);
+      int d = Point.distance(snake.head, powerup);
       if (d < max_distance) {
         max_distance = d;
-        closest = p;
+        closest = powerup;
       }
-      T.d(p + " d:" + d);
+      T.d(powerup + " d: " + d);
     }
     return closest;
   }
@@ -176,11 +211,23 @@ class Computer {
    * 0,1  1,1  2,1  3,1
    * 0,2  1,2  2,2  3,2
    */
+
+  static boolean canGo(Snake s, Point relative) {
+    // TOUS sauf la premiere qui bouge et sauf la derniere qui va disparaitre lors du mouvement
+    // SAUF si on vient de gober un truc // TODO peut etre a code peut etre non pertinent
+    Point nextPosition = new Point(s.head, relative);
+    for (Point part : s.parts) {
+      if (part.equals(nextPosition)) return false;
+    }
+
+    return true;
+  }
+
   static Dir getDirection(Snake s, PowerUp p) {
-    if (s.head.x < p.x && s.canGo(1, 0)) return Dir.RIGHT;
-    if (s.head.x > p.x) return Dir.LEFT;
-    if (s.head.y < p.y) return Dir.DOWN;
-    if (s.head.y > p.y) return Dir.UP;
+    if (s.head.x < p.x && canGo(s, RELATIF_RIGHT)) return Dir.RIGHT;
+    if (s.head.x > p.x && canGo(s, RELATIF_LEFT)) return Dir.LEFT;
+    if (s.head.y < p.y && canGo(s, RELATIF_DOWN)) return Dir.DOWN;
+    if (s.head.y > p.y && canGo(s, RELATIF_UP)) return Dir.UP;
     return Dir.UP;
   }
 }
@@ -192,7 +239,7 @@ class PowerUp extends Point {
   }
 
   public String toString() {
-    return "PowerUp:" + x + "," + y;
+    return "PowerUp " + super.toString();
   }
 
   static PowerUp[] builds(Scanner in) {
@@ -236,9 +283,9 @@ class Player {
     while (loop < 250) {
       PowerUp[] powerups = PowerUp.builds(in);
       Snake[] snakes = Snake.builds(in, myIds);
-      for (Snake s : snakes) T.d(s);
-      for (PowerUp p : powerups) T.d(p);
-      T.d("");
+      // for (Snake s : snakes) T.d(s);
+      // for (PowerUp p : powerups) T.d(p);
+      // T.d("");
 
       // Trouver le powerup le plus proche pour le premier serpent
       Snake myFirstSnake = Snake.getMyFirst(snakes);
@@ -246,8 +293,11 @@ class Player {
       T.d("closest " + closest + " of " + myFirstSnake);
       // Trouver la direction
       Dir dir = Computer.getDirection(myFirstSnake, closest);
-      T.p(myFirstSnake.id + " " + dir.name() + ";");
+
       // TODO, si il part a droit a l infinie, le stopper
+
+      // For codinGame
+      T.p(myFirstSnake.id + " " + dir.name() + ";");
       loop++;
     }
     in.close();
