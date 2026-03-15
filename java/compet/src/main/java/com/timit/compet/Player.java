@@ -8,7 +8,7 @@ import java.util.*;
 class T {
   // debug
   static void d(Object o) {
-    System.err.println("> " + o);
+    System.err.println(">> " + o);
   }
 
   // print
@@ -80,40 +80,59 @@ class Board {
   }
 }
 
-class Snake {
-  int id;
-
-  // Head place
+class Point {
   int x;
   int y;
 
-  String[] body;
+  Point(String p) {
+    String[] a = p.split(",");
+    x = Integer.valueOf(a[0]);
+    y = Integer.valueOf(a[1]);
+  }
 
-  boolean isMine;
-
-  Snake(int id, String body, boolean isMine) {
-    this.id = id;
-    this.body = body.split(":");
-    this.isMine = isMine;
-    String[] head = this.body[0].split(",");
-    x = Integer.valueOf(head[0]);
-    y = Integer.valueOf(head[1]);
-    // Remove head from body
-    this.body = Arrays.copyOfRange(this.body, 1, this.body.length);
+  Point(int x, int y) {
+    this.x = x;
+    this.y = y;
   }
 
   public String toString() {
-    return "Snake"
-        + " id:"
-        + id
-        + " isMine:"
-        + isMine
-        + " head:"
-        + x
-        + ","
-        + y
-        + " body:"
-        + Arrays.toString(body);
+    return "(" + x + "," + y + ")";
+  }
+}
+
+class Snake {
+  int id;
+  Point head;
+  // Point[] parts;
+  String[] parts;
+  Point tail;
+
+  boolean isMine;
+
+  Snake(int id, String bodyRaw, boolean isMine) {
+    this.id = id;
+    this.isMine = isMine;
+    String[] body = bodyRaw.split(":");
+    this.head = new Point(body[0]);
+    this.tail = new Point(body[body.length - 1]);
+
+    // Tout sauf la tete et la queue
+    this.parts = Arrays.copyOfRange(body, 1, body.length - 1);
+  }
+
+  public String toString() {
+    String mmine = isMine ? "mine " : "other";
+    return "Snake" + " " + mmine + " " + id + " " + head + Arrays.toString(parts) + tail;
+  }
+
+  // utilisé pour savoir si la tete
+  // peut se deplacer relativement dans cette direction
+  boolean canGo(int relativeX, int relativeY) {
+    // TOUS sauf la premiere qui bouge et sauf la derniere qui va disparaitre lors du mouvement
+    // SAUF si on vient de gober un truc // TODO peut etre a code peut etre non pertinent
+    int newX = head.x + relativeX;
+    int newY = head.y + relativeY;
+    return true;
   }
 
   static Snake getMyFirst(Snake[] snakes) {
@@ -140,7 +159,8 @@ class Computer {
     PowerUp closest = powerups[0];
     for (PowerUp p : powerups) {
       // sqrt((sx-px)²+(sy-py)²) // sx = snake.x ; px = powerup.x
-      float d = (snake.x - p.x) * (snake.x - p.x) + (snake.y - p.y) * (snake.y - p.y);
+      float d =
+          (snake.head.x - p.x) * (snake.head.x - p.x) + (snake.head.y - p.y) * (snake.head.y - p.y);
       if (d < max_distance) {
         max_distance = d;
         closest = p;
@@ -157,21 +177,18 @@ class Computer {
    * 0,2  1,2  2,2  3,2
    */
   static Dir getDirection(Snake s, PowerUp p) {
-    if (s.x < p.x) return Dir.RIGHT;
-    if (s.x > p.x) return Dir.LEFT;
-    if (s.y < p.y) return Dir.DOWN;
-    if (s.y > p.y) return Dir.UP;
+    if (s.head.x < p.x && s.canGo(1, 0)) return Dir.RIGHT;
+    if (s.head.x > p.x) return Dir.LEFT;
+    if (s.head.y < p.y) return Dir.DOWN;
+    if (s.head.y > p.y) return Dir.UP;
     return Dir.UP;
   }
 }
 
-class PowerUp {
-  int x;
-  int y;
+class PowerUp extends Point {
 
   PowerUp(int x, int y) {
-    this.x = x;
-    this.y = y;
+    super(x, y);
   }
 
   public String toString() {
@@ -219,9 +236,9 @@ class Player {
     while (loop < 250) {
       PowerUp[] powerups = PowerUp.builds(in);
       Snake[] snakes = Snake.builds(in, myIds);
-      // for (Snake s : snakes) T.d(s);
-      // for (PowerUp p : powerups) T.d(p);
-      // T.d("");
+      for (Snake s : snakes) T.d(s);
+      for (PowerUp p : powerups) T.d(p);
+      T.d("");
 
       // Trouver le powerup le plus proche pour le premier serpent
       Snake myFirstSnake = Snake.getMyFirst(snakes);
@@ -230,6 +247,7 @@ class Player {
       // Trouver la direction
       Dir dir = Computer.getDirection(myFirstSnake, closest);
       T.p(myFirstSnake.id + " " + dir.name() + ";");
+      // TODO, si il part a droit a l infinie, le stopper
       loop++;
     }
     in.close();
