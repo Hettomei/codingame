@@ -117,6 +117,18 @@ class Point {
   }
 }
 
+class ForbiddenPoints {
+  Set<Point> immuable;
+
+  ForbiddenPoints() {
+    immuable = new HashSet<>();
+  }
+
+  void addImmuable(Board board) {
+    immuable.add(new Point(1, 0));
+  }
+}
+
 class Snake {
   int id;
   Point head;
@@ -263,9 +275,11 @@ class Player {
   }
 
   public static void main(String args[]) {
+    ForbiddenPoints forbiddenPoints = new ForbiddenPoints();
     Scanner in = new Scanner(System.in);
     int myId = in.nextInt();
     Board board = Board.build(in);
+    forbiddenPoints.addImmuable(board);
 
     int snakePerPlayer = in.nextInt();
     Set<Integer> myIds;
