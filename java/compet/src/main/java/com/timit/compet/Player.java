@@ -72,15 +72,15 @@ class Snake {
   String[] body;
 
   // Head place
-  String x;
-  String y;
+  int x;
+  int y;
 
   Snake(int id, String body) {
     this.id = id;
     this.body = body.split(":");
     String[] head = this.body[0].split(",");
-    x = head[0];
-    y = head[1];
+    x = Integer.valueOf(head[0]);
+    y = Integer.valueOf(head[1]);
     // Remove head from body
     this.body = Arrays.copyOfRange(this.body, 1, this.body.length);
   }
