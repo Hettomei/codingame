@@ -67,17 +67,34 @@ class Board {
 
 class Snake {
 	int id;
-	Snake(int id) {
+	String[] body;
+
+	// Head place
+	String x;
+	String y;
+
+	Snake(int id, String body) {
 		this.id = id;
-	}
-	public String toString() {
-		return "Snake:" + id;
+		this.body = body.split(":");
+		String[] head = this.body[0].split(",");
+		x = head[0];
+		y = head[1];
+		// Remove head from body
+		this.body = Arrays.copyOfRange(this.body, 1, this.body.length);
 	}
 
-	static Snake[] builds(int n, Scanner in) {
-		Snake[] snakes = new Snake[n];
-		for (int i = 0; i < n; i++) {
-			snakes[i] = new Snake(in.nextInt());
+	public String toString() {
+		return "Snake"+
+			" id:" + id +
+			" head:" + x + "," + y + 
+			" body:" + Arrays.toString(body);
+	}
+
+	static Snake[] builds(Scanner in) {
+		int count = in.nextInt();
+		Snake[] snakes = new Snake[count];
+		for (int i = 0; i < count; i++) {
+			snakes[i] = new Snake(in.nextInt(), in.next());
 		}
 		return snakes;
 	}
@@ -91,7 +108,7 @@ class PowerUp {
 		this.y = y;
 	}
 	public String toString() {
-		return "Power:" + x + "," + y;
+		return "PowerUp:" + x + "," + y;
 	}
 
 	static PowerUp[] builds(Scanner in) {
@@ -106,37 +123,38 @@ class PowerUp {
 
 class Player {
 
+	static int[] getIds(int n, Scanner in) {
+		int[] ids = new int[n];
+		for (int i = 0; i < n; i++) {
+			ids[i] = in.nextInt();
+		}
+		return ids;
+	}
+
 	public static void main(String args[]) {
 		Scanner in = new Scanner(System.in);
 		int myId = in.nextInt();
 		Board board = Board.build(in);
-		T.d(board);
 
 		int snakePerPlayer = in.nextInt();
-		Snake[] mySnakes;
-		Snake[] opponentSnakes;
+		int[] myIds;
+		int[] opponentIds;
 
 		if (myId == 0) {
-			mySnakes = Snake.builds(snakePerPlayer, in);
-			opponentSnakes = Snake.builds(snakePerPlayer, in);
+			myIds = getIds(snakePerPlayer, in);
+			opponentIds = getIds(snakePerPlayer, in);
 		} else {
-			opponentSnakes = Snake.builds(snakePerPlayer, in);
-			mySnakes = Snake.builds(snakePerPlayer, in);
+			opponentIds = getIds(snakePerPlayer, in);
+			myIds = getIds(snakePerPlayer, in);
 		}
-
-		for (Snake a : mySnakes) {
-			T.d(a);
-		}
+		// Tout ok
 
 		int loop = 0;
-		while (loop<300) {
+		while (loop<250) {
 			PowerUp[] powerups = PowerUp.builds(in);
-			int snakebotCount = in.nextInt();
-			for (int i = 0; i < snakebotCount; i++) {
-				int snakebotId = in.nextInt();
-				String body = in.next();
-				T.d("snake: " + snakebotId + ", " + body);
-			}
+			// Avant cette ligne tout ok
+			Snake[] snakes = Snake.builds(in);
+			for (Snake s: snakes) T.d(s);
 
 			System.out.println("WAIT");
 			loop++;
