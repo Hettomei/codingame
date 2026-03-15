@@ -4,6 +4,10 @@
 ./run.sh
 ```
 
+# Comment envoyer sur codinGame ?
+
+Tout copier sauf le nom du package tout en haut
+
 
 # Goal
 

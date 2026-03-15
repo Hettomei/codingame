@@ -10,6 +10,11 @@ class T {
   static void d(Object o) {
     System.err.println("" + o);
   }
+
+  // print
+  static void p(Object o) {
+    System.out.println("" + o);
+  }
 }
 
 enum Level {
@@ -153,11 +158,13 @@ class Player {
     int loop = 0;
     while (loop < 250) {
       PowerUp[] powerups = PowerUp.builds(in);
-      // Avant cette ligne tout ok
       Snake[] snakes = Snake.builds(in);
-      for (Snake s : snakes) T.d(s);
+      // Avant cette ligne tout ok
+      for (int i : myIds) T.d(snakes[i]);
+      T.d("--");
+      for (int i : opponentIds) T.d(snakes[i]);
 
-      System.out.println("WAIT");
+      T.p("WAIT");
       loop++;
     }
     in.close();
