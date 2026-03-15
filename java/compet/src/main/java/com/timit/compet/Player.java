@@ -212,7 +212,7 @@ class Computer {
         max_distance = d;
         closest = powerup;
       }
-      T.d(powerup + " d: " + d);
+      // T.d(powerup + " d: " + d);
     }
     return closest;
   }
@@ -223,7 +223,6 @@ class Computer {
    * 0,1  1,1  2,1  3,1
    * 0,2  1,2  2,2  3,2
    */
-
   static boolean canGo(Snake s, Point relative) {
     // TOUS sauf la premiere qui bouge et sauf la derniere qui va disparaitre lors du mouvement
     // SAUF si on vient de gober un truc // TODO peut etre a code peut etre non pertinent
@@ -231,6 +230,7 @@ class Computer {
     for (Point part : s.parts) {
       if (part.equals(nextPosition)) return false;
     }
+    // TODO : ajouter tous les ForbiddenPlace
 
     return true;
   }
@@ -302,16 +302,20 @@ class Player {
       // T.d("");
 
       // Trouver le powerup le plus proche pour le premier serpent
-      Snake myFirstSnake = Snake.getMyFirst(snakes);
-      PowerUp closest = Computer.closestPowerUp(powerups, myFirstSnake);
-      T.d("closest " + closest + " of " + myFirstSnake);
-      // Trouver la direction
-      Dir dir = Computer.getDirection(myFirstSnake, closest);
+      StringBuilder mouve = new StringBuilder();
+      for (Snake s : snakes) {
+        if (!s.isMine) continue;
+        PowerUp closest = Computer.closestPowerUp(powerups, s);
+        T.d("closest " + closest + " of " + s);
+        Dir dir = Computer.getDirection(s, closest);
+        mouve.append(s.id);
+        mouve.append(" ");
+        mouve.append(dir.name());
+        mouve.append(";");
+      }
+      T.p(mouve);
 
       // TODO, si il part a droit a l infinie, le stopper
-
-      // For codinGame
-      T.p(myFirstSnake.id + " " + dir.name() + ";");
       loop++;
     }
     in.close();
