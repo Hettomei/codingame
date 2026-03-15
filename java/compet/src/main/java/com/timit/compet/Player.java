@@ -8,7 +8,7 @@ import java.util.*;
 class T {
   // debug
   static void d(Object o) {
-    System.err.println("" + o);
+    System.err.println("> " + o);
   }
 
   // print
@@ -17,12 +17,20 @@ class T {
   }
 }
 
+enum Dir {
+  UP,
+  DOWN,
+  LEFT,
+  RIGHT,
+  WAIT
+}
+
 enum Level {
   VIDE,
   MUR,
   ENERGIE,
   TETE,
-  CORPS,
+  CORPS
 }
 
 class Board {
@@ -74,11 +82,12 @@ class Board {
 
 class Snake {
   int id;
-  String[] body;
 
   // Head place
   int x;
   int y;
+
+  String[] body;
 
   boolean isMine;
 
@@ -107,6 +116,13 @@ class Snake {
         + Arrays.toString(body);
   }
 
+  static Snake getMyFirst(Snake[] snakes) {
+    for (Snake s : snakes) {
+      if (s.isMine) return s;
+    }
+    return null;
+  }
+
   static Snake[] builds(Scanner in, Set<Integer> myIds) {
     int count = in.nextInt();
     Snake[] snakes = new Snake[count];
@@ -115,6 +131,37 @@ class Snake {
       snakes[i] = new Snake(id, in.next(), myIds.contains(id));
     }
     return snakes;
+  }
+}
+
+class Computer {
+  static PowerUp closestPowerUp(PowerUp[] powerups, Snake snake) {
+    float max_distance = 1000 * 1000;
+    PowerUp closest = powerups[0];
+    for (PowerUp p : powerups) {
+      // sqrt((sx-px)²+(sy-py)²) // sx = snake.x ; px = powerup.x
+      float d = (snake.x - p.x) * (snake.x - p.x) + (snake.y - p.y) * (snake.y - p.y);
+      if (d < max_distance) {
+        max_distance = d;
+        closest = p;
+      }
+      T.d(p + " d:" + d);
+    }
+    return closest;
+  }
+
+  /*
+   * ordre des coordonnées :
+   * 0,0  1,0  2,0  3,0
+   * 0,1  1,1  2,1  3,1
+   * 0,2  1,2  2,2  3,2
+   */
+  static Dir getDirection(Snake s, PowerUp p) {
+    if (s.x < p.x) return Dir.RIGHT;
+    if (s.x > p.x) return Dir.LEFT;
+    if (s.y < p.y) return Dir.DOWN;
+    if (s.y > p.y) return Dir.UP;
+    return Dir.UP;
   }
 }
 
@@ -171,13 +218,18 @@ class Player {
     int loop = 0;
     while (loop < 250) {
       PowerUp[] powerups = PowerUp.builds(in);
-      Snake[] snakes = Snake.builds(in);
-      // Avant cette ligne tout ok
-      for (int i : myIds) T.d(snakes[i]);
-      T.d("--");
-      for (int i : opponentIds) T.d(snakes[i]);
+      Snake[] snakes = Snake.builds(in, myIds);
+      // for (Snake s : snakes) T.d(s);
+      // for (PowerUp p : powerups) T.d(p);
+      // T.d("");
 
-      T.p("WAIT");
+      // Trouver le powerup le plus proche pour le premier serpent
+      Snake myFirstSnake = Snake.getMyFirst(snakes);
+      PowerUp closest = Computer.closestPowerUp(powerups, myFirstSnake);
+      T.d("closest " + closest + " of " + myFirstSnake);
+      // Trouver la direction
+      Dir dir = Computer.getDirection(myFirstSnake, closest);
+      T.p(myFirstSnake.id + " " + dir.name() + ";");
       loop++;
     }
     in.close();
