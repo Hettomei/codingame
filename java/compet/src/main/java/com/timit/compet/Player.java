@@ -36,7 +36,7 @@ class Board {
   static Board build(Scanner in) {
     int width = in.nextInt();
     int height = in.nextInt();
-    Level[][] l = new Level[height][width];
+    Level[][] level = new Level[height][width];
     in.nextLine(); // utile pour passer à la suite
     for (int row = 0; row < height; row++) {
       int j;
@@ -46,14 +46,14 @@ class Board {
       int col = 0;
       for (String s : line) {
         if (s.equals(".")) {
-          l[row][col] = Level.VIDE;
+          level[row][col] = Level.VIDE;
         } else if (s.equals("#")) {
-          l[row][col] = Level.MUR;
+          level[row][col] = Level.MUR;
         }
         col++;
       }
     }
-    return new Board(l);
+    return new Board(level);
   }
 
   public String toString() {
@@ -80,9 +80,12 @@ class Snake {
   int x;
   int y;
 
-  Snake(int id, String body) {
+  boolean isMine;
+
+  Snake(int id, String body, boolean isMine) {
     this.id = id;
     this.body = body.split(":");
+    this.isMine = isMine;
     String[] head = this.body[0].split(",");
     x = Integer.valueOf(head[0]);
     y = Integer.valueOf(head[1]);
@@ -91,14 +94,25 @@ class Snake {
   }
 
   public String toString() {
-    return "Snake" + " id:" + id + " head:" + x + "," + y + " body:" + Arrays.toString(body);
+    return "Snake"
+        + " id:"
+        + id
+        + " isMine:"
+        + isMine
+        + " head:"
+        + x
+        + ","
+        + y
+        + " body:"
+        + Arrays.toString(body);
   }
 
-  static Snake[] builds(Scanner in) {
+  static Snake[] builds(Scanner in, Set<Integer> myIds) {
     int count = in.nextInt();
     Snake[] snakes = new Snake[count];
     for (int i = 0; i < count; i++) {
-      snakes[i] = new Snake(in.nextInt(), in.next());
+      int id = in.nextInt();
+      snakes[i] = new Snake(id, in.next(), myIds.contains(id));
     }
     return snakes;
   }
@@ -129,10 +143,10 @@ class PowerUp {
 
 class Player {
 
-  static int[] getIds(int n, Scanner in) {
-    int[] ids = new int[n];
+  static Set<Integer> getIds(int n, Scanner in) {
+    Set<Integer> ids = new HashSet<Integer>();
     for (int i = 0; i < n; i++) {
-      ids[i] = in.nextInt();
+      ids.add(in.nextInt());
     }
     return ids;
   }
@@ -143,8 +157,8 @@ class Player {
     Board board = Board.build(in);
 
     int snakePerPlayer = in.nextInt();
-    int[] myIds;
-    int[] opponentIds;
+    Set<Integer> myIds;
+    Set<Integer> opponentIds;
 
     if (myId == 0) {
       myIds = getIds(snakePerPlayer, in);
@@ -153,7 +167,6 @@ class Player {
       opponentIds = getIds(snakePerPlayer, in);
       myIds = getIds(snakePerPlayer, in);
     }
-    // Tout ok
 
     int loop = 0;
     while (loop < 250) {
