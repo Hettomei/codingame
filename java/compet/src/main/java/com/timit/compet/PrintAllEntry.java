@@ -1,4 +1,3 @@
 package com.timit.compet;
 
-public class PrintAllEntry {
-}
+public class PrintAllEntry {}
