@@ -115,6 +115,11 @@ class Point {
     Point other = (Point) o;
     return this.x == other.x && this.y == other.y;
   }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(x, y);
+  }
 }
 
 class ForbiddenPoints {
@@ -125,7 +130,19 @@ class ForbiddenPoints {
   }
 
   void addImmuable(Board board) {
-    immuable.add(new Point(1, 0));
+    int y = 0;
+    for (Level[] lineLevel : board.level) {
+      int x = 0;
+      for (Level level : lineLevel) {
+        if (level == Level.MUR) immuable.add(new Point(x, y));
+        x++;
+      }
+      y++;
+    }
+  }
+
+  boolean isAvailable(Point point) {
+    return !immuable.contains(point);
   }
 }
 
@@ -223,23 +240,27 @@ class Computer {
    * 0,1  1,1  2,1  3,1
    * 0,2  1,2  2,2  3,2
    */
-  static boolean canGo(Snake s, Point relative) {
+  static boolean canGo(Snake s, Point relative, ForbiddenPoints forbiddenPoints) {
     // TOUS sauf la premiere qui bouge et sauf la derniere qui va disparaitre lors du mouvement
     // SAUF si on vient de gober un truc // TODO peut etre a code peut etre non pertinent
     Point nextPosition = new Point(s.head, relative);
     for (Point part : s.parts) {
       if (part.equals(nextPosition)) return false;
     }
-    // TODO : ajouter tous les ForbiddenPlace
-
-    return true;
+    return forbiddenPoints.isAvailable(nextPosition);
   }
 
-  static Dir getDirection(Snake s, PowerUp p) {
-    if (s.head.x < p.x && canGo(s, RELATIF_RIGHT)) return Dir.RIGHT;
-    if (s.head.x > p.x && canGo(s, RELATIF_LEFT)) return Dir.LEFT;
-    if (s.head.y < p.y && canGo(s, RELATIF_DOWN)) return Dir.DOWN;
-    if (s.head.y > p.y && canGo(s, RELATIF_UP)) return Dir.UP;
+  static Dir getDirection(Snake s, PowerUp p, ForbiddenPoints forbiddenPoints) {
+    if (s.head.x < p.x && canGo(s, RELATIF_RIGHT, forbiddenPoints)) return Dir.RIGHT;
+    if (s.head.x > p.x && canGo(s, RELATIF_LEFT, forbiddenPoints)) return Dir.LEFT;
+    if (s.head.y < p.y && canGo(s, RELATIF_DOWN, forbiddenPoints)) return Dir.DOWN;
+    if (s.head.y > p.y && canGo(s, RELATIF_UP, forbiddenPoints)) return Dir.UP;
+
+    // on a tout fait mais on etait forbidden : on assoupli les regles
+    if (canGo(s, RELATIF_RIGHT, forbiddenPoints)) return Dir.RIGHT;
+    if (canGo(s, RELATIF_LEFT, forbiddenPoints)) return Dir.LEFT;
+    if (canGo(s, RELATIF_UP, forbiddenPoints)) return Dir.UP;
+    if (canGo(s, RELATIF_DOWN, forbiddenPoints)) return Dir.DOWN;
     return Dir.UP;
   }
 }
@@ -307,7 +328,7 @@ class Player {
         if (!s.isMine) continue;
         PowerUp closest = Computer.closestPowerUp(powerups, s);
         T.d("closest " + closest + " of " + s);
-        Dir dir = Computer.getDirection(s, closest);
+        Dir dir = Computer.getDirection(s, closest, forbiddenPoints);
         mouve.append(s.id);
         mouve.append(" ");
         mouve.append(dir.name());
