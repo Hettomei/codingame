@@ -89,6 +89,13 @@ class Point {
     y = a.y + relative.y;
   }
 
+  static Point move(Point a, Dir dir) {
+    if (dir == Dir.LEFT) return new Point(a, Fix.RELATIF_LEFT);
+    if (dir == Dir.RIGHT) return new Point(a, Fix.RELATIF_RIGHT);
+    if (dir == Dir.UP) return new Point(a, Fix.RELATIF_UP);
+    return new Point(a, Fix.RELATIF_DOWN);
+  }
+
   Point(String coord) {
     String[] coords = coord.split(",");
     x = Integer.valueOf(coords[0]);
@@ -124,9 +131,28 @@ class Point {
 
 class ForbiddenPoints {
   Set<Point> immuable;
+  Set<Point> change;
 
   ForbiddenPoints() {
     immuable = new HashSet<>();
+    change = new HashSet<>();
+  }
+
+  void restartWithSnakes(Snake... snakes) {
+    change.clear();
+    for (Snake s : snakes) {
+      change.add(s.head);
+      for (Point p : s.parts) change.add(p);
+      // change.add(s.tail); // non, pas la queue, forte chance qu elle bouge
+    }
+  }
+
+  void remove(Point p) {
+    change.remove(p);
+  }
+
+  void add(Point p) {
+    change.add(p);
   }
 
   void addImmuable(Board board) {
@@ -142,7 +168,7 @@ class ForbiddenPoints {
   }
 
   boolean isAvailable(Point point) {
-    return !immuable.contains(point);
+    return !immuable.contains(point) && !change.contains(point);
   }
 }
 
@@ -165,22 +191,13 @@ class Snake {
     this.tail = tail;
   }
 
+  Point getLastPart() {
+    return parts[parts.length - 1];
+  }
+
   public String toString() {
     String mmine = isMine ? "mine " : "other";
     return "Snake" + " " + mmine + " " + id + " " + head + Arrays.toString(parts) + tail;
-  }
-
-  // utilisé pour savoir si la tete
-  // peut se deplacer relativement dans cette direction
-  boolean canGo(Point relative) {
-    // TOUS sauf la premiere qui bouge et sauf la derniere qui va disparaitre lors du mouvement
-    // SAUF si on vient de gober un truc // TODO peut etre a code peut etre non pertinent
-    Point nextPosition = new Point(head, relative);
-    for (Point part : parts) {
-      if (part.equals(nextPosition)) return false;
-    }
-
-    return true;
   }
 
   static Snake getMyFirst(Snake[] snakes) {
@@ -211,13 +228,15 @@ class Snake {
   }
 }
 
-class Computer {
-
+class Fix {
   // Point relatif
   static Point RELATIF_LEFT = new Point(-1, 0);
   static Point RELATIF_RIGHT = new Point(1, 0);
   static Point RELATIF_UP = new Point(0, -1);
   static Point RELATIF_DOWN = new Point(0, 1);
+}
+
+class Computer {
 
   static PowerUp closestPowerUp(PowerUp[] powerups, Snake snake) {
     int max_distance = 1000 * 1000;
@@ -240,6 +259,8 @@ class Computer {
    * 0,1  1,1  2,1  3,1
    * 0,2  1,2  2,2  3,2
    */
+  // utilisé pour savoir si la tete
+  // peut se deplacer relativement dans cette direction
   static boolean canGo(Snake s, Point relative, ForbiddenPoints forbiddenPoints) {
     // TOUS sauf la premiere qui bouge et sauf la derniere qui va disparaitre lors du mouvement
     // SAUF si on vient de gober un truc // TODO peut etre a code peut etre non pertinent
@@ -251,16 +272,33 @@ class Computer {
   }
 
   static Dir getDirection(Snake s, PowerUp p, ForbiddenPoints forbiddenPoints) {
-    if (s.head.x < p.x && canGo(s, RELATIF_RIGHT, forbiddenPoints)) return Dir.RIGHT;
-    if (s.head.x > p.x && canGo(s, RELATIF_LEFT, forbiddenPoints)) return Dir.LEFT;
-    if (s.head.y < p.y && canGo(s, RELATIF_DOWN, forbiddenPoints)) return Dir.DOWN;
-    if (s.head.y > p.y && canGo(s, RELATIF_UP, forbiddenPoints)) return Dir.UP;
+    if (s.head.x < p.x && canGo(s, Fix.RELATIF_RIGHT, forbiddenPoints)) return Dir.RIGHT;
+    if (s.head.x > p.x && canGo(s, Fix.RELATIF_LEFT, forbiddenPoints)) return Dir.LEFT;
+    if (s.head.y > p.y && canGo(s, Fix.RELATIF_UP, forbiddenPoints)) return Dir.UP;
+    if (s.head.y < p.y && canGo(s, Fix.RELATIF_DOWN, forbiddenPoints)) return Dir.DOWN;
+
+    if (s.head.y > p.y && canGo(s, Fix.RELATIF_UP, forbiddenPoints)) return Dir.UP;
+    if (s.head.y < p.y && canGo(s, Fix.RELATIF_DOWN, forbiddenPoints)) return Dir.DOWN;
+    if (s.head.x < p.x && canGo(s, Fix.RELATIF_RIGHT, forbiddenPoints)) return Dir.RIGHT;
+    if (s.head.x > p.x && canGo(s, Fix.RELATIF_LEFT, forbiddenPoints)) return Dir.LEFT;
+
+    if (s.head.x > p.x && canGo(s, Fix.RELATIF_LEFT, forbiddenPoints)) return Dir.LEFT;
+    if (s.head.y > p.y && canGo(s, Fix.RELATIF_UP, forbiddenPoints)) return Dir.UP;
+    if (s.head.x < p.x && canGo(s, Fix.RELATIF_RIGHT, forbiddenPoints)) return Dir.RIGHT;
+    if (s.head.y < p.y && canGo(s, Fix.RELATIF_DOWN, forbiddenPoints)) return Dir.DOWN;
 
     // on a tout fait mais on etait forbidden : on assoupli les regles
-    if (canGo(s, RELATIF_RIGHT, forbiddenPoints)) return Dir.RIGHT;
-    if (canGo(s, RELATIF_LEFT, forbiddenPoints)) return Dir.LEFT;
-    if (canGo(s, RELATIF_UP, forbiddenPoints)) return Dir.UP;
-    if (canGo(s, RELATIF_DOWN, forbiddenPoints)) return Dir.DOWN;
+    /* ca couvre ce cas : le s veut "monter" pour le p
+       p
+
+      ##
+      ssss
+      ##
+    */
+    if (canGo(s, Fix.RELATIF_RIGHT, forbiddenPoints)) return Dir.RIGHT;
+    if (canGo(s, Fix.RELATIF_LEFT, forbiddenPoints)) return Dir.LEFT;
+    if (canGo(s, Fix.RELATIF_UP, forbiddenPoints)) return Dir.UP;
+    if (canGo(s, Fix.RELATIF_DOWN, forbiddenPoints)) return Dir.DOWN;
     return Dir.UP;
   }
 }
@@ -318,6 +356,7 @@ class Player {
     while (loop < 250) {
       PowerUp[] powerups = PowerUp.builds(in);
       Snake[] snakes = Snake.builds(in, myIds);
+      forbiddenPoints.restartWithSnakes(snakes);
       // for (Snake s : snakes) T.d(s);
       // for (PowerUp p : powerups) T.d(p);
       // T.d("");
@@ -327,8 +366,15 @@ class Player {
       for (Snake s : snakes) {
         if (!s.isMine) continue;
         PowerUp closest = Computer.closestPowerUp(powerups, s);
-        T.d("closest " + closest + " of " + s);
+        // T.d("closest " + closest + " of " + s);
+
         Dir dir = Computer.getDirection(s, closest, forbiddenPoints);
+        forbiddenPoints.add(Point.move(s.head, dir));
+        // si on est pas a 1 du bonus, on supprime la derniere partie qui avance
+        if (Point.distance(closest, s.head) != 1) {
+          forbiddenPoints.remove(s.getLastPart());
+          // } else {
+        }
         mouve.append(s.id);
         mouve.append(" ");
         mouve.append(dir.name());
