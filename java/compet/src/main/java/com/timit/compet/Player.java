@@ -144,7 +144,7 @@ class ForbiddenPoints {
     for (Snake s : snakes) {
       change.add(s.head);
       for (Point p : s.parts) change.add(p);
-      // change.add(s.tail); // non, pas la queue, forte chance qu elle bouge
+      change.add(s.tail);
     }
   }
 
@@ -187,10 +187,6 @@ class Snake {
     this.head = head;
     this.parts = parts;
     this.tail = tail;
-  }
-
-  Point getLastPart() {
-    return parts[parts.length - 1];
   }
 
   public String toString() {
@@ -356,7 +352,7 @@ class Player {
         // si on est pas a 1 du bonus, on supprime la derniere partie qui avance
         // en gros la queue n est plus un point interdit car elle va avancer
         if (Point.distance(closest, s.head) != 1) {
-          forbiddenPoints.remove(s.getLastPart());
+          forbiddenPoints.remove(s.tail);
         }
         resultat.append(s.id + " " + Point.name(dir) + ";");
       }
