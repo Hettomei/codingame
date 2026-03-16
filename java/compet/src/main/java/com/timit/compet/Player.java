@@ -303,6 +303,7 @@ class Computer {
     for (PowerUp powerup : powerups) {
       if (isBanned(snake, powerup)) continue;
       if (!isAccessible(powerup, snake, board)) {
+        // TODO, 5 , 10 ou 15 ?
         bans.add(new Ban(10, snake, powerup));
         continue;
       }
@@ -409,13 +410,13 @@ class Player {
     Set<Integer> myIds;
     Set<Integer> opponentIds;
 
-    if (myId == 0) {
-      myIds = getIds(snakePerPlayer, in);
-      opponentIds = getIds(snakePerPlayer, in);
-    } else {
-      opponentIds = getIds(snakePerPlayer, in);
-      myIds = getIds(snakePerPlayer, in);
-    }
+    // if (myId == 0) {
+    myIds = getIds(snakePerPlayer, in);
+    opponentIds = getIds(snakePerPlayer, in);
+    // } else {
+    //   opponentIds = getIds(snakePerPlayer, in);
+    // myIds = getIds(snakePerPlayer, in);
+    // }
 
     int loop = 0;
     while (loop < 250) {
