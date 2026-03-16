@@ -16,11 +16,11 @@ class PointTest {
   @Test
   void constructorAddPointsTest() {
     Point a = new Point(3, 5);
-    assertEquals(new Point(a, Fix.RELATIF_UP), new Point(3, 4));
+    assertEquals(new Point(a, Point.UP), new Point(3, 4));
 
     // La somme de tous fait 0
-    Point b = new Point(Fix.RELATIF_UP, Fix.RELATIF_DOWN);
-    Point c = new Point(Fix.RELATIF_LEFT, Fix.RELATIF_RIGHT);
+    Point b = new Point(Point.UP, Point.DOWN);
+    Point c = new Point(Point.LEFT, Point.RIGHT);
     assertEquals(new Point(0, 0), new Point(b, c));
   }
 
