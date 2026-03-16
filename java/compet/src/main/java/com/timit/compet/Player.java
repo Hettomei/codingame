@@ -145,9 +145,10 @@ class ForbiddenPoints {
     for (Snake s : snakes) {
       change.add(s.head);
       for (Point p : s.parts) change.add(p);
-      PowerUp closest = Computer.closestPowerUp(powerups, s);
-      // Si la tete est a 1 du plus proche, alors ajouter la queue
-      if (Point.distance(s.head, closest) == 1) change.add(s.tail);
+      int distance = Computer.closestDistance(powerups, s);
+      // Si la tete est a 1 du plus proche, alors il y a des chance qu il va le bouffer
+      // donc ajouter la queue pour pas taper dedans
+      if (distance == 1) change.add(s.tail);
     }
   }
 
@@ -197,6 +198,16 @@ class Snake {
     return "Snake" + " " + mmine + " " + id + " " + head + Arrays.toString(parts) + tail;
   }
 
+  boolean isToutDroitVersLeHaut() {
+    Point next = head;
+    for (Point part : parts) {
+      next = Point.move(next, Point.DOWN);
+      if (!next.equals(part)) return false;
+    }
+    next = Point.move(next, Point.DOWN);
+    return next.equals(tail);
+  }
+
   static Snake[] builds(Scanner in, Set<Integer> myIds) {
     int count = in.nextInt();
     Snake[] snakes = new Snake[count];
@@ -218,13 +229,64 @@ class Snake {
   }
 }
 
+class Ban {
+  int counter;
+  int snakeId;
+  PowerUp powerup;
+
+  Ban(int c, Snake s, PowerUp p) {
+    counter = c;
+    snakeId = s.id;
+    powerup = p;
+  }
+}
+
 class Computer {
   static Random r = new Random();
+  static List<Ban> bans = new ArrayList();
 
-  static PowerUp closestPowerUp(PowerUp[] powerups, Snake snake) {
+  static int closestDistance(PowerUp[] powerups, Snake snake) {
+    int max_distance = Point.distance(snake.head, powerups[0]);
+    for (PowerUp powerup : powerups) {
+      int d = Point.distance(snake.head, powerup);
+      if (d < max_distance) {
+        max_distance = d;
+      }
+    }
+    return max_distance;
+  }
+
+  // Exclure un powerup :
+  // si il est n case en haut du vide
+  // ne pas le prendre
+  static boolean isAccessible(PowerUp powerup, Snake snake, Board board) {
+    Point head = snake.head;
+
+    // le serpent est au dessus ou meme niveau, pas de risque
+    if (head.y <= powerup.y) return true;
+    // ils ne sont pas aligné, pas de risque
+    if (head.x != powerup.x) return true;
+    // il y a qu une case d ecart en haut, on peut l atteindre
+    Point next = Point.move(head, Point.UP);
+    if (next.equals(powerup)) return true;
+
+    // Donc la
+    // ils sont aligné, et le serpent est en dessous,
+    // alors si il est tout droit vers le haut, c est mort
+    return !snake.isToutDroitVersLeHaut();
+  }
+
+  static PowerUp closestPowerUp(PowerUp[] powerups, Snake snake, Board board) {
     PowerUp closest = powerups[0];
     int max_distance = Point.distance(snake.head, closest);
     for (PowerUp powerup : powerups) {
+      if (isBanned(powerup, snake)) continue;
+      if (!isAccessible(powerup, snake, board)) {
+        bans.add(new Ban(10, snake, powerup));
+        continue;
+      }
+
+      // On peut l atteindre, on calcul la distance
       int d = Point.distance(snake.head, powerup);
       if (d < max_distance) {
         max_distance = d;
@@ -343,7 +405,7 @@ class Player {
       StringBuilder resultat = new StringBuilder();
       for (Snake s : snakes) {
         if (!s.isMine) continue;
-        PowerUp closest = Computer.closestPowerUp(powerups, s);
+        PowerUp closest = Computer.closestPowerUp(powerups, s, board);
 
         Point dir = Computer.getDirection(s, closest, forbiddenPoints);
         Point newHead = Point.move(s.head, dir);
