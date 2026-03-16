@@ -77,6 +77,7 @@ class Point {
   static Point RIGHT = new Point(1, 0);
   static Point UP = new Point(0, -1);
   static Point DOWN = new Point(0, 1);
+  static Point WAIT = new Point(0, 0);
 
   int x;
   int y;
@@ -109,7 +110,8 @@ class Point {
     if (p.equals(UP)) return "UP";
     if (p.equals(DOWN)) return "DOWN";
     if (p.equals(LEFT)) return "LEFT";
-    return "RIGHT";
+    if (p.equals(RIGHT)) return "RIGHT";
+    return "WAIT";
   }
 
   public String toString() {
@@ -139,12 +141,14 @@ class ForbiddenPoints {
     change = new HashSet<>();
   }
 
-  void restartWithSnakes(Snake... snakes) {
+  void restartWithSnakes(Snake[] snakes, PowerUp[] powerups) {
     change.clear();
     for (Snake s : snakes) {
       change.add(s.head);
       for (Point p : s.parts) change.add(p);
-      change.add(s.tail);
+      PowerUp closest = Computer.closestPowerUp(powerups, s);
+      // Si la tete est a 1 du plus proche, alors ajouter la queue
+      if (Point.distance(s.head, closest) == 1) change.add(s.tail);
     }
   }
 
@@ -216,6 +220,7 @@ class Snake {
 }
 
 class Computer {
+  static Random r = new Random();
 
   static PowerUp closestPowerUp(PowerUp[] powerups, Snake snake) {
     PowerUp closest = powerups[0];
@@ -243,8 +248,7 @@ class Computer {
   */
   static boolean canGo(Snake s, Point relative, ForbiddenPoints forbiddenPoints) {
     // TOUS sauf la premiere qui bouge et sauf la derniere qui va disparaitre lors du mouvement
-    // SAUF si on vient de gober un truc // TODO peut etre a code peut etre non pertinent
-    Point nextPosition = new Point(s.head, relative);
+    Point nextPosition = Point.move(s.head, relative);
     for (Point part : s.parts) {
       if (part.equals(nextPosition)) return false;
     }
@@ -252,22 +256,14 @@ class Computer {
   }
 
   static Point getDirection(Snake s, PowerUp p, ForbiddenPoints forbiddenPoints) {
-    if (s.head.x < p.x && canGo(s, Point.RIGHT, forbiddenPoints)) return Point.RIGHT;
-    if (s.head.x > p.x && canGo(s, Point.LEFT, forbiddenPoints)) return Point.LEFT;
+    Point head = s.head;
+    // si il veut aller a droite, mais que son corps est a droite, monter
+    if (head.x < p.x && canGo(s, Point.RIGHT, forbiddenPoints)) return Point.RIGHT;
+    if (head.x > p.x && canGo(s, Point.LEFT, forbiddenPoints)) return Point.LEFT;
+    if (head.y > p.y && canGo(s, Point.UP, forbiddenPoints)) return Point.UP;
+    if (head.y < p.y && canGo(s, Point.DOWN, forbiddenPoints)) return Point.DOWN;
     // Le UP, ajouter la condition "si rien en dessous, ne pas faire" mais ca marche pas tjrs.... il
     // peut y avoir un block en plein milieu du worms. Donc non trivial
-    if (s.head.y > p.y && canGo(s, Point.UP, forbiddenPoints)) return Point.UP;
-    if (s.head.y < p.y && canGo(s, Point.DOWN, forbiddenPoints)) return Point.DOWN;
-
-    if (s.head.y > p.y && canGo(s, Point.UP, forbiddenPoints)) return Point.UP;
-    if (s.head.y < p.y && canGo(s, Point.DOWN, forbiddenPoints)) return Point.DOWN;
-    if (s.head.x < p.x && canGo(s, Point.RIGHT, forbiddenPoints)) return Point.RIGHT;
-    if (s.head.x > p.x && canGo(s, Point.LEFT, forbiddenPoints)) return Point.LEFT;
-
-    if (s.head.x > p.x && canGo(s, Point.LEFT, forbiddenPoints)) return Point.LEFT;
-    if (s.head.y > p.y && canGo(s, Point.UP, forbiddenPoints)) return Point.UP;
-    if (s.head.x < p.x && canGo(s, Point.RIGHT, forbiddenPoints)) return Point.RIGHT;
-    if (s.head.y < p.y && canGo(s, Point.DOWN, forbiddenPoints)) return Point.DOWN;
 
     // on a tout fait mais on etait forbidden : on assoupli les regles
     /* ca couvre ce cas : le s veut "monter" pour le p
@@ -277,13 +273,16 @@ class Computer {
       ssss                 <ssss   p
       ##
     */
-    // TODO, si il part a droit a l infinie, le stopper
-    // TODO, si il up et tombe dans le vide, ne pas up
-    if (canGo(s, Point.RIGHT, forbiddenPoints)) return Point.RIGHT;
-    if (canGo(s, Point.LEFT, forbiddenPoints)) return Point.LEFT;
-    if (canGo(s, Point.UP, forbiddenPoints)) return Point.UP;
-    if (canGo(s, Point.DOWN, forbiddenPoints)) return Point.DOWN;
-    return Point.UP;
+
+    List<Point> choices = new ArrayList();
+    if (canGo(s, Point.UP, forbiddenPoints)) choices.add(Point.UP);
+    if (canGo(s, Point.DOWN, forbiddenPoints)) choices.add(Point.DOWN);
+    if (canGo(s, Point.LEFT, forbiddenPoints)) choices.add(Point.LEFT);
+    if (canGo(s, Point.RIGHT, forbiddenPoints)) choices.add(Point.RIGHT);
+    if (choices.size() == 0) return Point.WAIT;
+
+    // int r1 = r.nextInt(1000); // Generate random integers in range 0 to 999
+    return choices.get(r.nextInt(choices.size()));
   }
 }
 
@@ -340,7 +339,7 @@ class Player {
     while (loop < 250) {
       PowerUp[] powerups = PowerUp.builds(in);
       Snake[] snakes = Snake.builds(in, myIds);
-      forbiddenPoints.restartWithSnakes(snakes);
+      forbiddenPoints.restartWithSnakes(snakes, powerups);
 
       StringBuilder resultat = new StringBuilder();
       for (Snake s : snakes) {
@@ -348,12 +347,8 @@ class Player {
         PowerUp closest = Computer.closestPowerUp(powerups, s);
 
         Point dir = Computer.getDirection(s, closest, forbiddenPoints);
-        forbiddenPoints.add(Point.move(s.head, dir));
-        // si on est pas a 1 du bonus, on supprime la derniere partie qui avance
-        // en gros la queue n est plus un point interdit car elle va avancer
-        if (Point.distance(closest, s.head) != 1) {
-          forbiddenPoints.remove(s.tail);
-        }
+        Point newHead = Point.move(s.head, dir);
+        forbiddenPoints.add(newHead);
         resultat.append(s.id + " " + Point.name(dir) + ";");
       }
       T.p(resultat);
