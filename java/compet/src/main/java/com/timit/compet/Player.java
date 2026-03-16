@@ -232,12 +232,23 @@ class Snake {
 class Ban {
   int counter;
   int snakeId;
+  boolean enabled;
   PowerUp powerup;
 
   Ban(int c, Snake s, PowerUp p) {
     counter = c;
     snakeId = s.id;
     powerup = p;
+    enabled = true;
+  }
+
+  boolean stillBan(Snake s, PowerUp p) {
+    return enabled && snakeId == s.id && powerup.equals(p);
+  }
+
+  void lessOrDisable() {
+    counter--;
+    if (counter < 1) enabled = false;
   }
 }
 
@@ -276,11 +287,21 @@ class Computer {
     return !snake.isToutDroitVersLeHaut();
   }
 
+  static boolean isBanned(Snake snake, PowerUp powerup) {
+    for (Ban ban : bans) {
+      if (ban.stillBan(snake, powerup)) {
+        ban.lessOrDisable();
+        return true;
+      }
+    }
+    return false;
+  }
+
   static PowerUp closestPowerUp(PowerUp[] powerups, Snake snake, Board board) {
     PowerUp closest = powerups[0];
     int max_distance = Point.distance(snake.head, closest);
     for (PowerUp powerup : powerups) {
-      if (isBanned(powerup, snake)) continue;
+      if (isBanned(snake, powerup)) continue;
       if (!isAccessible(powerup, snake, board)) {
         bans.add(new Ban(10, snake, powerup));
         continue;
