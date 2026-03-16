@@ -77,7 +77,6 @@ class Point {
   static Point RIGHT = new Point(1, 0);
   static Point UP = new Point(0, -1);
   static Point DOWN = new Point(0, 1);
-  static Point WAIT = new Point(0, 0);
 
   int x;
   int y;
@@ -111,7 +110,7 @@ class Point {
     if (p.equals(DOWN)) return "DOWN";
     if (p.equals(LEFT)) return "LEFT";
     if (p.equals(RIGHT)) return "RIGHT";
-    return "WAIT";
+    return "RIGHT";
   }
 
   public String toString() {
@@ -279,7 +278,7 @@ class Computer {
     if (canGo(s, Point.DOWN, forbiddenPoints)) choices.add(Point.DOWN);
     if (canGo(s, Point.LEFT, forbiddenPoints)) choices.add(Point.LEFT);
     if (canGo(s, Point.RIGHT, forbiddenPoints)) choices.add(Point.RIGHT);
-    if (choices.size() == 0) return Point.WAIT;
+    if (choices.size() == 0) return Point.UP;
 
     // int r1 = r.nextInt(1000); // Generate random integers in range 0 to 999
     return choices.get(r.nextInt(choices.size()));
