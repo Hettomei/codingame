@@ -340,11 +340,13 @@ class Computer {
 
   static Point getDirection(Snake s, PowerUp p, ForbiddenPoints forbiddenPoints) {
     Point head = s.head;
+    List<Point> choices = new ArrayList();
     // si il veut aller a droite, mais que son corps est a droite, monter
-    if (head.x < p.x && canGo(s, Point.RIGHT, forbiddenPoints)) return Point.RIGHT;
-    if (head.x > p.x && canGo(s, Point.LEFT, forbiddenPoints)) return Point.LEFT;
-    if (head.y > p.y && canGo(s, Point.UP, forbiddenPoints)) return Point.UP;
-    if (head.y < p.y && canGo(s, Point.DOWN, forbiddenPoints)) return Point.DOWN;
+    if (head.x < p.x && canGo(s, Point.RIGHT, forbiddenPoints)) choices.add(Point.RIGHT);
+    if (head.x > p.x && canGo(s, Point.LEFT, forbiddenPoints)) choices.add(Point.LEFT);
+    if (head.y > p.y && canGo(s, Point.UP, forbiddenPoints)) choices.add(Point.UP);
+    if (head.y < p.y && canGo(s, Point.DOWN, forbiddenPoints)) choices.add(Point.DOWN);
+    if (choices.size() != 0) return choices.get(r.nextInt(choices.size()));
     // Le UP, ajouter la condition "si rien en dessous, ne pas faire" mais ca marche pas tjrs.... il
     // peut y avoir un block en plein milieu du worms. Donc non trivial
 
@@ -357,7 +359,6 @@ class Computer {
       ##
     */
 
-    List<Point> choices = new ArrayList();
     if (canGo(s, Point.UP, forbiddenPoints)) choices.add(Point.UP);
     if (canGo(s, Point.DOWN, forbiddenPoints)) choices.add(Point.DOWN);
     if (canGo(s, Point.LEFT, forbiddenPoints)) choices.add(Point.LEFT);
