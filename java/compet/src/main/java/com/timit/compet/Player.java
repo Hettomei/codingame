@@ -274,6 +274,7 @@ class Computer {
   static Dir getDirection(Snake s, PowerUp p, ForbiddenPoints forbiddenPoints) {
     if (s.head.x < p.x && canGo(s, Fix.RELATIF_RIGHT, forbiddenPoints)) return Dir.RIGHT;
     if (s.head.x > p.x && canGo(s, Fix.RELATIF_LEFT, forbiddenPoints)) return Dir.LEFT;
+// Le UP, ajouter la condition "si rien en dessous, ne pas faire" mais ca marche pas tjrs.... il peut y avoir un block en plein milieu du worms. Donc non trivial
     if (s.head.y > p.y && canGo(s, Fix.RELATIF_UP, forbiddenPoints)) return Dir.UP;
     if (s.head.y < p.y && canGo(s, Fix.RELATIF_DOWN, forbiddenPoints)) return Dir.DOWN;
 
@@ -383,6 +384,7 @@ class Player {
       T.p(mouve);
 
       // TODO, si il part a droit a l infinie, le stopper
+      // TODO, si il up et tombe dans le vide, ne pas up
       loop++;
     }
     in.close();
