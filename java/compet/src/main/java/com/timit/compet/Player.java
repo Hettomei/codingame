@@ -288,7 +288,7 @@ class Computer {
   }
 
   // Exclure un powerup :
-  // si il est n case en haut du vide
+  // si il est n case loin de toute plateforme
   // ne pas le prendre
   static boolean isAccessible(PowerUp powerup, Snake snake, Board board) {
     Point head = snake.head;
@@ -321,12 +321,9 @@ class Computer {
     PowerUp closest = powerups[0];
     int max_distance = Point.distance(snake.head, closest);
     for (PowerUp powerup : powerups) {
-      if (isBanned(snake, powerup)) continue;
-      if (!isAccessible(powerup, snake, board)) {
-        // TODO, 5 , 10 ou 15 ?
-        bans.add(new Ban(10, snake, powerup));
-        continue;
-      }
+      // if (!isAccessible(powerup, snake, board)) {
+      //   continue;
+      // }
 
       // On peut l atteindre, on calcul la distance
       int d = Point.distance(snake.head, powerup);
@@ -453,6 +450,10 @@ class Player {
         Point dir = Computer.getDirection(s, closest, forbiddenPoints);
         Point newHead = Point.move(s.head, dir);
         forbiddenPoints.add(newHead);
+        // On va bouger. Sans manger, donc on libere la place de la queue
+        if (!newHead.equals(closest)) {
+          forbiddenPoints.remove(s.tail);
+        }
         resultat.append(s.id + " " + Point.name(dir) + ";");
       }
       T.p(resultat);
@@ -462,3 +463,11 @@ class Player {
     in.close();
   }
 }
+/* TODO
+tout ce qui est cul de sac, on degage :
+
+###  ##  ##   # #
+# #   #  #    ###
+     ##  ##
+
+*/
