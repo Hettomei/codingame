@@ -14,10 +14,10 @@ class ForbiddenPointsTest {
         new Level[][] {
           {Level.VIDE, Level.MUR, Level.VIDE},
           {Level.VIDE, Level.MUR, Level.VIDE},
-          {Level.VIDE, Level.MUR, Level.MUR},
+          {Level.VIDE, Level.MUR, Level.VIDE},
         };
     // 1,0 1,1 1,2 2,2
-    Board board = new Board(level);
+    Board board = new Board(level, 3, 3);
     fp.addImmuable(board);
 
     T.d(fp.immuable);
@@ -31,8 +31,23 @@ class ForbiddenPointsTest {
     assertFalse(fp.isAvailable(new Point(1, 1)));
     assertTrue(fp.isAvailable(new Point(2, 1)));
     // ligne 3
-    assertTrue(fp.isAvailable(new Point(0, 2)));
+    // en fait, le sol est tjrs interdit
+    assertFalse(fp.isAvailable(new Point(0, 2)));
     assertFalse(fp.isAvailable(new Point(1, 2)));
     assertFalse(fp.isAvailable(new Point(2, 2)));
+
+    // colonne tout a gauche, toujours interdite
+    assertFalse(fp.isAvailable(new Point(-1, -2)));
+    assertFalse(fp.isAvailable(new Point(-1, -1)));
+    assertFalse(fp.isAvailable(new Point(-1, 0)));
+    assertFalse(fp.isAvailable(new Point(-1, 1)));
+    assertFalse(fp.isAvailable(new Point(-1, 2)));
+
+    // colonne tout a droite, toujours interdite
+    assertFalse(fp.isAvailable(new Point(3, -2)));
+    assertFalse(fp.isAvailable(new Point(3, -1)));
+    assertFalse(fp.isAvailable(new Point(3, 0)));
+    assertFalse(fp.isAvailable(new Point(3, 1)));
+    assertFalse(fp.isAvailable(new Point(3, 2)));
   }
 }

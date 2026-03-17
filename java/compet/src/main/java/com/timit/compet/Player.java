@@ -29,8 +29,13 @@ class Board {
 
   Level[][] level;
 
-  Board(Level[][] level) {
+  int width;
+  int height;
+
+  Board(Level[][] level, int width, int height) {
     this.level = level;
+    this.width = width;
+    this.height = height;
   }
 
   static Board build(Scanner in) {
@@ -53,7 +58,7 @@ class Board {
         col++;
       }
     }
-    return new Board(level);
+    return new Board(level, width, height);
   }
 
   public String toString() {
@@ -169,6 +174,21 @@ class ForbiddenPoints {
         x++;
       }
       y++;
+    }
+
+    // interdit d aller dans le sol si le sol ressemble a :
+    // ###  ##   ####  ##  #####
+    for (int x = 0; x < board.width; x++) {
+      immuable.add(new Point(x, board.height - 1));
+    }
+
+    // interdit d aller tout a gauche
+    // interdit d aller tout a droite
+    // et on fait depasser de 5
+    // ###  ##   ####  ##  #####
+    for (int yy = -5; yy <= board.height; yy++) {
+      immuable.add(new Point(-1, yy));
+      immuable.add(new Point(board.width, yy));
     }
   }
 
