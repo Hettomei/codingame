@@ -357,13 +357,12 @@ class Computer {
 
   static Point getDirection(Snake s, PowerUp p, ForbiddenPoints forbiddenPoints) {
     Point head = s.head;
-    List<Point> choices = new ArrayList();
     // si il veut aller a droite, mais que son corps est a droite, monter
-    if (head.x < p.x && canGo(s, Point.RIGHT, forbiddenPoints)) choices.add(Point.RIGHT);
-    if (head.x > p.x && canGo(s, Point.LEFT, forbiddenPoints)) choices.add(Point.LEFT);
-    if (head.y > p.y && canGo(s, Point.UP, forbiddenPoints)) choices.add(Point.UP);
-    if (head.y < p.y && canGo(s, Point.DOWN, forbiddenPoints)) choices.add(Point.DOWN);
-    if (choices.size() != 0) return choices.get(r.nextInt(choices.size()));
+    if (head.x < p.x && canGo(s, Point.RIGHT, forbiddenPoints)) return Point.RIGHT;
+    if (head.x > p.x && canGo(s, Point.LEFT, forbiddenPoints)) return Point.LEFT;
+    if (head.y > p.y && canGo(s, Point.UP, forbiddenPoints)) return Point.UP;
+    if (head.y < p.y && canGo(s, Point.DOWN, forbiddenPoints)) return Point.DOWN;
+
     // Le UP, ajouter la condition "si rien en dessous, ne pas faire" mais ca marche pas tjrs.... il
     // peut y avoir un block en plein milieu du worms. Donc non trivial
 
@@ -376,10 +375,12 @@ class Computer {
       ##
     */
 
+    List<Point> choices = new ArrayList();
     if (canGo(s, Point.UP, forbiddenPoints)) choices.add(Point.UP);
     if (canGo(s, Point.DOWN, forbiddenPoints)) choices.add(Point.DOWN);
     if (canGo(s, Point.LEFT, forbiddenPoints)) choices.add(Point.LEFT);
     if (canGo(s, Point.RIGHT, forbiddenPoints)) choices.add(Point.RIGHT);
+		 // on peut rien faire ? on va au pif ? // TODO a reflechir
     if (choices.size() == 0) return Point.UP;
 
     // int r1 = r.nextInt(1000); // Generate random integers in range 0 to 999
@@ -446,6 +447,7 @@ class Player {
       for (Snake s : snakes) {
         if (!s.isMine) continue;
         PowerUp closest = Computer.closestPowerUp(powerups, s, board);
+        // Memory m = memories.get(s.id);
 
         Point dir = Computer.getDirection(s, closest, forbiddenPoints);
         Point newHead = Point.move(s.head, dir);
