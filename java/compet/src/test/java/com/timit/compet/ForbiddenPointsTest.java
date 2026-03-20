@@ -3,6 +3,7 @@ package com.timit.compet;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.*;
 import org.junit.jupiter.api.Test;
 
 class ForbiddenPointsTest {
@@ -10,14 +11,12 @@ class ForbiddenPointsTest {
   @Test
   void isAvailable() {
     ForbiddenPoints fp = new ForbiddenPoints();
-    Level[][] level =
-        new Level[][] {
-          {Level.VIDE, Level.MUR, Level.VIDE},
-          {Level.VIDE, Level.MUR, Level.VIDE},
-          {Level.VIDE, Level.MUR, Level.VIDE},
-        };
     // 1,0 1,1 1,2 2,2
-    Board board = new Board(level, 3, 3);
+    Set<Point> murs = new HashSet();
+    murs.add(new Point(1, 0));
+    murs.add(new Point(1, 1));
+    murs.add(new Point(1, 2));
+    Board board = new Board(murs, 3, 3);
     fp.addImmuable(board);
 
     T.d(fp.immuable);

@@ -27,13 +27,13 @@ enum Level {
 
 class Board {
 
-  Level[][] level;
+  Set<Point> murs;
 
   int width;
   int height;
 
-  Board(Level[][] level, int width, int height) {
-    this.level = level;
+  Board(Set<Point> murs, int width, int height) {
+    this.murs = murs;
     this.width = width;
     this.height = height;
   }
@@ -41,35 +41,32 @@ class Board {
   static Board build(Scanner in) {
     int width = in.nextInt();
     int height = in.nextInt();
-    Level[][] level = new Level[height][width];
+    Set<Point> murs = new HashSet();
     in.nextLine(); // utile pour passer à la suite
     for (int row = 0; row < height; row++) {
-      int j;
       String rawLine = in.nextLine();
       T.d(rawLine);
-      String[] line = rawLine.split("");
       int col = 0;
-      for (String s : line) {
-        if (s.equals(".")) {
-          level[row][col] = Level.VIDE;
-        } else if (s.equals("#")) {
-          level[row][col] = Level.MUR;
+      for (String s : rawLine.split("")) {
+        if (s.equals("#")) {
+          murs.add(new Point(col, row));
         }
         col++;
       }
     }
-    return new Board(level, width, height);
+    return new Board(murs, width, height);
   }
 
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    for (int row = 0; row < level.length; row++) {
-      for (int col = 0; col < level[row].length; col++) {
-        sb.append(col);
-        sb.append(",");
-        sb.append(row);
-        sb.append(level[row][col]);
-        sb.append(" ");
+    sb.append("\n");
+    for (int row = 0; row < height; row++) {
+      for (int col = 0; col < width; col++) {
+        if (murs.contains(new Point(col, row))) {
+          sb.append("#");
+        } else {
+          sb.append(" ");
+        }
       }
       sb.append("\n");
     }
@@ -141,8 +138,8 @@ class ForbiddenPoints {
   Set<Point> change;
 
   ForbiddenPoints() {
-    immuable = new HashSet<>();
-    change = new HashSet<>();
+    immuable = new HashSet();
+    change = new HashSet();
   }
 
   void restartWithSnakes(Snake[] snakes, PowerUp[] powerups) {
@@ -166,15 +163,7 @@ class ForbiddenPoints {
   }
 
   void addImmuable(Board board) {
-    int y = 0;
-    for (Level[] lineLevel : board.level) {
-      int x = 0;
-      for (Level level : lineLevel) {
-        if (level == Level.MUR) immuable.add(new Point(x, y));
-        x++;
-      }
-      y++;
-    }
+    immuable.addAll(board.murs);
 
     // interdit d aller dans le sol si le sol ressemble a :
     // ###  ##   ####  ##  #####
@@ -194,6 +183,22 @@ class ForbiddenPoints {
 
   boolean isAvailable(Point point) {
     return !immuable.contains(point) && !change.contains(point);
+  }
+
+  public String display(Board b) {
+    StringBuilder sb = new StringBuilder();
+    sb.append("\n");
+    for (int y = -8; y < b.height + 8; y++) {
+      for (int x = -8; x < b.width + 5; x++) {
+        if (immuable.contains(new Point(x, y))) {
+          sb.append("#");
+        } else {
+          sb.append(" ");
+        }
+      }
+      sb.append("\n");
+    }
+    return sb.toString();
   }
 }
 
@@ -293,6 +298,8 @@ class Computer {
   static boolean isAccessible(PowerUp powerup, Snake snake, Board board) {
     Point head = snake.head;
 
+    // powerup.isAwayFromAnyBlock
+
     // le serpent est au dessus ou meme niveau, pas de risque
     if (head.y <= powerup.y) return true;
     // ils ne sont pas aligné, pas de risque
@@ -357,11 +364,22 @@ class Computer {
 
   static Point getDirection(Snake s, PowerUp p, ForbiddenPoints forbiddenPoints) {
     Point head = s.head;
+    // si tu veux atteindre le truc, en priorité, monte
     // si il veut aller a droite, mais que son corps est a droite, monter
     if (head.x < p.x && canGo(s, Point.RIGHT, forbiddenPoints)) return Point.RIGHT;
+    if (head.x < p.x && canGo(s, Point.UP, forbiddenPoints)) return Point.UP;
+
+    // si tu veux atteindre le truc, en priorité, monte
     if (head.x > p.x && canGo(s, Point.LEFT, forbiddenPoints)) return Point.LEFT;
+    if (head.x > p.x && canGo(s, Point.UP, forbiddenPoints)) return Point.UP;
+
     if (head.y > p.y && canGo(s, Point.UP, forbiddenPoints)) return Point.UP;
+    if (head.y > p.y && canGo(s, Point.RIGHT, forbiddenPoints)) return Point.RIGHT;
+    if (head.y > p.y && canGo(s, Point.LEFT, forbiddenPoints)) return Point.LEFT;
+
     if (head.y < p.y && canGo(s, Point.DOWN, forbiddenPoints)) return Point.DOWN;
+    if (head.y < p.y && canGo(s, Point.RIGHT, forbiddenPoints)) return Point.RIGHT;
+    if (head.y < p.y && canGo(s, Point.LEFT, forbiddenPoints)) return Point.LEFT;
 
     // Le UP, ajouter la condition "si rien en dessous, ne pas faire" mais ca marche pas tjrs.... il
     // peut y avoir un block en plein milieu du worms. Donc non trivial
@@ -380,7 +398,7 @@ class Computer {
     if (canGo(s, Point.DOWN, forbiddenPoints)) choices.add(Point.DOWN);
     if (canGo(s, Point.LEFT, forbiddenPoints)) choices.add(Point.LEFT);
     if (canGo(s, Point.RIGHT, forbiddenPoints)) choices.add(Point.RIGHT);
-		 // on peut rien faire ? on va au pif ? // TODO a reflechir
+    // on peut rien faire ? on va au pif ? // TODO a reflechir
     if (choices.size() == 0) return Point.UP;
 
     // int r1 = r.nextInt(1000); // Generate random integers in range 0 to 999
@@ -411,7 +429,7 @@ class PowerUp extends Point {
 class Player {
 
   static Set<Integer> getIds(int n, Scanner in) {
-    Set<Integer> ids = new HashSet<Integer>();
+    Set<Integer> ids = new HashSet();
     for (int i = 0; i < n; i++) {
       ids.add(in.nextInt());
     }
@@ -424,6 +442,8 @@ class Player {
     int myId = in.nextInt();
     Board board = Board.build(in);
     forbiddenPoints.addImmuable(board);
+    T.d(board);
+    T.d(forbiddenPoints.display(board));
 
     int snakePerPlayer = in.nextInt();
     Set<Integer> myIds;
@@ -470,6 +490,4 @@ tout ce qui est cul de sac, on degage :
 
 ###  ##  ##   # #
 # #   #  #    ###
-     ##  ##
-
 */
