@@ -28,6 +28,7 @@ enum Level {
 class Board {
 
   Set<Point> murs;
+  Set<Point> enceinte;
 
   int width;
   int height;
@@ -36,6 +37,37 @@ class Board {
     this.murs = murs;
     this.width = width;
     this.height = height;
+    this.enceinte = new HashSet();
+  }
+
+  boolean isForbidden(int x, int y) {
+    Point p = new Point(x, y);
+    return murs.contains(p) || enceinte.contains(p);
+  }
+
+  boolean isAvailable(int x, int y) {
+    return isAvailable(new Point(x, y));
+  }
+
+  boolean isAvailable(Point p) {
+    return !murs.contains(p) && !enceinte.contains(p);
+  }
+
+  void buildEnceinte() {
+    // interdit d aller dans le sol si le sol ressemble a :
+    // ###  ##   ####  ##  #####
+    for (int x = -5; x < width + 5; x++) {
+      enceinte.add(new Point(x, height));
+    }
+
+    // interdit d aller tout a gauche
+    // interdit d aller tout a droite
+    // et on fait depasser de 5
+    // ###  ##   ####  ##  #####
+    // for (int y = -5; y <= height; y++) {
+    //   enceinte.add(new Point(-1, y));
+    //   enceinte.add(new Point(width, y));
+    // }
   }
 
   static Board build(Scanner in) {
@@ -60,8 +92,8 @@ class Board {
   public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append("\n");
-    for (int row = 0; row < height; row++) {
-      for (int col = 0; col < width; col++) {
+    for (int row = -4; row < height + 3; row++) {
+      for (int col = -4; col < width + 3; col++) {
         if (murs.contains(new Point(col, row))) {
           sb.append("#");
         } else {
@@ -134,11 +166,11 @@ class Point {
 }
 
 class ForbiddenPoints {
-  Set<Point> immuable;
+  Board board;
   Set<Point> change;
 
-  ForbiddenPoints() {
-    immuable = new HashSet();
+  ForbiddenPoints(Board board) {
+    this.board = board;
     change = new HashSet();
   }
 
@@ -162,35 +194,16 @@ class ForbiddenPoints {
     change.add(p);
   }
 
-  void addImmuable(Board board) {
-    immuable.addAll(board.murs);
-
-    // interdit d aller dans le sol si le sol ressemble a :
-    // ###  ##   ####  ##  #####
-    for (int x = 0; x < board.width; x++) {
-      immuable.add(new Point(x, board.height - 1));
-    }
-
-    // interdit d aller tout a gauche
-    // interdit d aller tout a droite
-    // et on fait depasser de 5
-    // ###  ##   ####  ##  #####
-    for (int yy = -5; yy <= board.height; yy++) {
-      immuable.add(new Point(-1, yy));
-      immuable.add(new Point(board.width, yy));
-    }
-  }
-
   boolean isAvailable(Point point) {
-    return !immuable.contains(point) && !change.contains(point);
+    return board.isAvailable(point) && !change.contains(point);
   }
 
   public String display(Board b) {
     StringBuilder sb = new StringBuilder();
     sb.append("\n");
-    for (int y = -8; y < b.height + 8; y++) {
-      for (int x = -8; x < b.width + 5; x++) {
-        if (immuable.contains(new Point(x, y))) {
+    for (int y = -2; y < b.height + 2; y++) {
+      for (int x = -5; x < b.width + 5; x++) {
+        if (change.contains(new Point(x, y))) {
           sb.append("#");
         } else {
           sb.append(" ");
@@ -437,13 +450,10 @@ class Player {
   }
 
   public static void main(String args[]) {
-    ForbiddenPoints forbiddenPoints = new ForbiddenPoints();
     Scanner in = new Scanner(System.in);
     int myId = in.nextInt();
     Board board = Board.build(in);
-    forbiddenPoints.addImmuable(board);
-    T.d(board);
-    T.d(forbiddenPoints.display(board));
+    ForbiddenPoints forbiddenPoints = new ForbiddenPoints(board);
 
     int snakePerPlayer = in.nextInt();
     Set<Integer> myIds;
