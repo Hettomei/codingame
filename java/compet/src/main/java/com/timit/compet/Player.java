@@ -33,8 +33,7 @@ class Board {
   }
 
   boolean isForbidden(int x, int y) {
-    Point p = new Point(x, y);
-    return murs.contains(p) || leSol.contains(p);
+    return !isAvailable(x, y);
   }
 
   boolean isAvailable(int x, int y) {
@@ -212,9 +211,8 @@ class ForbiddenPoints {
     newTurnForbidden.clear();
     newTurnCulDeSac.clear();
     for (Snake s : snakes) {
-      // Les miens auront un autre comportement
       newTurnForbidden.add(s.head);
-      for (Point p : s.parts) newTurnForbidden.add(p);
+      newTurnForbidden.addAll(s.getParts());
       // Si la tete est a 1 du plus proche,
       // alors il y a des chance qu il va le bouffer
       // donc ajouter la queue pour pas taper dedans
@@ -223,34 +221,9 @@ class ForbiddenPoints {
     // Maintenant qu'on a fait tout le newTurnForbidden.
     // on va tout parcourir, et interdir tous les cul de sac
 
-    // Toutes les cases ou on peut juste mettre la tete :
-    // C est un cul de sac !
-    int minX = findMinimalX();
-    int maxX = findMaximalX();
-    int minY = findMinimalY();
-    int maxY = findMaximalY();
-
-    for (int y = minY; y <= maxY; y++) {
-      for (int x = minX; x <= maxX; x++) {
-        Point aEvaluer = new Point(x, y);
-        if (isAvailableSansCulDeSac(aEvaluer)) {
-          if (caseLibreAutourSansCulDeSac(aEvaluer) <= 1) {
-            // Ajouter la logique de dire "si il y a MA tete, y a pas de probleme"
-            for (Snake s : snakes) {
-              if (s.getCount() <= 4) continue; // les petits, on s en fou
-              if (!s.isMine) {
-                // newTurnCulDeSac.add(aEvaluer);
-              }
-              // if (Point.distance(s.head())
-            }
-          }
-        }
-      }
+    for (Snake s : snakes) {
+      newTurnCulDeSac.addAll(s.listCulDeSac(board));
     }
-
-    // Bon... puisque c est mal codé : il y a des cul de sac qui ne devrait pas exister.
-    // Notamment, tous les "." a coté des tetes qui peuvent s en sortir
-
   }
 
   void remove(Point p) {
@@ -348,6 +321,7 @@ class ForbiddenPoints {
     // find minimal x, max x
     // find min y, max y
 
+    sb.append("\n");
     for (int y = minY; y <= maxY; y++) {
       for (int x = minX; x <= maxX; x++) {
 
@@ -389,6 +363,78 @@ class Snake {
 
   int getCount() {
     return 2 + parts.length;
+  }
+
+  boolean notPartOfMe(Point aEvaluer) {
+    return !partOfMe(aEvaluer);
+  }
+
+  boolean partOfMe(Point aEvaluer) {
+    return head.equals(aEvaluer) && tail.equals(aEvaluer) && getParts().contains(aEvaluer);
+  }
+
+  Set<Point> getParts() {
+    return new HashSet(Arrays.asList(parts));
+  }
+
+  // chez snake
+  boolean isAvailable(int x, int y, Board board) {
+    Point aEvaluer = new Point(x, y);
+    return board.isAvailable(aEvaluer)
+        && !head.equals(aEvaluer)
+        && !tail.equals(aEvaluer)
+        && !getParts().contains(aEvaluer);
+  }
+
+  // chez snake
+  boolean isCulDeSac(Point aEvaluer, Board board) {
+    int x = aEvaluer.x;
+    int y = aEvaluer.y;
+
+    int count = 0;
+    if (isAvailable(x - 1, y, board)) count++;
+    if (isAvailable(x + 1, y, board)) count++;
+    if (isAvailable(x, y - 1, board)) count++;
+    if (isAvailable(x, y + 1, board)) count++;
+
+    return count < 2;
+  }
+
+  void addToAvoidIfNeeded(Point aEvaluer, Board board, Set<Point> avoid) {
+    if (board.isAvailable(aEvaluer) && notPartOfMe(aEvaluer) && isCulDeSac(aEvaluer, board)) {
+      avoid.add(aEvaluer);
+    }
+  }
+
+  Set<Point> listCulDeSac(Board board) {
+    Set<Point> avoid = new HashSet();
+    // les petits miens, on s en fou
+    if (isMine && getCount() <= 4) return avoid;
+
+    // pour chaque partie existante, on regarde les 4 case autour.
+    // si une case est libre, on la compare au board
+    if (!isMine) {
+      // sans la tete quand c est le mien
+      addToAvoidIfNeeded(Point.move(head, Point.UP), board, avoid);
+      addToAvoidIfNeeded(Point.move(head, Point.DOWN), board, avoid);
+      addToAvoidIfNeeded(Point.move(head, Point.LEFT), board, avoid);
+      addToAvoidIfNeeded(Point.move(head, Point.RIGHT), board, avoid);
+    }
+
+    for (Point p : parts) {
+      addToAvoidIfNeeded(Point.move(p, Point.UP), board, avoid);
+      addToAvoidIfNeeded(Point.move(p, Point.DOWN), board, avoid);
+      addToAvoidIfNeeded(Point.move(p, Point.LEFT), board, avoid);
+      addToAvoidIfNeeded(Point.move(p, Point.RIGHT), board, avoid);
+    }
+
+    // tail, on fait pas ?
+    // addToAvoidIfNeeded(Point.move(tail, Point.UP), board, avoid);
+    // addToAvoidIfNeeded(Point.move(tail, Point.DOWN), board, avoid);
+    // addToAvoidIfNeeded(Point.move(tail, Point.LEFT), board, avoid);
+    // addToAvoidIfNeeded(Point.move(tail, Point.RIGHT), board, avoid);
+
+    return avoid;
   }
 
   static Snake[] builds(Scanner in, Set<Integer> myIds) {

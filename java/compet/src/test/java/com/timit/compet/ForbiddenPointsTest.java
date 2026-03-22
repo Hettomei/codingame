@@ -37,11 +37,11 @@ class ForbiddenPointsTest {
     murs.add(new Point(1, 2));
     Board board = new Board(murs, 3, 3);
     ForbiddenPoints fp = new ForbiddenPoints(board);
-    assertEquals("#\n" + "#\n" + "#\n", fp.toString());
+    assertEquals("\n" + "#\n" + "#\n" + "#\n", fp.toString());
 
     board.buildSol();
     assertEquals(
-        ""
+        "\n"
             + "      #      \n" //    ajout d un comme pour le linter
             + "      #      \n"
             + "      #      \n"
@@ -105,7 +105,7 @@ class ForbiddenPointsTest {
     ForbiddenPoints fp = new ForbiddenPoints(board);
 
     assertEquals(
-        ""
+        "\n"
             + "###  ##  ##  # #   ###\n" //    ajout d un comme pour le linter
             + "# #   #  #   ###   # #\n"
             + "     ##  ##        ###\n"
@@ -114,7 +114,7 @@ class ForbiddenPointsTest {
 
     board.buildSol();
     assertEquals(
-        ""
+        "\n"
             + "     ###  ##  ##  # #   ###     \n"
             + "     # #   #  #   ###   # #     \n"
             + "          ##  ##        ###     \n"
@@ -128,7 +128,7 @@ class ForbiddenPointsTest {
     // puis le contient
     assertTrue(fp.culDeSac.contains(new Point(1, 1)));
     assertEquals(
-        ""
+        "\n"
             + "     ###  ##  ##  #.#   ###     \n"
             + "     #.#  .#  #.  ###   #.#     \n"
             + "          ##  ##        ###     \n"
@@ -190,7 +190,7 @@ class ForbiddenPointsTest {
     ForbiddenPoints fp = new ForbiddenPoints(board);
     PowerUp[] powerups = new PowerUp[] {};
 
-    assertEquals("######\n", fp.toString());
+    assertEquals("\n######\n", fp.toString());
 
     Snake s;
     Point head;
@@ -223,7 +223,7 @@ class ForbiddenPointsTest {
     */
 
     assertEquals(
-        "" // pour le linter mec
+        "\n" // pour le linter mec
             + " sss  \n"
             + " s.s  \n"
             + "######\n",
@@ -257,22 +257,25 @@ class ForbiddenPointsTest {
     Snake myOponnent = new Snake(1, false, head, parts, tail);
     Snake[] snakes = new Snake[] {mySnake};
 
+    fp.buildCulDeSac();
     fp.newLoop(snakes, powerups);
     assertEquals(
-        "" // pour le linter mec
+        "\n" // pour le linter mec
             + " ##\n"
             + "s #\n"
+            + "s  \n"
+            + "s  \n"
             + "s  \n",
-        +"s  \n",
-        +"s  \n",
         fp.toString());
 
     snakes = new Snake[] {myOponnent};
     fp.newLoop(snakes, powerups);
     assertEquals(
-        "" // pour le linter mec
+        "\n" // pour le linter mec
             + " ##\n"
             + "s.#\n"
+            + "s  \n"
+            + "s  \n"
             + "s  \n",
         fp.toString());
   }
@@ -302,9 +305,10 @@ class ForbiddenPointsTest {
     Snake s = new Snake(1, true, head, parts, tail);
     Snake[] snakes = new Snake[] {s};
 
+    fp.buildCulDeSac();
     fp.newLoop(snakes, powerups);
     assertEquals(
-        "" // pour le linter mec
+        "\n" // pour le linter mec
             + "###\n"
             + "#.#\n"
             + " s \n"
@@ -336,21 +340,22 @@ class ForbiddenPointsTest {
     murs.add(new Point(7, 3));
     murs.add(new Point(5, 2));
     murs.add(new Point(6, 2));
-    Board board = new Board(murs, 8, 6);
-    ForbiddenPoints fp = new ForbiddenPoints(board);
+    Board board = new Board(murs, 10, 9);
     PowerUp[] powerups = new PowerUp[] {};
 
     Point head = new Point(3, 2);
     Point[] parts = new Point[] {new Point(3, 1), new Point(3, 0), new Point(2, 0)};
     Point tail = new Point(2, 1);
-    Snake s = new Snake(1, true, head, parts, tail);
-    Snake[] snakes = new Snake[] {s};
+    Snake mine = new Snake(1, true, head, parts, tail);
+    Snake[] snakes = new Snake[] {mine};
 
+    ForbiddenPoints fp = new ForbiddenPoints(board);
+    fp.buildCulDeSac();
     fp.newLoop(snakes, powerups);
     assertEquals(
-        "" // pour le linter mec
-            + "# ss    \n"
-            + "## s    \n"
+        "\n" // pour le linter mec
+            + "#.ss    \n"
+            + "##.s    \n"
             + "## s ## \n"
             + "########\n",
         fp.toString());
