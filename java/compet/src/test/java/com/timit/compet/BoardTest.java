@@ -51,7 +51,7 @@ class BoardTest {
     assertFalse(board.isForbidden(0, 5));
     assertTrue(board.isAvailable(0, 5));
 
-    board.buildEnceinte();
+    board.buildSol();
     assertTrue(board.isForbidden(0, 5));
     assertFalse(board.isAvailable(0, 5));
 

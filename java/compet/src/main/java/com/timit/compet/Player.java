@@ -53,7 +53,7 @@ class Board {
     return !murs.contains(p) && !enceinte.contains(p);
   }
 
-  void buildEnceinte() {
+  void buildSol() {
     // interdit d aller dans le sol si le sol ressemble a :
     // ###  ##   ####  ##  #####
     for (int x = -5; x < width + 5; x++) {
@@ -198,15 +198,71 @@ class ForbiddenPoints {
     return board.isAvailable(point) && !change.contains(point);
   }
 
-  public String display(Board b) {
+  boolean isAvailable(int x, int y) {
+    return isAvailable(new Point(x, y));
+  }
+
+  int findMinimalX() {
+    int minimal = 1000;
+    for (Point p : board.murs) {
+      if (p.x < minimal) minimal = p.x;
+    }
+    for (Point p : board.enceinte) {
+      if (p.x < minimal) minimal = p.x;
+    }
+    return minimal;
+  }
+
+  int findMaximalX() {
+    int max = 0;
+    for (Point p : board.murs) {
+      if (p.x > max) max = p.x;
+    }
+    for (Point p : board.enceinte) {
+      if (p.x > max) max = p.x;
+    }
+    return max;
+  }
+
+  int findMinimalY() {
+    int minimal = 1000;
+    for (Point p : board.murs) {
+      if (p.y < minimal) minimal = p.y;
+    }
+    for (Point p : board.enceinte) {
+      if (p.y < minimal) minimal = p.y;
+    }
+    return minimal;
+  }
+
+  int findMaximalY() {
+    int max = 0;
+    for (Point p : board.murs) {
+      if (p.y > max) max = p.y;
+    }
+    for (Point p : board.enceinte) {
+      if (p.y > max) max = p.y;
+    }
+    return max;
+  }
+
+  public String display() {
+    int minX = findMinimalX();
+    int maxX = findMaximalX();
+    int minY = findMinimalY();
+    int maxY = findMaximalY();
     StringBuilder sb = new StringBuilder();
-    sb.append("\n");
-    for (int y = -2; y < b.height + 2; y++) {
-      for (int x = -5; x < b.width + 5; x++) {
-        if (change.contains(new Point(x, y))) {
-          sb.append("#");
-        } else {
+
+    // find minimal x, max x
+    // find min y, max y
+
+    for (int y = minY; y <= maxY; y++) {
+      for (int x = minX; x <= maxX; x++) {
+
+        if (isAvailable(x, y)) {
           sb.append(" ");
+        } else {
+          sb.append("#");
         }
       }
       sb.append("\n");

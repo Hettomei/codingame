@@ -1,5 +1,6 @@
 package com.timit.compet;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -26,5 +27,27 @@ class ForbiddenPointsTest {
     assertTrue(fp.isAvailable(new Point(0, 1)));
     assertFalse(fp.isAvailable(new Point(1, 1)));
     assertTrue(fp.isAvailable(new Point(2, 1)));
+  }
+
+  @Test
+  void display() {
+    Set<Point> murs = new HashSet();
+    murs.add(new Point(1, 0));
+    murs.add(new Point(1, 1));
+    murs.add(new Point(1, 2));
+    Board board = new Board(murs, 3, 3);
+    ForbiddenPoints fp = new ForbiddenPoints(board);
+    String result = fp.display();
+    assertEquals("#\n" + "#\n" + "#\n", result);
+
+    board.buildSol();
+    result = fp.display();
+    assertEquals(
+        ""
+            + "      #      \n" //    ajout d un comme pour le linter
+            + "      #      \n"
+            + "      #      \n"
+            + "#############\n",
+        result);
   }
 }
