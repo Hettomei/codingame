@@ -17,14 +17,6 @@ class T {
   }
 }
 
-enum Level {
-  VIDE,
-  MUR,
-  ENERGIE,
-  TETE,
-  CORPS
-}
-
 class Board {
 
   Set<Point> murs;
@@ -91,8 +83,8 @@ class Board {
   public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append("\n");
-    for (int row = -4; row < height + 3; row++) {
-      for (int col = -4; col < width + 3; col++) {
+    for (int row = -1; row < height + 1; row++) {
+      for (int col = -3; col < width + 3; col++) {
         if (murs.contains(new Point(col, row))) {
           sb.append("#");
         } else {
@@ -138,12 +130,12 @@ class Point {
     return (a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y);
   }
 
-  static String name(Point p) {
-    if (p.equals(UP)) return "UP";
-    if (p.equals(DOWN)) return "DOWN";
-    if (p.equals(LEFT)) return "LEFT";
-    if (p.equals(RIGHT)) return "RIGHT";
-    return "RIGHT";
+  String name() {
+    if (this.equals(UP)) return "UP";
+    if (this.equals(DOWN)) return "DOWN";
+    if (this.equals(LEFT)) return "LEFT";
+    if (this.equals(RIGHT)) return "RIGHT";
+    return "ERREUR DE NOM";
   }
 
   public String toString() {
@@ -204,7 +196,7 @@ class ForbiddenPoints {
     }
   }
 
-  void restartWithSnakes(Snake[] snakes, PowerUp[] powerups) {
+  void newLoop(Snake[] snakes, PowerUp[] powerups) {
     change.clear();
     for (Snake s : snakes) {
       change.add(s.head);
@@ -527,7 +519,7 @@ class Player {
     while (loop < 250) {
       PowerUp[] powerups = PowerUp.builds(in);
       Snake[] snakes = Snake.builds(in, myIds);
-      forbiddenPoints.restartWithSnakes(snakes, powerups);
+      forbiddenPoints.newLoop(snakes, powerups);
 
       StringBuilder resultat = new StringBuilder();
       for (Snake s : snakes) {
@@ -537,7 +529,7 @@ class Player {
         Point newHead = Point.move(s.head, dir);
         forbiddenPoints.add(newHead);
         // On avait deja ajouté la queue si proche de 1. donc on ne fait rien ici.
-        resultat.append(s.id + " " + Point.name(dir) + ";");
+        resultat.append(s.id + " " + dir.name() + ";");
       }
       T.p(resultat);
 

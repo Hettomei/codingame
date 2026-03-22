@@ -136,4 +136,43 @@ class ForbiddenPointsTest {
             + "################################\n",
         fp.toString());
   }
+
+  @Test
+  void newLoop() {
+    Set<Point> murs = new HashSet();
+    murs.add(new Point(1, 0));
+    murs.add(new Point(1, 1));
+    murs.add(new Point(1, 2));
+    Board board = new Board(murs, 3, 3);
+    ForbiddenPoints fp = new ForbiddenPoints(board);
+
+    PowerUp[] powerups = new PowerUp[] {new PowerUp(4, 4), new PowerUp(5, 4)};
+
+    Snake s;
+    Point head;
+    Point[] parts;
+    Point tail;
+    head = new Point(0, 0);
+    parts = new Point[] {new Point(0, 1), new Point(0, 2)};
+    tail = new Point(0, 3);
+    s = new Snake(1, true, head, parts, tail);
+
+    Snake[] snakes = new Snake[] {s};
+
+    assertTrue(fp.isAvailable(s.head));
+    assertTrue(fp.isAvailable(4, 4)); // le powerup
+
+    fp.newLoop(snakes, powerups);
+    assertFalse(fp.isAvailable(s.head));
+    assertTrue(fp.isAvailable(4, 4)); // le powerup, case libre
+
+    // Loin d un powerup, alors c est bon c est valide car elle va avancer
+    assertTrue(fp.isAvailable(s.tail));
+
+    powerups = new PowerUp[] {new PowerUp(1, 0)};
+    fp.newLoop(snakes, powerups);
+    // a coté d un powerup,
+    // alors elle risque de rester
+    assertFalse(fp.isAvailable(s.tail));
+  }
 }

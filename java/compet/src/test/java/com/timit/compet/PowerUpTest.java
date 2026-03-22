@@ -36,5 +36,6 @@ class PowerUpTest {
     assertEquals(ups[0], new Point(3, 4));
     assertEquals(ups[1], new Point(5, 6));
     in.close();
+    assertEquals("PowerUp (5,6)", (new PowerUp(5, 6)).toString());
   }
 }

@@ -1,6 +1,7 @@
 package com.timit.compet;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 import org.junit.jupiter.api.Test;
 
@@ -35,5 +36,26 @@ class PointTest {
     assertEquals(1, Point.distance(a, c));
     assertEquals(2, Point.distance(a, d));
     assertEquals(8, Point.distance(a, e));
+  }
+
+  @Test
+  void equalsTest() {
+    Point a = new Point(3, 5);
+    Point b = new Point(3, 5);
+    Point c = new Point(4, 5);
+    assertEquals(a, a);
+    assertEquals(a, b);
+    assertNotEquals(a, c);
+    assertNotEquals(a, null);
+  }
+
+  @Test
+  void nameTest() {
+    Point a = new Point(3, 5);
+    assertEquals("ERREUR DE NOM", a.name());
+    assertEquals("LEFT", new Point(-1, 0).name());
+    assertEquals("RIGHT", new Point(1, 0).name());
+    assertEquals("UP", new Point(0, -1).name());
+    assertEquals("DOWN", new Point(0, 1).name());
   }
 }

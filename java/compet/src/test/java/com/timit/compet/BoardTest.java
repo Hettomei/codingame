@@ -1,5 +1,6 @@
 package com.timit.compet;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -52,6 +53,17 @@ class BoardTest {
     assertTrue(board.isAvailable(0, 5));
 
     board.buildSol();
+    assertEquals(
+        "\n"
+            + "             \n"
+            + "    # # ##   \n"
+            + "   # # # #   \n"
+            + "    # # ##   \n"
+            + "   # # # #   \n"
+            + "    # # ##   \n"
+            + "             \n",
+        board.toString());
+
     assertTrue(board.isForbidden(0, 5));
     assertFalse(board.isAvailable(0, 5));
 
