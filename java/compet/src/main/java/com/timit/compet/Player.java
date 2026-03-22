@@ -126,6 +126,11 @@ class Point {
     return new Point(a, direction);
   }
 
+  /*
+   * Quand c est cote a cote, ca vaut 1
+   * quand c est en diago, ca vaut 2
+   * Quand c est au meme endroit ... 0
+   */
   static int distance(Point a, Point b) {
     return (a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y);
   }
@@ -201,10 +206,10 @@ class ForbiddenPoints {
     for (Snake s : snakes) {
       change.add(s.head);
       for (Point p : s.parts) change.add(p);
-      int distance = Computer.closestDistance(powerups, s);
-      // Si la tete est a 1 du plus proche, alors il y a des chance qu il va le bouffer
+      // Si la tete est a 1 du plus proche,
+      // alors il y a des chance qu il va le bouffer
       // donc ajouter la queue pour pas taper dedans
-      if (distance == 1) change.add(s.tail);
+      if (Computer.snakeTouchePiece(s, powerups)) change.add(s.tail);
     }
   }
 
@@ -217,7 +222,9 @@ class ForbiddenPoints {
   }
 
   boolean isAvailable(Point point) {
-    return board.isAvailable(point) && !change.contains(point) && !culDeSac.contains(point);
+    return board.isAvailable(point)
+        && !change.contains(point) // long comment pour linter
+        && !culDeSac.contains(point);
   }
 
   boolean isAvailable(int x, int y) {
@@ -348,15 +355,11 @@ class Snake {
 class Computer {
   static Random r = new Random();
 
-  static int closestDistance(PowerUp[] powerups, Snake snake) {
-    int max_distance = Point.distance(snake.head, powerups[0]);
+  static boolean snakeTouchePiece(Snake snake, PowerUp[] powerups) {
     for (PowerUp powerup : powerups) {
-      int d = Point.distance(snake.head, powerup);
-      if (d < max_distance) {
-        max_distance = d;
-      }
+      if (Point.distance(snake.head, powerup) == 1) return true;
     }
-    return max_distance;
+    return false;
   }
 
   // Exclure un powerup :
