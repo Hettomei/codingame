@@ -213,6 +213,14 @@ class ForbiddenPoints {
     }
     return sb.toString();
   }
+
+  /* TODO à coder
+  tout ce qui est cul de sac, on degage :
+
+  ###  ##  ##   # #
+  # #   #  #    ###
+       ##  ##
+  */
 }
 
 class Snake {
@@ -477,15 +485,10 @@ class Player {
       for (Snake s : snakes) {
         if (!s.isMine) continue;
         PowerUp closest = Computer.closestPowerUp(powerups, s, board);
-        // Memory m = memories.get(s.id);
-
         Point dir = Computer.getDirection(s, closest, forbiddenPoints);
         Point newHead = Point.move(s.head, dir);
         forbiddenPoints.add(newHead);
-        // On va bouger. Sans manger, donc on libere la place de la queue
-        if (!newHead.equals(closest)) {
-          forbiddenPoints.remove(s.tail);
-        }
+        // On avait deja ajouté la queue si proche de 1. donc on ne fait rien ici.
         resultat.append(s.id + " " + Point.name(dir) + ";");
       }
       T.p(resultat);
@@ -495,10 +498,3 @@ class Player {
     in.close();
   }
 }
-/* TODO
-tout ce qui est cul de sac, on degage :
-
-###  ##  ##   # #
-# #   #  #    ###
-     ##  ##
-*/
