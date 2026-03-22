@@ -275,32 +275,8 @@ class Snake {
   }
 }
 
-class Ban {
-  int counter;
-  int snakeId;
-  boolean enabled;
-  PowerUp powerup;
-
-  Ban(int c, Snake s, PowerUp p) {
-    counter = c;
-    snakeId = s.id;
-    powerup = p;
-    enabled = true;
-  }
-
-  boolean stillBan(Snake s, PowerUp p) {
-    return enabled && snakeId == s.id && powerup.equals(p);
-  }
-
-  void lessOrDisable() {
-    counter--;
-    if (counter < 1) enabled = false;
-  }
-}
-
 class Computer {
   static Random r = new Random();
-  static List<Ban> bans = new ArrayList();
 
   static int closestDistance(PowerUp[] powerups, Snake snake) {
     int max_distance = Point.distance(snake.head, powerups[0]);
@@ -333,16 +309,6 @@ class Computer {
     // ils sont aligné, et le serpent est en dessous,
     // alors si il est tout droit vers le haut, c est mort
     return !snake.isToutDroitVersLeHaut();
-  }
-
-  static boolean isBanned(Snake snake, PowerUp powerup) {
-    for (Ban ban : bans) {
-      if (ban.stillBan(snake, powerup)) {
-        ban.lessOrDisable();
-        return true;
-      }
-    }
-    return false;
   }
 
   static PowerUp closestPowerUp(PowerUp[] powerups, Snake snake, Board board) {
