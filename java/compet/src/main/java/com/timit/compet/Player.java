@@ -163,6 +163,7 @@ class Point {
 
 class ForbiddenPoints {
   Board board;
+  // Toutes les cases interdites a chaque tour
   Set<Point> change;
   Set<Point> culDeSac;
 
@@ -211,6 +212,23 @@ class ForbiddenPoints {
       // donc ajouter la queue pour pas taper dedans
       if (Computer.snakeTouchePiece(s, powerups)) change.add(s.tail);
     }
+    // Maintenant qu'on a fait tout le change.
+    // on va tout parcourir, et interdir tous les cul de sac
+
+    // Toutes les cases ou on peut juste mettre la tete :
+    // C est un cul de sac !
+    // void buildCulDeSac() {
+    int minX = findMinimalX();
+    int maxX = findMaximalX();
+    int minY = findMinimalY();
+    int maxY = findMaximalY();
+
+    for (int y = minY; y <= maxY; y++) {
+      for (int x = minX; x <= maxX; x++) {
+        if (isAvailable(x, y) && caseLibreAutour(x, y) < 2) change.add(new Point(x, y));
+      }
+    }
+    // }
   }
 
   void remove(Point p) {
@@ -233,6 +251,9 @@ class ForbiddenPoints {
 
   int findMinimalX() {
     int minimal = 1000;
+    for (Point p : change) {
+      if (p.x < minimal) minimal = p.x;
+    }
     for (Point p : board.murs) {
       if (p.x < minimal) minimal = p.x;
     }
@@ -244,6 +265,9 @@ class ForbiddenPoints {
 
   int findMaximalX() {
     int max = 0;
+    for (Point p : change) {
+      if (p.x > max) max = p.x;
+    }
     for (Point p : board.murs) {
       if (p.x > max) max = p.x;
     }
@@ -255,6 +279,9 @@ class ForbiddenPoints {
 
   int findMinimalY() {
     int minimal = 1000;
+    for (Point p : change) {
+      if (p.y < minimal) minimal = p.y;
+    }
     for (Point p : board.murs) {
       if (p.y < minimal) minimal = p.y;
     }
@@ -266,6 +293,9 @@ class ForbiddenPoints {
 
   int findMaximalY() {
     int max = 0;
+    for (Point p : change) {
+      if (p.y > max) max = p.y;
+    }
     for (Point p : board.murs) {
       if (p.y > max) max = p.y;
     }

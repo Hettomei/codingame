@@ -175,4 +175,57 @@ class ForbiddenPointsTest {
     // alors elle risque de rester
     assertFalse(fp.isAvailable(s.tail));
   }
+
+  @Test
+  void newLoopAvecSerpent() {
+    // 1,0 1,1 1,2 2,2
+    Set<Point> murs = new HashSet();
+    murs.add(new Point(5, 3));
+    murs.add(new Point(6, 3));
+    murs.add(new Point(7, 3));
+    murs.add(new Point(8, 3));
+    murs.add(new Point(9, 3));
+    murs.add(new Point(10, 3));
+    Board board = new Board(murs, 8, 5);
+    ForbiddenPoints fp = new ForbiddenPoints(board);
+    PowerUp[] powerups = new PowerUp[] {};
+
+    assertEquals("######\n", fp.toString());
+
+    Snake s;
+    Point head;
+    Point[] parts;
+    Point tail;
+    head = new Point(8, 2);
+    parts =
+        new Point[] {
+          new Point(8, 1), // fdsdsfsdfsdfdsfsd dfs
+          new Point(7, 1),
+          new Point(6, 1),
+          new Point(6, 2)
+        };
+    tail = new Point(5, 2);
+    s = new Snake(1, true, head, parts, tail);
+
+    Snake[] snakes = new Snake[] {s};
+
+    fp.newLoop(snakes, powerups);
+    /* on en est a :
+    P powerup, s, snake, t, tail, h head
+
+       sss
+    P ts h
+    ########
+
+    la piece tout a gauche
+    Donc on interdit l interieur entre s et h
+    */
+
+    assertEquals(
+        "" // rzerze rze rze fzefe zze
+            + " ###  \n"
+            + " ###  \n"
+            + "######\n",
+        fp.toString());
+  }
 }
