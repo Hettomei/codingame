@@ -28,7 +28,7 @@ enum Level {
 class Board {
 
   Set<Point> murs;
-  Set<Point> enceinte;
+  Set<Point> leSol;
 
   int width;
   int height;
@@ -37,12 +37,12 @@ class Board {
     this.murs = murs;
     this.width = width;
     this.height = height;
-    this.enceinte = new HashSet();
+    this.leSol = new HashSet();
   }
 
   boolean isForbidden(int x, int y) {
     Point p = new Point(x, y);
-    return murs.contains(p) || enceinte.contains(p);
+    return murs.contains(p) || leSol.contains(p);
   }
 
   boolean isAvailable(int x, int y) {
@@ -50,14 +50,14 @@ class Board {
   }
 
   boolean isAvailable(Point p) {
-    return !murs.contains(p) && !enceinte.contains(p);
+    return !murs.contains(p) && !leSol.contains(p);
   }
 
   void buildSol() {
     // interdit d aller dans le sol si le sol ressemble a :
     // ###  ##   ####  ##  #####
     for (int x = -5; x < width + 5; x++) {
-      enceinte.add(new Point(x, height));
+      leSol.add(new Point(x, height));
     }
 
     // interdit d aller tout a gauche
@@ -65,8 +65,8 @@ class Board {
     // et on fait depasser de 5
     // ###  ##   ####  ##  #####
     // for (int y = -5; y <= height; y++) {
-    //   enceinte.add(new Point(-1, y));
-    //   enceinte.add(new Point(width, y));
+    //   leSol.add(new Point(-1, y));
+    //   leSol.add(new Point(width, y));
     // }
   }
 
@@ -77,7 +77,6 @@ class Board {
     in.nextLine(); // utile pour passer à la suite
     for (int row = 0; row < height; row++) {
       String rawLine = in.nextLine();
-      T.d(rawLine);
       int col = 0;
       for (String s : rawLine.split("")) {
         if (s.equals("#")) {
@@ -168,10 +167,41 @@ class Point {
 class ForbiddenPoints {
   Board board;
   Set<Point> change;
+  Set<Point> culDeSac;
 
   ForbiddenPoints(Board board) {
     this.board = board;
     change = new HashSet();
+    culDeSac = new HashSet();
+  }
+
+  /*  .
+   * .X.  => x vaut 4 si il y en a 4 autour
+   *  .
+   */
+  int caseLibreAutour(int x, int y) {
+    int count = 0;
+    if (isAvailable(x - 1, y)) count++;
+    if (isAvailable(x + 1, y)) count++;
+    if (isAvailable(x, y - 1)) count++;
+    if (isAvailable(x, y + 1)) count++;
+
+    return count;
+  }
+
+  // Toutes les cases ou on peut juste mettre la tete :
+  // C est un cul de sac !
+  void buildCulDeSac() {
+    int minX = findMinimalX();
+    int maxX = findMaximalX();
+    int minY = findMinimalY();
+    int maxY = findMaximalY();
+
+    for (int y = minY; y <= maxY; y++) {
+      for (int x = minX; x <= maxX; x++) {
+        if (isAvailable(x, y) && caseLibreAutour(x, y) < 2) culDeSac.add(new Point(x, y));
+      }
+    }
   }
 
   void restartWithSnakes(Snake[] snakes, PowerUp[] powerups) {
@@ -195,7 +225,7 @@ class ForbiddenPoints {
   }
 
   boolean isAvailable(Point point) {
-    return board.isAvailable(point) && !change.contains(point);
+    return board.isAvailable(point) && !change.contains(point) && !culDeSac.contains(point);
   }
 
   boolean isAvailable(int x, int y) {
@@ -207,7 +237,7 @@ class ForbiddenPoints {
     for (Point p : board.murs) {
       if (p.x < minimal) minimal = p.x;
     }
-    for (Point p : board.enceinte) {
+    for (Point p : board.leSol) {
       if (p.x < minimal) minimal = p.x;
     }
     return minimal;
@@ -218,7 +248,7 @@ class ForbiddenPoints {
     for (Point p : board.murs) {
       if (p.x > max) max = p.x;
     }
-    for (Point p : board.enceinte) {
+    for (Point p : board.leSol) {
       if (p.x > max) max = p.x;
     }
     return max;
@@ -229,7 +259,7 @@ class ForbiddenPoints {
     for (Point p : board.murs) {
       if (p.y < minimal) minimal = p.y;
     }
-    for (Point p : board.enceinte) {
+    for (Point p : board.leSol) {
       if (p.y < minimal) minimal = p.y;
     }
     return minimal;
@@ -240,13 +270,13 @@ class ForbiddenPoints {
     for (Point p : board.murs) {
       if (p.y > max) max = p.y;
     }
-    for (Point p : board.enceinte) {
+    for (Point p : board.leSol) {
       if (p.y > max) max = p.y;
     }
     return max;
   }
 
-  public String display() {
+  public String toString() {
     int minX = findMinimalX();
     int maxX = findMaximalX();
     int minY = findMinimalY();
@@ -269,14 +299,6 @@ class ForbiddenPoints {
     }
     return sb.toString();
   }
-
-  /* TODO à coder
-  tout ce qui est cul de sac, on degage :
-
-  ###  ##  ##   # #
-  # #   #  #    ###
-       ##  ##
-  */
 }
 
 class Snake {
@@ -483,7 +505,11 @@ class Player {
     Scanner in = new Scanner(System.in);
     int myId = in.nextInt();
     Board board = Board.build(in);
+    board.buildSol();
+
     ForbiddenPoints forbiddenPoints = new ForbiddenPoints(board);
+    forbiddenPoints.buildCulDeSac();
+    T.d("FORBIDDEN\n" + forbiddenPoints);
 
     int snakePerPlayer = in.nextInt();
     Set<Integer> myIds;
