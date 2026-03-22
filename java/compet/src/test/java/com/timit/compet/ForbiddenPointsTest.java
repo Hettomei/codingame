@@ -129,10 +129,10 @@ class ForbiddenPointsTest {
     assertTrue(fp.culDeSac.contains(new Point(1, 1)));
     assertEquals(
         ""
-            + "     ###  ##  ##  ###   ###     \n"
-            + "     ###  ##  ##  ###   ###     \n"
+            + "     ###  ##  ##  #.#   ###     \n"
+            + "     #.#  .#  #.  ###   #.#     \n"
             + "          ##  ##        ###     \n"
-            + "     ###                        \n"
+            + "     #.#                        \n"
             + "################################\n",
         fp.toString());
   }
@@ -219,13 +219,140 @@ class ForbiddenPointsTest {
 
     la piece tout a gauche
     Donc on interdit l interieur entre s et h
+    on ne voit pas le t de tail car n est pas un point forbidden
     */
 
     assertEquals(
-        "" // rzerze rze rze fzefe zze
-            + " ###  \n"
-            + " ###  \n"
+        "" // pour le linter mec
+            + " sss  \n"
+            + " s.s  \n"
             + "######\n",
+        fp.toString());
+  }
+
+  @Test
+  void newLoopAvecSerpentNonRegression1() {
+    /*
+    // MON serpent : on ne doit pas bloquer
+    // LE SERPENT D UN AUTRE, on bloque
+           ##
+          s #
+          s
+          s
+          s
+          s
+        */
+    Set<Point> murs = new HashSet();
+    murs.add(new Point(4, 1));
+    murs.add(new Point(5, 1));
+    murs.add(new Point(5, 2));
+    Board board = new Board(murs, 5, 3);
+    ForbiddenPoints fp = new ForbiddenPoints(board);
+    PowerUp[] powerups = new PowerUp[] {};
+
+    Point head = new Point(3, 2);
+    Point[] parts = new Point[] {new Point(3, 3), new Point(3, 4), new Point(3, 5)};
+    Point tail = new Point(3, 6);
+    Snake mySnake = new Snake(1, true, head, parts, tail);
+    Snake myOponnent = new Snake(1, false, head, parts, tail);
+    Snake[] snakes = new Snake[] {mySnake};
+
+    fp.newLoop(snakes, powerups);
+    assertEquals(
+        "" // pour le linter mec
+            + " ##\n"
+            + "s #\n"
+            + "s  \n",
+        +"s  \n",
+        +"s  \n",
+        fp.toString());
+
+    snakes = new Snake[] {myOponnent};
+    fp.newLoop(snakes, powerups);
+    assertEquals(
+        "" // pour le linter mec
+            + " ##\n"
+            + "s.#\n"
+            + "s  \n",
+        fp.toString());
+  }
+
+  @Test
+  void newLoopAvecSerpentNonRegression2() {
+    /*
+     ###
+     #.#
+      s
+      s
+      s
+    */
+    Set<Point> murs = new HashSet();
+    murs.add(new Point(0, 0));
+    murs.add(new Point(1, 0));
+    murs.add(new Point(2, 0));
+    murs.add(new Point(0, 1));
+    murs.add(new Point(2, 1));
+    Board board = new Board(murs, 5, 6);
+    ForbiddenPoints fp = new ForbiddenPoints(board);
+    PowerUp[] powerups = new PowerUp[] {};
+
+    Point head = new Point(1, 2);
+    Point[] parts = new Point[] {new Point(1, 3)};
+    Point tail = new Point(1, 4);
+    Snake s = new Snake(1, true, head, parts, tail);
+    Snake[] snakes = new Snake[] {s};
+
+    fp.newLoop(snakes, powerups);
+    assertEquals(
+        "" // pour le linter mec
+            + "###\n"
+            + "#.#\n"
+            + " s \n"
+            + " s \n",
+        fp.toString());
+  }
+
+  @Test
+  void newLoopAvecSerpentNonRegression3() {
+    /*
+    # ss
+    ##ts
+    ## h ##
+    ########
+    */
+    Set<Point> murs = new HashSet();
+    murs.add(new Point(0, 0));
+    murs.add(new Point(0, 1));
+    murs.add(new Point(0, 2));
+    murs.add(new Point(0, 3));
+    murs.add(new Point(1, 1));
+    murs.add(new Point(1, 2));
+    murs.add(new Point(1, 3));
+    murs.add(new Point(2, 3));
+    murs.add(new Point(3, 3));
+    murs.add(new Point(4, 3));
+    murs.add(new Point(5, 3));
+    murs.add(new Point(6, 3));
+    murs.add(new Point(7, 3));
+    murs.add(new Point(5, 2));
+    murs.add(new Point(6, 2));
+    Board board = new Board(murs, 8, 6);
+    ForbiddenPoints fp = new ForbiddenPoints(board);
+    PowerUp[] powerups = new PowerUp[] {};
+
+    Point head = new Point(3, 2);
+    Point[] parts = new Point[] {new Point(3, 1), new Point(3, 0), new Point(2, 0)};
+    Point tail = new Point(2, 1);
+    Snake s = new Snake(1, true, head, parts, tail);
+    Snake[] snakes = new Snake[] {s};
+
+    fp.newLoop(snakes, powerups);
+    assertEquals(
+        "" // pour le linter mec
+            + "# ss    \n"
+            + "## s    \n"
+            + "## s ## \n"
+            + "########\n",
         fp.toString());
   }
 }

@@ -164,12 +164,14 @@ class Point {
 class ForbiddenPoints {
   Board board;
   // Toutes les cases interdites a chaque tour
-  Set<Point> change;
+  Set<Point> newTurnForbidden;
+  Set<Point> newTurnCulDeSac;
   Set<Point> culDeSac;
 
   ForbiddenPoints(Board board) {
     this.board = board;
-    change = new HashSet();
+    newTurnForbidden = new HashSet();
+    newTurnCulDeSac = new HashSet();
     culDeSac = new HashSet();
   }
 
@@ -179,12 +181,16 @@ class ForbiddenPoints {
    */
   int caseLibreAutour(int x, int y) {
     int count = 0;
-    if (isAvailable(x - 1, y)) count++;
-    if (isAvailable(x + 1, y)) count++;
-    if (isAvailable(x, y - 1)) count++;
-    if (isAvailable(x, y + 1)) count++;
+    if (isAvailableSansCulDeSac(x - 1, y)) count++;
+    if (isAvailableSansCulDeSac(x + 1, y)) count++;
+    if (isAvailableSansCulDeSac(x, y - 1)) count++;
+    if (isAvailableSansCulDeSac(x, y + 1)) count++;
 
     return count;
+  }
+
+  int caseLibreAutourSansCulDeSac(Point p) {
+    return caseLibreAutour(p.x, p.y);
   }
 
   // Toutes les cases ou on peut juste mettre la tete :
@@ -203,21 +209,22 @@ class ForbiddenPoints {
   }
 
   void newLoop(Snake[] snakes, PowerUp[] powerups) {
-    change.clear();
+    newTurnForbidden.clear();
+    newTurnCulDeSac.clear();
     for (Snake s : snakes) {
-      change.add(s.head);
-      for (Point p : s.parts) change.add(p);
+      // Les miens auront un autre comportement
+      newTurnForbidden.add(s.head);
+      for (Point p : s.parts) newTurnForbidden.add(p);
       // Si la tete est a 1 du plus proche,
       // alors il y a des chance qu il va le bouffer
       // donc ajouter la queue pour pas taper dedans
-      if (Computer.snakeTouchePiece(s, powerups)) change.add(s.tail);
+      if (Computer.snakeTouchePiece(s, powerups)) newTurnForbidden.add(s.tail);
     }
-    // Maintenant qu'on a fait tout le change.
+    // Maintenant qu'on a fait tout le newTurnForbidden.
     // on va tout parcourir, et interdir tous les cul de sac
 
     // Toutes les cases ou on peut juste mettre la tete :
     // C est un cul de sac !
-    // void buildCulDeSac() {
     int minX = findMinimalX();
     int maxX = findMaximalX();
     int minY = findMinimalY();
@@ -225,23 +232,39 @@ class ForbiddenPoints {
 
     for (int y = minY; y <= maxY; y++) {
       for (int x = minX; x <= maxX; x++) {
-        if (isAvailable(x, y) && caseLibreAutour(x, y) < 2) change.add(new Point(x, y));
+        Point aEvaluer = new Point(x, y);
+        if (isAvailableSansCulDeSac(aEvaluer)) {
+          if (caseLibreAutourSansCulDeSac(aEvaluer) <= 1) {
+            // Ajouter la logique de dire "si il y a MA tete, y a pas de probleme"
+            for (Snake s : snakes) {
+              if (s.getCount() <= 4) continue; // les petits, on s en fou
+              if (!s.isMine) {
+                // newTurnCulDeSac.add(aEvaluer);
+              }
+              // if (Point.distance(s.head())
+            }
+          }
+        }
       }
     }
-    // }
+
+    // Bon... puisque c est mal codé : il y a des cul de sac qui ne devrait pas exister.
+    // Notamment, tous les "." a coté des tetes qui peuvent s en sortir
+
   }
 
   void remove(Point p) {
-    change.remove(p);
+    newTurnForbidden.remove(p);
   }
 
   void add(Point p) {
-    change.add(p);
+    newTurnForbidden.add(p);
   }
 
   boolean isAvailable(Point point) {
-    return board.isAvailable(point)
-        && !change.contains(point) // long comment pour linter
+    return board.isAvailable(point) // long comment pour linter
+        && !newTurnForbidden.contains(point)
+        && !newTurnCulDeSac.contains(point)
         && !culDeSac.contains(point);
   }
 
@@ -249,9 +272,19 @@ class ForbiddenPoints {
     return isAvailable(new Point(x, y));
   }
 
+  boolean isAvailableSansCulDeSac(Point point) {
+    return board.isAvailable(point) // long comment pour linter
+        && !newTurnForbidden.contains(point)
+        && !culDeSac.contains(point);
+  }
+
+  boolean isAvailableSansCulDeSac(int x, int y) {
+    return isAvailableSansCulDeSac(new Point(x, y));
+  }
+
   int findMinimalX() {
     int minimal = 1000;
-    for (Point p : change) {
+    for (Point p : newTurnForbidden) {
       if (p.x < minimal) minimal = p.x;
     }
     for (Point p : board.murs) {
@@ -265,7 +298,7 @@ class ForbiddenPoints {
 
   int findMaximalX() {
     int max = 0;
-    for (Point p : change) {
+    for (Point p : newTurnForbidden) {
       if (p.x > max) max = p.x;
     }
     for (Point p : board.murs) {
@@ -279,7 +312,7 @@ class ForbiddenPoints {
 
   int findMinimalY() {
     int minimal = 1000;
-    for (Point p : change) {
+    for (Point p : newTurnForbidden) {
       if (p.y < minimal) minimal = p.y;
     }
     for (Point p : board.murs) {
@@ -293,7 +326,7 @@ class ForbiddenPoints {
 
   int findMaximalY() {
     int max = 0;
-    for (Point p : change) {
+    for (Point p : newTurnForbidden) {
       if (p.y > max) max = p.y;
     }
     for (Point p : board.murs) {
@@ -321,7 +354,10 @@ class ForbiddenPoints {
         if (isAvailable(x, y)) {
           sb.append(" ");
         } else {
-          sb.append("#");
+          if (newTurnForbidden.contains(new Point(x, y))) sb.append("s");
+          else if (newTurnCulDeSac.contains(new Point(x, y))) sb.append(".");
+          else if (culDeSac.contains(new Point(x, y))) sb.append(".");
+          else sb.append("#");
         }
       }
       sb.append("\n");
@@ -351,14 +387,8 @@ class Snake {
     return "Snake" + " " + mmine + " " + id + " " + head + Arrays.toString(parts) + tail;
   }
 
-  boolean isToutDroitVersLeHaut() {
-    Point next = head;
-    for (Point part : parts) {
-      next = Point.move(next, Point.DOWN);
-      if (!next.equals(part)) return false;
-    }
-    next = Point.move(next, Point.DOWN);
-    return next.equals(tail);
+  int getCount() {
+    return 2 + parts.length;
   }
 
   static Snake[] builds(Scanner in, Set<Integer> myIds) {
@@ -392,36 +422,10 @@ class Computer {
     return false;
   }
 
-  // Exclure un powerup :
-  // si il est n case loin de toute plateforme
-  // ne pas le prendre
-  static boolean isAccessible(PowerUp powerup, Snake snake, Board board) {
-    Point head = snake.head;
-
-    // powerup.isAwayFromAnyBlock
-
-    // le serpent est au dessus ou meme niveau, pas de risque
-    if (head.y <= powerup.y) return true;
-    // ils ne sont pas aligné, pas de risque
-    if (head.x != powerup.x) return true;
-    // il y a qu une case d ecart en haut, on peut l atteindre
-    Point next = Point.move(head, Point.UP);
-    if (next.equals(powerup)) return true;
-
-    // Donc la
-    // ils sont aligné, et le serpent est en dessous,
-    // alors si il est tout droit vers le haut, c est mort
-    return !snake.isToutDroitVersLeHaut();
-  }
-
   static PowerUp closestPowerUp(PowerUp[] powerups, Snake snake, Board board) {
     PowerUp closest = powerups[0];
     int max_distance = Point.distance(snake.head, closest);
     for (PowerUp powerup : powerups) {
-      // if (!isAccessible(powerup, snake, board)) {
-      //   continue;
-      // }
-
       // On peut l atteindre, on calcul la distance
       int d = Point.distance(snake.head, powerup);
       if (d < max_distance) {
@@ -553,6 +557,7 @@ class Player {
       PowerUp[] powerups = PowerUp.builds(in);
       Snake[] snakes = Snake.builds(in, myIds);
       forbiddenPoints.newLoop(snakes, powerups);
+      T.d("forbid\n" + forbiddenPoints);
 
       StringBuilder resultat = new StringBuilder();
       for (Snake s : snakes) {
