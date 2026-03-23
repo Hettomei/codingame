@@ -17,6 +17,74 @@ class T {
   }
 }
 
+class Memory {
+  int id;
+  // La derniere direction
+  List<Point> lastDirs;
+  // a donné la derniere
+  List<String> lastPositions;
+  int isFollowingCountdown;
+
+  Memory(Integer id) {
+    this.id = id.intValue();
+    this.lastDirs = new ArrayList();
+    // On ajoute le premier pour etre toujours egale
+    this.lastDirs.add(Point.WAIT);
+    this.lastPositions = new ArrayList();
+    this.isFollowingCountdown = 0;
+  }
+
+  void saveNewDir(Point p) {
+    lastDirs.add(p);
+  }
+
+  // Memorise all the places
+  void saveNewPosition(Snake s) {
+    lastPositions.add(s.getOrderedParts());
+  }
+
+  boolean hasNotMoved() {
+    if (lastPositions.size() < 2) return false;
+    // Point a = lastDirs.get(lastDirs.size() - 1);
+    // Point b = lastDirs.get(lastDirs.size() - 2);
+
+    String c = lastPositions.get(lastPositions.size() - 1);
+    String d = lastPositions.get(lastPositions.size() - 2);
+
+    if (lastPositions.size() > 4) {
+      String e = lastPositions.get(lastPositions.size() - 3);
+      String f = lastPositions.get(lastPositions.size() - 4);
+      String g = lastPositions.get(lastPositions.size() - 5);
+      // return a.equals(b) && c.equals(d);
+      // comparer -1 avec moins -5
+      return c.equals(d) || c.equals(e) || c.equals(f) || c.equals(g);
+    } else {
+      return c.equals(d);
+    }
+  }
+
+  boolean hasMoved() {
+    return !hasNotMoved();
+  }
+
+  void reduceFollowTail() {
+    isFollowingCountdown--;
+    if (isFollowingCountdown == -1) {
+      isFollowingCountdown = 5;
+    }
+  }
+
+  boolean isFollowingTail() {
+    return isFollowingCountdown > 0;
+  }
+
+  public String toString() {
+    return "Mem:" + id + " Size:" + lastPositions.size();
+  }
+}
+
+// Si il est bloqué, alors suivre un id pour les 10 prochains tours
+
 class Board {
 
   Set<Point> murs;
@@ -32,14 +100,17 @@ class Board {
     this.leSol = new HashSet();
   }
 
+  // board
   boolean isForbidden(int x, int y) {
     return !isAvailable(x, y);
   }
 
+  // board
   boolean isAvailable(int x, int y) {
     return isAvailable(new Point(x, y));
   }
 
+  // board
   boolean isAvailable(Point p) {
     return !murs.contains(p) && !leSol.contains(p);
   }
@@ -101,6 +172,7 @@ class Point {
   static Point RIGHT = new Point(1, 0);
   static Point UP = new Point(0, -1);
   static Point DOWN = new Point(0, 1);
+  static Point WAIT = new Point(0, 0);
 
   int x;
   int y;
@@ -377,6 +449,14 @@ class Snake {
     return new HashSet(Arrays.asList(parts));
   }
 
+  String getOrderedParts() {
+    StringBuilder sb = new StringBuilder();
+    sb.append(head.x + "-" + head.y + ";");
+    for (Point p : parts) sb.append(p.x + "-" + p.y + ";");
+    sb.append(tail.x + "-" + tail.y + ";");
+    return sb.toString();
+  }
+
   // chez snake
   boolean isAvailable(int x, int y, Board board) {
     Point aEvaluer = new Point(x, y);
@@ -468,7 +548,7 @@ class Computer {
     return false;
   }
 
-  static PowerUp closestPowerUp(PowerUp[] powerups, Snake snake, Board board) {
+  static PowerUp closestPowerUp(PowerUp[] powerups, Snake snake) {
     PowerUp closest = powerups[0];
     int max_distance = Point.distance(snake.head, closest);
     for (PowerUp powerup : powerups) {
@@ -480,6 +560,29 @@ class Computer {
       }
     }
     return closest;
+  }
+
+  static Point closestSnakesTail(Snake[] snakes, Snake snake) {
+    // Il est seul, faut l aider, on l envoie tout en haut a gauche
+    if (snakes.length == 2) return new Point(0, 0);
+
+    Snake closest = null;
+    int max_distance = 99999;
+    for (Snake s : snakes) {
+      // que les miens
+      if (!s.isMine) continue;
+      // on ne se mort pas la queue
+      if (s.id == snake.id) continue;
+      // On suit le premier par defaut
+      if (closest == null) closest = s;
+      // On peut l atteindre, on calcul la distance
+      int d = Point.distance(snake.head, s.tail);
+      if (d < max_distance) {
+        max_distance = d;
+        closest = s;
+      }
+    }
+    return closest.tail;
   }
 
   /*
@@ -502,7 +605,17 @@ class Computer {
     return forbiddenPoints.isAvailable(nextPosition);
   }
 
-  static Point getDirection(Snake s, PowerUp p, ForbiddenPoints forbiddenPoints) {
+  // Nécessaire quand on a été un peut dur et qu il peut rien faire "apparamment"
+  static boolean canGoSoft(Snake s, Point relative, ForbiddenPoints forbiddenPoints) {
+    // TOUS sauf la premiere qui bouge et sauf la derniere qui va disparaitre lors du mouvement
+    Point nextPosition = Point.move(s.head, relative);
+    for (Point part : s.parts) {
+      if (part.equals(nextPosition)) return false;
+    }
+    return forbiddenPoints.isAvailableSansCulDeSac(nextPosition);
+  }
+
+  static Point getDirection(Snake s, Point p, ForbiddenPoints forbiddenPoints) {
     Point head = s.head;
     // si tu veux atteindre le truc, en priorité, monte
     // si il veut aller a droite, mais que son corps est a droite, monter
@@ -534,10 +647,10 @@ class Computer {
     */
 
     List<Point> choices = new ArrayList();
-    if (canGo(s, Point.UP, forbiddenPoints)) choices.add(Point.UP);
-    if (canGo(s, Point.DOWN, forbiddenPoints)) choices.add(Point.DOWN);
-    if (canGo(s, Point.LEFT, forbiddenPoints)) choices.add(Point.LEFT);
-    if (canGo(s, Point.RIGHT, forbiddenPoints)) choices.add(Point.RIGHT);
+    if (canGoSoft(s, Point.UP, forbiddenPoints)) choices.add(Point.UP);
+    if (canGoSoft(s, Point.DOWN, forbiddenPoints)) choices.add(Point.DOWN);
+    if (canGoSoft(s, Point.LEFT, forbiddenPoints)) choices.add(Point.LEFT);
+    if (canGoSoft(s, Point.RIGHT, forbiddenPoints)) choices.add(Point.RIGHT);
     // on peut rien faire ? on va au pif ? // TODO a reflechir
     if (choices.size() == 0) return Point.UP;
 
@@ -582,9 +695,10 @@ class Player {
     Board board = Board.build(in);
     board.buildSol();
 
+    Map<Integer, Memory> memories = new HashMap();
+
     ForbiddenPoints forbiddenPoints = new ForbiddenPoints(board);
     forbiddenPoints.buildCulDeSac();
-    T.d("FORBIDDEN\n" + forbiddenPoints);
 
     int snakePerPlayer = in.nextInt();
     Set<Integer> myIds;
@@ -598,20 +712,37 @@ class Player {
     // myIds = getIds(snakePerPlayer, in);
     // }
 
+    for (Integer snakeId : myIds) {
+      memories.put(snakeId, new Memory(snakeId));
+    }
+
     int loop = 0;
     while (loop < 250) {
       PowerUp[] powerups = PowerUp.builds(in);
       Snake[] snakes = Snake.builds(in, myIds);
       forbiddenPoints.newLoop(snakes, powerups);
-      T.d("forbid\n" + forbiddenPoints);
+      // T.d("forbid\n" + forbiddenPoints);
 
       StringBuilder resultat = new StringBuilder();
       for (Snake s : snakes) {
         if (!s.isMine) continue;
-        PowerUp closest = Computer.closestPowerUp(powerups, s, board);
+        Memory m = memories.get(Integer.valueOf(s.id));
+        m.saveNewPosition(s); // va avec le dernier nextMove() realisé
+
+        Point closest;
+        if (m.hasMoved() && !m.isFollowingTail()) {
+          closest = Computer.closestPowerUp(powerups, s);
+        } else {
+          m.reduceFollowTail();
+          T.d("" + m);
+          // Il n a pas bougé, on va le forcer
+          closest = Computer.closestSnakesTail(snakes, s);
+        }
         Point dir = Computer.getDirection(s, closest, forbiddenPoints);
         Point newHead = Point.move(s.head, dir);
         forbiddenPoints.add(newHead);
+
+        m.saveNewDir(dir);
         // On avait deja ajouté la queue si proche de 1. donc on ne fait rien ici.
         resultat.append(s.id + " " + dir.name() + ";");
       }
