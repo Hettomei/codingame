@@ -610,11 +610,11 @@ class Computer {
     // si tu veux atteindre le truc, en priorité, monte
     // si il veut aller a droite, mais que son corps est a droite, monter
     if (head.x < p.x && canGo(s, Point.RIGHT, forbiddenPoints)) return Point.RIGHT;
-    if (head.x < p.x && canGo(s, Point.UP, forbiddenPoints)) return Point.UP;
+    // if (head.x < p.x && canGo(s, Point.UP, forbiddenPoints)) return Point.UP;
 
     // si tu veux atteindre le truc, en priorité, monte
     if (head.x > p.x && canGo(s, Point.LEFT, forbiddenPoints)) return Point.LEFT;
-    if (head.x > p.x && canGo(s, Point.UP, forbiddenPoints)) return Point.UP;
+    // if (head.x > p.x && canGo(s, Point.UP, forbiddenPoints)) return Point.UP;
 
     if (head.y > p.y && canGo(s, Point.UP, forbiddenPoints)) return Point.UP;
     if (head.y > p.y && canGo(s, Point.RIGHT, forbiddenPoints)) return Point.RIGHT;
