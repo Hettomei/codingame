@@ -563,9 +563,6 @@ class Computer {
   }
 
   static Point closestSnakesTail(Snake[] snakes, Snake snake) {
-    // Il est seul, faut l aider, on l envoie tout en haut a gauche
-    if (snakes.length == 2) return new Point(0, 0);
-
     Snake closest = null;
     int max_distance = 99999;
     for (Snake s : snakes) {
@@ -582,6 +579,9 @@ class Computer {
         closest = s;
       }
     }
+
+    // Il est seul, faut l aider, on l envoie tout en haut a gauche
+    if (closest == null) return new Point(0, 0);
     return closest.tail;
   }
 
