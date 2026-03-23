@@ -19,67 +19,47 @@ class T {
 
 class Memory {
   int id;
-  // La derniere direction
-  List<Point> lastDirs;
-  // a donné la derniere
-  List<String> lastPositions;
-  int isFollowingCountdown;
+  Point target;
+  Set<Point> banTarget;
+  int distance;
+  int compteur;
+  static int DEFAUT = 5;
 
   Memory(Integer id) {
     this.id = id.intValue();
-    this.lastDirs = new ArrayList();
-    // On ajoute le premier pour etre toujours egale
-    this.lastDirs.add(Point.WAIT);
-    this.lastPositions = new ArrayList();
-    this.isFollowingCountdown = 0;
+    this.target = null;
+    this.banTarget = new HashSet();
+    this.distance = 99999;
+    this.compteur = DEFAUT;
   }
 
-  void saveNewDir(Point p) {
-    lastDirs.add(p);
-  }
-
-  // Memorise all the places
-  void saveNewPosition(Snake s) {
-    lastPositions.add(s.getOrderedParts());
-  }
-
-  boolean hasNotMoved() {
-    if (lastPositions.size() < 2) return false;
-    // Point a = lastDirs.get(lastDirs.size() - 1);
-    // Point b = lastDirs.get(lastDirs.size() - 2);
-
-    String c = lastPositions.get(lastPositions.size() - 1);
-    String d = lastPositions.get(lastPositions.size() - 2);
-
-    if (lastPositions.size() > 4) {
-      String e = lastPositions.get(lastPositions.size() - 3);
-      String f = lastPositions.get(lastPositions.size() - 4);
-      String g = lastPositions.get(lastPositions.size() - 5);
-      // return a.equals(b) && c.equals(d);
-      // comparer -1 avec moins -5
-      return c.equals(d) || c.equals(e) || c.equals(f) || c.equals(g);
+  void updateTarget(Point p, int distance) {
+    // Si au bout de 5 tour on est pas mieux, on s active;
+    if (target != null && target.equals(p)) {
+      compteur--;
+      if (compteur == 0) {
+        if (distance < this.distance - 2) {
+          // tout va bien il a bougé
+          target = null; // va reset au prochain
+        } else {
+          banTarget.add(p);
+          // il est moins bien on le ban
+        }
+      }
     } else {
-      return c.equals(d);
+      // remise a zero
+      target = p;
+      this.distance = distance;
+      compteur = DEFAUT;
     }
   }
 
-  boolean hasMoved() {
-    return !hasNotMoved();
-  }
-
-  void reduceFollowTail() {
-    isFollowingCountdown--;
-    if (isFollowingCountdown == -1) {
-      isFollowingCountdown = 5;
-    }
-  }
-
-  boolean isFollowingTail() {
-    return isFollowingCountdown > 0;
+  boolean isBanned(Point p) {
+    return banTarget.contains(p);
   }
 
   public String toString() {
-    return "Mem:" + id + " Size:" + lastPositions.size();
+    return "Mem:" + id + " target:" + banTarget;
   }
 }
 
@@ -126,10 +106,10 @@ class Board {
     // interdit d aller tout a droite
     // et on fait depasser de 5
     // ###  ##   ####  ##  #####
-    // for (int y = -5; y <= height; y++) {
-    //   leSol.add(new Point(-1, y));
-    //   leSol.add(new Point(width, y));
-    // }
+    for (int y = height - 5; y <= height; y++) {
+      leSol.add(new Point(-1, y));
+      leSol.add(new Point(width, y));
+    }
   }
 
   static Board build(Scanner in) {
@@ -495,10 +475,10 @@ class Snake {
     // si une case est libre, on la compare au board
     if (!isMine) {
       // sans la tete quand c est le mien
-      addToAvoidIfNeeded(Point.move(head, Point.UP), board, avoid);
-      addToAvoidIfNeeded(Point.move(head, Point.DOWN), board, avoid);
-      addToAvoidIfNeeded(Point.move(head, Point.LEFT), board, avoid);
-      addToAvoidIfNeeded(Point.move(head, Point.RIGHT), board, avoid);
+      // addToAvoidIfNeeded(Point.move(head, Point.UP), board, avoid);
+      // addToAvoidIfNeeded(Point.move(head, Point.DOWN), board, avoid);
+      // addToAvoidIfNeeded(Point.move(head, Point.LEFT), board, avoid);
+      // addToAvoidIfNeeded(Point.move(head, Point.RIGHT), board, avoid);
     }
 
     for (Point p : parts) {
@@ -548,10 +528,11 @@ class Computer {
     return false;
   }
 
-  static PowerUp closestPowerUp(PowerUp[] powerups, Snake snake) {
-    PowerUp closest = powerups[0];
-    int max_distance = Point.distance(snake.head, closest);
+  static PowerUp closestPowerUp(PowerUp[] powerups, Snake snake, Memory m) {
+    PowerUp closest = null;
+    int max_distance = 999999;
     for (PowerUp powerup : powerups) {
+      if (m.isBanned(powerup)) continue;
       // On peut l atteindre, on calcul la distance
       int d = Point.distance(snake.head, powerup);
       if (d < max_distance) {
@@ -559,6 +540,7 @@ class Computer {
         closest = powerup;
       }
     }
+    if (closest == null) return powerups[0];
     return closest;
   }
 
@@ -727,22 +709,13 @@ class Player {
       for (Snake s : snakes) {
         if (!s.isMine) continue;
         Memory m = memories.get(Integer.valueOf(s.id));
-        m.saveNewPosition(s); // va avec le dernier nextMove() realisé
 
-        Point closest;
-        if (m.hasMoved() && !m.isFollowingTail()) {
-          closest = Computer.closestPowerUp(powerups, s);
-        } else {
-          m.reduceFollowTail();
-          T.d("" + m);
-          // Il n a pas bougé, on va le forcer
-          closest = Computer.closestSnakesTail(snakes, s);
-        }
+        Point closest = Computer.closestPowerUp(powerups, s, m);
+        m.updateTarget(closest, Point.distance(s.head, closest));
         Point dir = Computer.getDirection(s, closest, forbiddenPoints);
         Point newHead = Point.move(s.head, dir);
         forbiddenPoints.add(newHead);
 
-        m.saveNewDir(dir);
         // On avait deja ajouté la queue si proche de 1. donc on ne fait rien ici.
         resultat.append(s.id + " " + dir.name() + ";");
       }
