@@ -20,20 +20,24 @@ class T {
 class Memory {
   int id;
   Point target;
-  Set<Point> banTarget;
+  List<Point> banTarget;
   int distance;
   int compteur;
-  static int DEFAUT = 5;
+  int BIGCOUNT;
+  static int DEFAUT = 4;
 
   Memory(Integer id) {
     this.id = id.intValue();
     this.target = null;
-    this.banTarget = new HashSet();
+    this.banTarget = new ArrayList();
     this.distance = 99999;
     this.compteur = DEFAUT;
+    this.BIGCOUNT = 1;
   }
 
   void updateTarget(Point p, int distance) {
+    this.BIGCOUNT++;
+    if (this.BIGCOUNT % 20 == 0) removeFirstBan();
     // Si au bout de 5 tour on est pas mieux, on s active;
     if (target != null && target.equals(p)) {
       compteur--;
@@ -56,6 +60,10 @@ class Memory {
 
   boolean isBanned(Point p) {
     return banTarget.contains(p);
+  }
+
+  void removeFirstBan() {
+    if (banTarget.size() > 0) banTarget.remove(0);
   }
 
   public String toString() {
