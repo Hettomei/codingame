@@ -8,6 +8,9 @@
 
 Tout copier sauf le nom du package tout en haut
 
+# Fin du concours :
+
+Arrivé 778 eme / 2382 participants
 
 # Goal
 
