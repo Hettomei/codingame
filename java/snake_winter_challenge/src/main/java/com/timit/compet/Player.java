@@ -20,20 +20,24 @@ class T {
 class Memory {
   int id;
   Point target;
-  Set<Point> banTarget;
+  List<Point> banTarget;
   int distance;
   int compteur;
-  static int DEFAUT = 5;
+  int BIGCOUNT;
+  static int DEFAUT = 4;
 
   Memory(Integer id) {
     this.id = id.intValue();
     this.target = null;
-    this.banTarget = new HashSet();
+    this.banTarget = new ArrayList();
     this.distance = 99999;
     this.compteur = DEFAUT;
+    this.BIGCOUNT = 1;
   }
 
-  void updateTarget(Point p, int distance) {
+  void updateTarget(Point p, int distance, Snake s) {
+    this.BIGCOUNT++;
+    if (this.BIGCOUNT % (25 - Math.min(24, s.getCount())) == 0) removeFirstBan();
     // Si au bout de 5 tour on est pas mieux, on s active;
     if (target != null && target.equals(p)) {
       compteur--;
@@ -50,12 +54,16 @@ class Memory {
       // remise a zero
       target = p;
       this.distance = distance;
-      compteur = DEFAUT;
+      compteur = s.getCount();
     }
   }
 
   boolean isBanned(Point p) {
     return banTarget.contains(p);
+  }
+
+  void removeFirstBan() {
+    if (banTarget.size() > 0) banTarget.remove(0);
   }
 
   public String toString() {
@@ -532,9 +540,9 @@ class Computer {
     PowerUp closest = null;
     int max_distance = 999999;
     for (PowerUp powerup : powerups) {
-      if (m.isBanned(powerup)) continue;
       // On peut l atteindre, on calcul la distance
       int d = Point.distance(snake.head, powerup);
+      if (m.isBanned(powerup) && d != 1) continue;
       if (d < max_distance) {
         max_distance = d;
         closest = powerup;
@@ -602,11 +610,11 @@ class Computer {
     // si tu veux atteindre le truc, en priorité, monte
     // si il veut aller a droite, mais que son corps est a droite, monter
     if (head.x < p.x && canGo(s, Point.RIGHT, forbiddenPoints)) return Point.RIGHT;
-    if (head.x < p.x && canGo(s, Point.UP, forbiddenPoints)) return Point.UP;
+    // if (head.x < p.x && canGo(s, Point.UP, forbiddenPoints)) return Point.UP;
 
     // si tu veux atteindre le truc, en priorité, monte
     if (head.x > p.x && canGo(s, Point.LEFT, forbiddenPoints)) return Point.LEFT;
-    if (head.x > p.x && canGo(s, Point.UP, forbiddenPoints)) return Point.UP;
+    // if (head.x > p.x && canGo(s, Point.UP, forbiddenPoints)) return Point.UP;
 
     if (head.y > p.y && canGo(s, Point.UP, forbiddenPoints)) return Point.UP;
     if (head.y > p.y && canGo(s, Point.RIGHT, forbiddenPoints)) return Point.RIGHT;
@@ -711,7 +719,7 @@ class Player {
         Memory m = memories.get(Integer.valueOf(s.id));
 
         Point closest = Computer.closestPowerUp(powerups, s, m);
-        m.updateTarget(closest, Point.distance(s.head, closest));
+        m.updateTarget(closest, Point.distance(s.head, closest), s);
         Point dir = Computer.getDirection(s, closest, forbiddenPoints);
         Point newHead = Point.move(s.head, dir);
         forbiddenPoints.add(newHead);
