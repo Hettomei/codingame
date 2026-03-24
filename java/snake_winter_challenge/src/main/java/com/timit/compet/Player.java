@@ -35,9 +35,9 @@ class Memory {
     this.BIGCOUNT = 1;
   }
 
-  void updateTarget(Point p, int distance) {
+  void updateTarget(Point p, int distance, Snake s) {
     this.BIGCOUNT++;
-    if (this.BIGCOUNT % 20 == 0) removeFirstBan();
+    if (this.BIGCOUNT % (25 - Math.min(24, s.getCount())) == 0) removeFirstBan();
     // Si au bout de 5 tour on est pas mieux, on s active;
     if (target != null && target.equals(p)) {
       compteur--;
@@ -54,7 +54,7 @@ class Memory {
       // remise a zero
       target = p;
       this.distance = distance;
-      compteur = DEFAUT;
+      compteur = s.getCount();
     }
   }
 
@@ -540,9 +540,9 @@ class Computer {
     PowerUp closest = null;
     int max_distance = 999999;
     for (PowerUp powerup : powerups) {
-      if (m.isBanned(powerup)) continue;
       // On peut l atteindre, on calcul la distance
       int d = Point.distance(snake.head, powerup);
+      if (m.isBanned(powerup) && d != 1) continue;
       if (d < max_distance) {
         max_distance = d;
         closest = powerup;
@@ -719,7 +719,7 @@ class Player {
         Memory m = memories.get(Integer.valueOf(s.id));
 
         Point closest = Computer.closestPowerUp(powerups, s, m);
-        m.updateTarget(closest, Point.distance(s.head, closest));
+        m.updateTarget(closest, Point.distance(s.head, closest), s);
         Point dir = Computer.getDirection(s, closest, forbiddenPoints);
         Point newHead = Point.move(s.head, dir);
         forbiddenPoints.add(newHead);
