@@ -1,6 +1,26 @@
-# compiler :
+# installation
+
+
+Telecharger commandlinetools-linux-14742923_latest.zip sur https://developer.android.com/tools?hl=fr
+
+Dans le bashrc. Note : sdk manager s'attend VRAIMENT a avoir un dossier "latest"
+
+```
+if [ -d "$HOME/programmes/android-sdk" ] ; then
+  export ANDROID_SDK_ROOT="$HOME/programmes/android-sdk"
+  export PATH=$PATH:$ANDROID_SDK_ROOT/cmdline-tools/latest/bin
+  export PATH=$PATH:$ANDROID_SDK_ROOT/build-tools/34.0.0
+  export PATH=$PATH:$ANDROID_SDK_ROOT/platform-tools
+fi
+```
 
 Avoir java 21
+
+```
+sdkmanager "platforms;android-34" "build-tools;34.0.0" "platform-tools"
+```
+
+# compiler et envoyer l app:
 
 ```
 ./build.sh
@@ -11,6 +31,14 @@ adb install build/app-signed.apk
 
 # (Réinstaller si déjà présent)
 adb install -r build/app-signed.apk
+```
+
+# Backend
+
+Pour le moment le backend ne fait rien d autre que de montrer qu'il a recu les data
+
+```
+python simple_backend.py
 ```
 
 # demo
