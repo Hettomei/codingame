@@ -22,6 +22,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -195,7 +196,7 @@ public class MainActivity extends Activity {
             in.close();
 
             // Part footer
-            out.write(("\r\n--" + boundary + "--\r\n").getBytes("UTF-8"));
+            out.write(("\r\n--" + boundary + "--\r\n").getBytes(StandardCharsets.UTF_8));
             out.flush();
             out.close();
 
@@ -204,12 +205,7 @@ public class MainActivity extends Activity {
             return code >= 200 && code < 300;
 
         } catch (Exception e) {
-            String a = "\n" + e.getClass().getSimpleName() + ": " + e.getMessage() + "\n";
-
-            mainHandler.post(() -> {
-                logView.append(a);
-                scrollView.post(() -> scrollView.fullScroll(ScrollView.FOCUS_DOWN));
-            });
+            logException(e);
             return false;
         }
     }
@@ -243,7 +239,7 @@ public class MainActivity extends Activity {
                 }
             }
         } catch (Exception e) {
-            mainHandler.post(() -> logView.append("Erreur filename: " + e.getMessage() + "\n"));
+            logException(e);
             throw e;
         }
 
@@ -277,11 +273,10 @@ public class MainActivity extends Activity {
                 }
 
                 // Construction du message de debug
-                String debugInfo = "\n[DEBUG FILE]\n" +
+                String debugInfo = "[DEBUG FILE]\n" +
                         "ID/Uri : " + uri.getLastPathSegment() + "\n" +
                         "Nom réel : " + displayName + "\n" +
-                        "Date de capture : " + dateString + "\n" +
-                        "--------------------------\n";
+                        "Date de capture : " + dateString + "\n";
 
                 // Affichage dans le logView sur le thread principal
                 mainHandler.post(() -> {
@@ -297,8 +292,11 @@ public class MainActivity extends Activity {
     }
 
     private void logException(Exception e){
-        String errorMsg = "ERROR :" + e.getClass().getSimpleName() + " " + e.getMessage() + "\n";
-        mainHandler.post(() -> logView.append(errorMsg));
+        String errorMsg = "ERROR: " + e.getClass().getSimpleName() + " " + e.getMessage() + "\n";
+        mainHandler.post(() -> {
+            logView.append(errorMsg);
+            scrollView.post(() -> scrollView.fullScroll(ScrollView.FOCUS_DOWN));
+        });
     }
 
     private String getFileNameFonctionnepas(Uri uri) {
@@ -316,13 +314,7 @@ public class MainActivity extends Activity {
                     return name;
             }
         } catch (Exception e) {
-            String a = "\n" + e.getClass().getSimpleName() + ": " + e.getMessage() + "\n";
-
-            mainHandler.post(() -> {
-                logView.append(a);
-                scrollView.post(() -> scrollView.fullScroll(ScrollView.FOCUS_DOWN));
-            });
-
+            logException(e);
         }
 
         // Essai 2 : via OpenableColumns
@@ -341,13 +333,7 @@ public class MainActivity extends Activity {
                 }
             }
         } catch (Exception e) {
-
-            String a = "\n" + e.getClass().getSimpleName() + ": " + e.getMessage() + "\n";
-
-            mainHandler.post(() -> {
-                logView.append(a);
-                scrollView.post(() -> scrollView.fullScroll(ScrollView.FOCUS_DOWN));
-            });
+            logException(e);
         }
 
         // Essai 3 : dernier segment de l'Uri
@@ -374,7 +360,6 @@ public class MainActivity extends Activity {
         calendar.set(Calendar.MINUTE, 0);
         calendar.set(Calendar.SECOND, 0);
         calendar.set(Calendar.MILLISECOND, 0);
-        long startTime = calendar.getTimeInMillis();
 
         // 2. Préparer la requête sur le MediaStore
         Uri collection = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
@@ -385,8 +370,9 @@ public class MainActivity extends Activity {
 
         // On filtre par date de capture et on exclut les images qui n'ont pas de date
         String selection = MediaStore.Images.Media.DATE_TAKEN + " >= ?";
+        long startTime = calendar.getTimeInMillis();
         String[] selectionArgs = new String[]{String.valueOf(startTime)};
-        String sortOrder = MediaStore.Images.Media.DATE_TAKEN + " DESC";
+        String sortOrder = MediaStore.Images.Media.DATE_TAKEN + " ASC";
 
         try (Cursor cursor = getContentResolver().query(collection, projection, selection, selectionArgs, sortOrder)) {
             if (cursor != null && cursor.moveToFirst()) {
@@ -400,7 +386,7 @@ public class MainActivity extends Activity {
                 } while (cursor.moveToNext());
             }
         } catch (Exception e) {
-            mainHandler.post(() -> logView.append("Erreur scan: " + e.getMessage() + "\n"));
+            logException(e);
         }
 
         // 3. Informer l'utilisateur et envoyer
