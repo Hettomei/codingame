@@ -2,6 +2,7 @@ package com.equipothee.helloworld;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -27,6 +28,10 @@ import java.util.Locale;
 public class MainActivity extends Activity {
 
     private static final int PICK_IMAGES = 1;
+    // Constantes pour la sauvegarde
+    private static final String PREFS_NAME = "AppPrefs";
+    private static final String KEY_URL = "target_url";
+    private static final String DEFAULT_URL = "http://192.168.1.15:8000/sendpics/send-photo";
     private EditText urlField;
     private TextView logView;
     private ScrollView scrollView;
@@ -38,12 +43,30 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
 
         mainHandler = new Handler(Looper.getMainLooper());
-        urlField = findViewById(R.id.urlField);
         logView = findViewById(R.id.logView);
         scrollView = findViewById(R.id.scrollView);
+        urlField = findViewById(R.id.urlField);
+
+        // 1. Charger l'URL sauvegardée au démarrage
+        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        String savedUrl = prefs.getString(KEY_URL, DEFAULT_URL);
+        urlField.setText(savedUrl);
+
+        // 2. Logique du bouton Reset
+        Button btnReset = findViewById(R.id.btnReset);
+        btnReset.setOnClickListener(v -> {
+            urlField.setText(DEFAULT_URL);
+            saveUrl(DEFAULT_URL); // On remet aussi à zéro la sauvegarde
+        });
 
         Button btnSend = findViewById(R.id.btnSend);
         btnSend.setOnClickListener(v -> pickImages());
+    }
+
+    // Méthode pour sauvegarder l'URL
+    private void saveUrl(String url) {
+        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        prefs.edit().putString(KEY_URL, url).apply();
     }
 
     private void pickImages() {
@@ -58,6 +81,9 @@ public class MainActivity extends Activity {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode != PICK_IMAGES || resultCode != RESULT_OK || data == null)
             return;
+
+        String currentUrl = urlField.getText().toString().trim();
+        saveUrl(currentUrl);
 
         List<Uri> uris = new ArrayList<>();
         if (data.getClipData() != null) {
@@ -161,7 +187,7 @@ public class MainActivity extends Activity {
     }
 
     private String getFileName(Uri uri) {
-        String[] projection = { android.provider.MediaStore.Images.Media.DATE_TAKEN };
+        String[] projection = {android.provider.MediaStore.Images.Media.DATE_TAKEN};
         try (Cursor cursor = getContentResolver().query(uri, projection, null, null, null)) {
             if (cursor != null && cursor.moveToFirst()) {
                 long dateTaken = cursor.getLong(0);
@@ -181,7 +207,7 @@ public class MainActivity extends Activity {
 
     private String getFileNameFonctionnepas(Uri uri) {
         // Essai 1 : via MediaStore (donne le vrai nom PXL_xxxx.jpg)
-        String[] projection = { android.provider.MediaStore.MediaColumns.DISPLAY_NAME };
+        String[] projection = {android.provider.MediaStore.MediaColumns.DISPLAY_NAME};
         try (Cursor cursor = getContentResolver().query(uri, projection, null, null, null)) {
             if (cursor != null && cursor.moveToFirst()) {
                 String name = cursor.getString(0);

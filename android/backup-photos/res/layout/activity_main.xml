@@ -9,17 +9,26 @@
         android:id="@+id/urlField"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="http://192.168.1.15:8000/sendpics/send-photo"
+        android:text="nothing"
         android:inputType="textUri"
         android:singleLine="true"
-        android:hint="URL"/>
+        android:hint="URL" />
+
+    <!-- Nouveau bouton Reset -->
+    <Button
+        android:id="@+id/btnReset"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end"
+        android:textSize="12sp"
+        android:text="Reset URL par défaut" />
 
     <Button
         android:id="@+id/btnSend"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
-        android:text="Envoyer photo"/>
+        android:text="Envoyer photo" />
 
     <ScrollView
         android:id="@+id/scrollView"
@@ -34,7 +43,7 @@
             android:layout_height="wrap_content"
             android:fontFamily="monospace"
             android:textSize="13sp"
-            android:padding="8dp"/>
+            android:padding="8dp" />
 
     </ScrollView>
 

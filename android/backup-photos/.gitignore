@@ -1,2 +1,6 @@
 mykey.jks
 /build/
+/.idea/
+/.classpath
+/.project
+/backup-photos.iml
