@@ -21,14 +21,20 @@
         android:layout_height="wrap_content"
         android:layout_gravity="end"
         android:textSize="12sp"
-        android:text="Reset URL par défaut" />
+        android:text="Reset URL" />
 
     <Button
         android:id="@+id/btnSend"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
-        android:text="Envoyer photo" />
+        android:text="Select photo" />
+
+    <Button
+        android:id="@+id/btnMonth"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Envoyer du mois" />
 
     <ScrollView
         android:id="@+id/scrollView"

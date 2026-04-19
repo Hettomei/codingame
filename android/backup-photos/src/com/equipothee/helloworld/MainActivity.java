@@ -1,10 +1,13 @@
 package com.equipothee.helloworld;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -25,9 +28,14 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+import android.provider.MediaStore;
+import android.content.ContentUris;
+import java.util.Calendar;
+
 public class MainActivity extends Activity {
 
     private static final int PICK_IMAGES = 1;
+    private static final int PERMISSION_REQUEST_CODE = 100;
     // Constantes pour la sauvegarde
     private static final String PREFS_NAME = "AppPrefs";
     private static final String KEY_URL = "target_url";
@@ -61,7 +69,44 @@ public class MainActivity extends Activity {
 
         Button btnSend = findViewById(R.id.btnSend);
         btnSend.setOnClickListener(v -> pickImages());
+        findViewById(R.id.btnMonth).setOnClickListener(v -> checkPermissionAndProceed());
     }
+
+    private void checkPermissionAndProceed() {
+        // Déterminer quelle permission demander selon la version d'Android
+        String permission;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            permission = Manifest.permission.READ_MEDIA_IMAGES;
+        } else {
+            permission = Manifest.permission.READ_EXTERNAL_STORAGE;
+        }
+
+        // Vérifier si la permission est déjà accordée
+        if (checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED) {
+            // Déjà autorisé, on lance le scan
+            selectCurrentMonthPhotos();
+        } else {
+            // Non autorisé, on demande à l'utilisateur
+            requestPermissions(new String[]{permission}, PERMISSION_REQUEST_CODE);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (requestCode == PERMISSION_REQUEST_CODE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // L'utilisateur a dit OUI
+                logView.append("Permission accordée.\n");
+                selectCurrentMonthPhotos();
+            } else {
+                // L'utilisateur a dit NON
+                logView.append("Erreur : Permission refusée. Impossible de scanner les photos.\n");
+            }
+        }
+    }
+
 
     // Méthode pour sauvegarder l'URL
     private void saveUrl(String url) {
@@ -187,7 +232,7 @@ public class MainActivity extends Activity {
     }
 
     private String getFileName(Uri uri) {
-        String[] projection = {android.provider.MediaStore.Images.Media.DATE_TAKEN};
+        String[] projection = {MediaStore.Images.Media.DATE_TAKEN};
         try (Cursor cursor = getContentResolver().query(uri, projection, null, null, null)) {
             if (cursor != null && cursor.moveToFirst()) {
                 long dateTaken = cursor.getLong(0);
@@ -197,7 +242,9 @@ public class MainActivity extends Activity {
                     return "IMG_" + formatted + ".jpg";
                 }
             }
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            mainHandler.post(() -> logView.append("Erreur filename: " + e.getMessage() + "\n"));
+            throw e;
         }
 
         // Fallback : date actuelle
@@ -205,9 +252,58 @@ public class MainActivity extends Activity {
         return "IMG_" + formatted + ".jpg";
     }
 
+    private void debugChooseFileName(Uri uri) {
+        // On définit les colonnes que l'on veut récupérer
+        String[] projection = {
+                MediaStore.Images.Media.DATE_TAKEN,
+                MediaStore.Images.Media.DISPLAY_NAME
+        };
+
+        try (Cursor cursor = getContentResolver().query(uri, projection, null, null, null)) {
+            if (cursor != null && cursor.moveToFirst()) {
+                // 1. Récupération de la date de capture
+                int dateIdx = cursor.getColumnIndex(MediaStore.Images.Media.DATE_TAKEN);
+                long dateTaken = (dateIdx != -1) ? cursor.getLong(dateIdx) : 0;
+
+                // 2. Récupération du nom affiché (nom de fichier réel)
+                int nameIdx = cursor.getColumnIndex(MediaStore.Images.Media.DISPLAY_NAME);
+                String displayName = (nameIdx != -1) ? cursor.getString(nameIdx) : "Inconnu";
+
+                // Formatage de la date pour le log
+                String dateString = "Aucune date";
+                if (dateTaken > 0) {
+                    dateString = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+                            .format(new Date(dateTaken));
+                }
+
+                // Construction du message de debug
+                String debugInfo = "\n[DEBUG FILE]\n" +
+                        "ID/Uri : " + uri.getLastPathSegment() + "\n" +
+                        "Nom réel : " + displayName + "\n" +
+                        "Date de capture : " + dateString + "\n" +
+                        "--------------------------\n";
+
+                // Affichage dans le logView sur le thread principal
+                mainHandler.post(() -> {
+                    logView.append(debugInfo);
+                    scrollView.post(() -> scrollView.fullScroll(ScrollView.FOCUS_DOWN));
+                });
+            } else {
+                mainHandler.post(() -> logView.append("DEBUG : Impossible de lire les métadonnées pour cet URI.\n"));
+            }
+        } catch (Exception e) {
+            logException(e);
+        }
+    }
+
+    private void logException(Exception e){
+        String errorMsg = "ERROR :" + e.getClass().getSimpleName() + " " + e.getMessage() + "\n";
+        mainHandler.post(() -> logView.append(errorMsg));
+    }
+
     private String getFileNameFonctionnepas(Uri uri) {
         // Essai 1 : via MediaStore (donne le vrai nom PXL_xxxx.jpg)
-        String[] projection = {android.provider.MediaStore.MediaColumns.DISPLAY_NAME};
+        String[] projection = {MediaStore.MediaColumns.DISPLAY_NAME};
         try (Cursor cursor = getContentResolver().query(uri, projection, null, null, null)) {
             if (cursor != null && cursor.moveToFirst()) {
                 String name = cursor.getString(0);
@@ -267,4 +363,58 @@ public class MainActivity extends Activity {
         }
         return super.onKeyDown(keyCode, event);
     }
+
+    private void selectCurrentMonthPhotos() {
+        List<Uri> uris = new ArrayList<>();
+
+        // 1. Calculer le timestamp du 1er jour du mois actuel à 00:00:00
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.DAY_OF_MONTH, 1);
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+        long startTime = calendar.getTimeInMillis();
+
+        // 2. Préparer la requête sur le MediaStore
+        Uri collection = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+        String[] projection = new String[]{
+                MediaStore.Images.Media._ID,
+                MediaStore.Images.Media.DATE_TAKEN
+        };
+
+        // On filtre par date de capture et on exclut les images qui n'ont pas de date
+        String selection = MediaStore.Images.Media.DATE_TAKEN + " >= ?";
+        String[] selectionArgs = new String[]{String.valueOf(startTime)};
+        String sortOrder = MediaStore.Images.Media.DATE_TAKEN + " DESC";
+
+        try (Cursor cursor = getContentResolver().query(collection, projection, selection, selectionArgs, sortOrder)) {
+            if (cursor != null && cursor.moveToFirst()) {
+                int idColumn = cursor.getColumnIndexOrThrow(MediaStore.Images.Media._ID);
+
+                do {
+                    long id = cursor.getLong(idColumn);
+                    Uri contentUri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id);
+                    uris.add(contentUri);
+                    debugChooseFileName(contentUri);
+                } while (cursor.moveToNext());
+            }
+        } catch (Exception e) {
+            mainHandler.post(() -> logView.append("Erreur scan: " + e.getMessage() + "\n"));
+        }
+
+        // 3. Informer l'utilisateur et envoyer
+        String targetUrl = urlField.getText().toString().trim();
+        String msg = "Auto-sélection : " + uris.size() + " photos trouvées pour ce mois.\n";
+
+        mainHandler.post(() -> {
+            logView.append(msg);
+            scrollView.post(() -> scrollView.fullScroll(ScrollView.FOCUS_DOWN));
+        });
+
+//        if (!uris.isEmpty()) {
+//            new Thread(() -> sendAll(uris, targetUrl)).start();
+//        }
+    }
+
 }
