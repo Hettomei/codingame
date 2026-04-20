@@ -5,36 +5,76 @@
     android:orientation="vertical"
     android:padding="5dp">
 
-    <EditText
-        android:id="@+id/urlField"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="nothing"
-        android:inputType="textUri"
-        android:singleLine="true"
-        android:hint="URL" />
+        android:orientation="horizontal">
 
-    <!-- Nouveau bouton Reset -->
-    <Button
-        android:id="@+id/btnReset"
-        android:layout_width="wrap_content"
+        <EditText
+            android:id="@+id/urlField"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="8"
+            android:text="nothing"
+            android:inputType="textUri"
+            android:singleLine="true"
+            android:hint="URL" />
+
+        <!-- Nouveau bouton Reset -->
+        <Button
+            android:id="@+id/btnReset"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="2"
+            android:textSize="12sp"
+            android:text="Reset" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="end"
-        android:textSize="12sp"
-        android:text="Reset URL" />
+        android:orientation="horizontal">
 
-    <Button
-        android:id="@+id/btnSend"
+        <EditText
+            android:id="@+id/searchField"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="8"
+            android:text="nothing"
+            android:inputType="text"
+            android:singleLine="true"
+            android:hint="Search" />
+
+        <!-- Nouveau bouton Reset -->
+        <Button
+            android:id="@+id/btnResetSearch"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="2"
+            android:textSize="12sp"
+            android:text="Reset" />
+    </LinearLayout>
+
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
-        android:text="Select photo" />
+        android:orientation="horizontal">
 
-    <Button
-        android:id="@+id/btnMonth"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Envoyer du mois" />
+        <Button
+            android:id="@+id/btnSend"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Selection" />
+
+        <Button
+            android:id="@+id/btnMonth"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Recherche Auto" />
+    </LinearLayout>
 
     <ScrollView
         android:id="@+id/scrollView"

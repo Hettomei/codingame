@@ -11,10 +11,12 @@ public final class R {
   public static final class id {
     public static final int btnMonth=0x7f010000;
     public static final int btnReset=0x7f010001;
-    public static final int btnSend=0x7f010002;
-    public static final int logView=0x7f010003;
-    public static final int scrollView=0x7f010004;
-    public static final int urlField=0x7f010005;
+    public static final int btnResetSearch=0x7f010002;
+    public static final int btnSend=0x7f010003;
+    public static final int logView=0x7f010004;
+    public static final int scrollView=0x7f010005;
+    public static final int searchField=0x7f010006;
+    public static final int urlField=0x7f010007;
   }
   public static final class layout {
     public static final int activity_main=0x7f020000;

@@ -37,8 +37,10 @@ public class MainActivity extends Activity {
     private static final String PREFS_NAME = "AppPrefs";
     private static final String KEY_URL = "target_url";
     private static final String DEFAULT_URL = "http://192.168.1.15:8000/sendpics/send-photo";
+    private static final String KEY_SEARCH = "target_search";
     public Handler mainHandler;
     private EditText urlField;
+    private EditText searchField;
     private TextView logView;
     private ScrollView scrollView;
     private FileSelector fs;
@@ -53,17 +55,26 @@ public class MainActivity extends Activity {
         logView = findViewById(R.id.logView);
         scrollView = findViewById(R.id.scrollView);
         urlField = findViewById(R.id.urlField);
+        searchField = findViewById(R.id.searchField);
 
         // 1. Charger l'URL sauvegardée au démarrage
         SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
         String savedUrl = prefs.getString(KEY_URL, DEFAULT_URL);
         urlField.setText(savedUrl);
 
-        // 2. Logique du bouton Reset
-        Button btnReset = findViewById(R.id.btnReset);
-        btnReset.setOnClickListener(v -> {
+        String dateString = new SimpleDateFormat("yyyyMM", Locale.getDefault()).format(new Date());
+        String selectionArgs = "PXL_" + dateString + "%";
+        String savedSearch = prefs.getString(KEY_SEARCH, selectionArgs);
+        searchField.setText(savedSearch);
+
+        findViewById(R.id.btnReset).setOnClickListener(v -> {
             urlField.setText(DEFAULT_URL);
-            saveUrl(DEFAULT_URL); // On remet aussi à zéro la sauvegarde
+            savePref(KEY_URL, DEFAULT_URL); // On remet aussi à zéro la sauvegarde
+        });
+
+        findViewById(R.id.btnResetSearch).setOnClickListener(v -> {
+            searchField.setText(selectionArgs);
+            savePref(KEY_SEARCH, selectionArgs); // On remet aussi à zéro la sauvegarde
         });
 
         Button btnSend = findViewById(R.id.btnSend);
@@ -82,17 +93,23 @@ public class MainActivity extends Activity {
 
         // Vérifier si la permission est déjà accordée
         if (checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED) {
-            // Déjà autorisé, on lance le scan
-            List<Uri> uris = fs.getCurrentMonth();
+            // autorisé
+            getCurrentSearch();
+        } else {
+            // Non autorisé
+            requestPermissions(new String[]{permission}, PERMISSION_REQUEST_CODE);
+        }
+    }
+
+    private void getCurrentSearch() {
+        List<Uri> uris = fs.getCurrentMonth();
+        savePref(KEY_URL, urlField.getText().toString().trim());
 
 //            if (!uris.isEmpty()) {
 //                String targetUrl = urlField.getText().toString().trim();
 //                new Thread(() -> sendAll(uris, targetUrl)).start();
 //            }
-        } else {
-            // Non autorisé, on demande à l'utilisateur
-            requestPermissions(new String[]{permission}, PERMISSION_REQUEST_CODE);
-        }
+
     }
 
     @Override
@@ -102,8 +119,7 @@ public class MainActivity extends Activity {
         if (requestCode == PERMISSION_REQUEST_CODE) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 // L'utilisateur a dit OUI
-                logView.append("Permission accordée.\n");
-                List<Uri> uris = fs.getCurrentMonth();
+                getCurrentSearch();
             } else {
                 // L'utilisateur a dit NON
                 logView.append("Erreur : Permission refusée. Impossible de scanner les photos.\n");
@@ -113,9 +129,9 @@ public class MainActivity extends Activity {
 
 
     // Méthode pour sauvegarder l'URL
-    private void saveUrl(String url) {
+    private void savePref(String key, String url) {
         SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
-        prefs.edit().putString(KEY_URL, url).apply();
+        prefs.edit().putString(key, url).apply();
     }
 
     private void pickImages() {
@@ -132,7 +148,7 @@ public class MainActivity extends Activity {
             return;
 
         String currentUrl = urlField.getText().toString().trim();
-        saveUrl(currentUrl);
+        savePref(KEY_URL, currentUrl);
 
         List<Uri> uris = new ArrayList<>();
         if (data.getClipData() != null) {
