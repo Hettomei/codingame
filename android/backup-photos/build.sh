@@ -20,6 +20,8 @@ aapt2 link build/layout_activity_main.xml.flat \
     --java build/gen \
     -o build/apk_unsigned/app.apk
 
+cp build/gen/$PKG/R.java src/$PKG/
+
 # 2. Compiler le Java
 javac -classpath $ANDROID_JAR \
       -sourcepath src:build/gen \
