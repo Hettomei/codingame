@@ -185,7 +185,7 @@ public class MainActivity extends Activity {
             // Part header
             String partHeader = "--" + boundary + "\r\n" + "Content-Disposition: form-data; name=\"photo\"; filename=\""
                     + filename + "\"\r\n" + "Content-Type: image/jpeg\r\n\r\n";
-            out.write(partHeader.getBytes("UTF-8"));
+            out.write(partHeader.getBytes(StandardCharsets.UTF_8));
 
             // Données image
             InputStream in = getContentResolver().openInputStream(uri);
@@ -210,23 +210,6 @@ public class MainActivity extends Activity {
         }
     }
 
-    private String getFileNameOld(Uri uri) {
-        String result = null;
-        if ("content".equals(uri.getScheme())) {
-            try (Cursor cursor = getContentResolver().query(uri, null, null, null, null)) {
-                if (cursor != null && cursor.moveToFirst()) {
-                    int idx = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
-                    if (idx >= 0)
-                        result = cursor.getString(idx);
-                }
-            }
-        }
-        if (result == null) {
-            result = uri.getLastPathSegment();
-        }
-        return result != null ? result : "photo.jpg";
-    }
-
     private String getFileName(Uri uri) {
         String[] projection = {MediaStore.Images.Media.DATE_TAKEN};
         try (Cursor cursor = getContentResolver().query(uri, projection, null, null, null)) {
@@ -248,7 +231,7 @@ public class MainActivity extends Activity {
         return "IMG_" + formatted + ".jpg";
     }
 
-    private void debugChooseFileName(Uri uri) {
+    private void fileInfo(Uri uri) {
         // On définit les colonnes que l'on veut récupérer
         String[] projection = {
                 MediaStore.Images.Media.DATE_TAKEN,
@@ -299,48 +282,6 @@ public class MainActivity extends Activity {
         });
     }
 
-    private String getFileNameFonctionnepas(Uri uri) {
-        // Essai 1 : via MediaStore (donne le vrai nom PXL_xxxx.jpg)
-        String[] projection = {MediaStore.MediaColumns.DISPLAY_NAME};
-        try (Cursor cursor = getContentResolver().query(uri, projection, null, null, null)) {
-            if (cursor != null && cursor.moveToFirst()) {
-                String name = cursor.getString(0);
-                String a = " *** " + name + " ***\n";
-                mainHandler.post(() -> {
-                    logView.append(a);
-                    scrollView.post(() -> scrollView.fullScroll(ScrollView.FOCUS_DOWN));
-                });
-                if (name != null && name.contains("."))
-                    return name;
-            }
-        } catch (Exception e) {
-            logException(e);
-        }
-
-        // Essai 2 : via OpenableColumns
-        try (Cursor cursor = getContentResolver().query(uri, null, null, null, null)) {
-            if (cursor != null && cursor.moveToFirst()) {
-                int idx = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
-                if (idx >= 0) {
-                    String name = cursor.getString(idx);
-                    String a = " *** " + name + " ***\n";
-                    mainHandler.post(() -> {
-                        logView.append(a);
-                        scrollView.post(() -> scrollView.fullScroll(ScrollView.FOCUS_DOWN));
-                    });
-                    if (name != null && name.contains("."))
-                        return name;
-                }
-            }
-        } catch (Exception e) {
-            logException(e);
-        }
-
-        // Essai 3 : dernier segment de l'Uri
-        String last = uri.getLastPathSegment();
-        return (last != null) ? last : "photo.jpg";
-    }
-
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK) {
@@ -382,7 +323,7 @@ public class MainActivity extends Activity {
                     long id = cursor.getLong(idColumn);
                     Uri contentUri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id);
                     uris.add(contentUri);
-                    debugChooseFileName(contentUri);
+                    fileInfo(contentUri);
                 } while (cursor.moveToNext());
             }
         } catch (Exception e) {
