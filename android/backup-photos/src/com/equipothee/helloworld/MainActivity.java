@@ -79,20 +79,23 @@ public class MainActivity extends Activity {
 
     private void checkPermissionAndProceed() {
         // Déterminer quelle permission demander selon la version d'Android
-        String permission;
+        String permissionImg;
+        String permissionVid;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            permission = Manifest.permission.READ_MEDIA_IMAGES;
+            permissionImg = Manifest.permission.READ_MEDIA_IMAGES;
+            permissionVid = Manifest.permission.READ_MEDIA_VIDEO;
         } else {
-            permission = Manifest.permission.READ_EXTERNAL_STORAGE;
+            permissionImg = Manifest.permission.READ_EXTERNAL_STORAGE;
+            permissionVid = Manifest.permission.READ_EXTERNAL_STORAGE;
         }
 
-        // Vérifier si la permission est déjà accordée
-        if (checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED) {
+        // Vérifier si la permissionImg est déjà accordée
+        if (checkSelfPermission(permissionImg) == PackageManager.PERMISSION_GRANTED && checkSelfPermission(permissionVid) == PackageManager.PERMISSION_GRANTED) {
             // autorisé
             getCurrentSearch();
         } else {
             // Non autorisé
-            requestPermissions(new String[]{permission}, PERMISSION_REQUEST_CODE);
+            requestPermissions(new String[]{permissionImg, permissionVid}, PERMISSION_REQUEST_CODE);
         }
     }
 
