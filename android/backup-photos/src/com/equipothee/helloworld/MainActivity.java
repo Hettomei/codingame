@@ -13,7 +13,6 @@ import android.os.Handler;
 import android.os.Looper;
 import android.provider.MediaStore;
 import android.view.KeyEvent;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ScrollView;
 import android.widget.TextView;
@@ -57,15 +56,12 @@ public class MainActivity extends Activity {
         urlField = findViewById(R.id.urlField);
         searchField = findViewById(R.id.searchField);
 
-        // 1. Charger l'URL sauvegardée au démarrage
         SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
-        String savedUrl = prefs.getString(KEY_URL, DEFAULT_URL);
-        urlField.setText(savedUrl);
+        urlField.setText(prefs.getString(KEY_URL, DEFAULT_URL));
 
         String dateString = new SimpleDateFormat("yyyyMM", Locale.getDefault()).format(new Date());
         String selectionArgs = "PXL_" + dateString + "%";
-        String savedSearch = prefs.getString(KEY_SEARCH, selectionArgs);
-        searchField.setText(savedSearch);
+        searchField.setText(prefs.getString(KEY_SEARCH, selectionArgs));
 
         findViewById(R.id.btnReset).setOnClickListener(v -> {
             urlField.setText(DEFAULT_URL);
@@ -77,8 +73,7 @@ public class MainActivity extends Activity {
             savePref(KEY_SEARCH, selectionArgs); // On remet aussi à zéro la sauvegarde
         });
 
-        Button btnSend = findViewById(R.id.btnSend);
-        btnSend.setOnClickListener(v -> pickImages());
+        findViewById(R.id.btnSend).setOnClickListener(v -> pickImages());
         findViewById(R.id.btnMonth).setOnClickListener(v -> checkPermissionAndProceed());
     }
 
@@ -102,8 +97,10 @@ public class MainActivity extends Activity {
     }
 
     private void getCurrentSearch() {
-        List<Uri> uris = fs.getCurrentMonth();
         savePref(KEY_URL, urlField.getText().toString().trim());
+        savePref(KEY_SEARCH, searchField.getText().toString());
+
+        List<Uri> uris = fs.getCurrentMonth(searchField.getText().toString());
 
 //            if (!uris.isEmpty()) {
 //                String targetUrl = urlField.getText().toString().trim();
@@ -127,8 +124,6 @@ public class MainActivity extends Activity {
         }
     }
 
-
-    // Méthode pour sauvegarder l'URL
     private void savePref(String key, String url) {
         SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
         prefs.edit().putString(key, url).apply();

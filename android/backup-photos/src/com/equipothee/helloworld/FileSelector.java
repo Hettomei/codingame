@@ -7,7 +7,6 @@ import android.provider.MediaStore;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -19,32 +18,21 @@ public class FileSelector {
         this.mainActivity = mainActivity;
     }
 
-    public List<Uri> getCurrentMonth() {
+    public List<Uri> getCurrentMonth(String recherche) {
         List<Uri> uris = new ArrayList<>();
 
-        // 1. Calculer le timestamp du 1er jour du mois actuel à 00:00:00
-        Calendar calendar = Calendar.getInstance();
-        calendar.set(Calendar.DAY_OF_MONTH, 1);
-        calendar.set(Calendar.HOUR_OF_DAY, 0);
-        calendar.set(Calendar.MINUTE, 0);
-        calendar.set(Calendar.SECOND, 0);
-        calendar.set(Calendar.MILLISECOND, 0);
-
         // 2. Préparer la requête sur le MediaStore
-        Uri collection = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
         String[] projections = new String[]{
                 MediaStore.Images.Media._ID,
                 MediaStore.Images.Media.DATE_TAKEN,
                 MediaStore.Images.Media.DISPLAY_NAME,
         };
 
-        // On filtre par date de capture et on exclut les images qui n'ont pas de date
-        String dateString = new SimpleDateFormat("yyyyMM", Locale.getDefault()).format(new Date());
-        String[] selectionArgs = new String[]{"PXL_" + dateString + "%"};
+        String[] selectionArgs = new String[]{recherche};
         String selection = MediaStore.Images.Media.DISPLAY_NAME + " like ?";
         String sortOrder = MediaStore.Images.Media.DISPLAY_NAME + " ASC";
 
-        try (Cursor cursor = mainActivity.getContentResolver().query(collection, projections, selection, selectionArgs, sortOrder)) {
+        try (Cursor cursor = mainActivity.getContentResolver().query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, projections, selection, selectionArgs, sortOrder)) {
             if (cursor != null && cursor.moveToFirst()) {
                 int idColumn = cursor.getColumnIndexOrThrow(MediaStore.Images.Media._ID);
                 do {
