@@ -3,6 +3,7 @@ package com.equipothee.helloworld;
 import android.content.ContentUris;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.SystemClock;
 import android.provider.MediaStore;
 
 import java.text.SimpleDateFormat;
@@ -13,63 +14,89 @@ import java.util.Locale;
 
 public class FileSelector {
     private final MainActivity mainActivity;
+    private final SimpleDateFormat dateFormat;
 
     public FileSelector(MainActivity mainActivity) {
         this.mainActivity = mainActivity;
+        this.dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
     }
 
     public List<Uri> getCurrentMonth(String recherche) {
+        long startTime = SystemClock.elapsedRealtime(); // Performance metric
         List<Uri> uris = new ArrayList<>();
+        int pics = 0;
+        int vids = 0;
 
-        // 2. Préparer la requête sur le MediaStore
+        // 1. Single projection for all file types
         String[] projections = new String[]{
-                MediaStore.Images.Media._ID,
-                MediaStore.Images.Media.DATE_TAKEN,
-                MediaStore.Images.Media.DISPLAY_NAME,
+                MediaStore.Files.FileColumns._ID,
+                MediaStore.Files.FileColumns.DATE_TAKEN,
+                MediaStore.Files.FileColumns.DISPLAY_NAME,
+                MediaStore.Files.FileColumns.MEDIA_TYPE
         };
 
-        String[] selectionArgs = new String[]{recherche};
-        String selection = MediaStore.Images.Media.DISPLAY_NAME + " like ?";
-        String sortOrder = MediaStore.Images.Media.DISPLAY_NAME + " ASC";
+        // 2. Query MediaStore.Files to get both Images and Videos in one IPC call
+        // Filter by name and ensure we only get Images or Videos
+        String selection = MediaStore.Files.FileColumns.DISPLAY_NAME + " LIKE ? AND (" +
+                MediaStore.Files.FileColumns.MEDIA_TYPE + "=" + MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE + " OR " +
+                MediaStore.Files.FileColumns.MEDIA_TYPE + "=" + MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO + ")";
 
-        try (Cursor cursor = mainActivity.getContentResolver().query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, projections, selection, selectionArgs, sortOrder)) {
+        String[] selectionArgs = new String[]{recherche};
+        String sortOrder = MediaStore.Files.FileColumns.DISPLAY_NAME + " ASC";
+
+        Uri queryUri = MediaStore.Files.getContentUri("external");
+
+        StringBuilder logBatch = new StringBuilder();
+
+        try (Cursor cursor = mainActivity.getContentResolver().query(queryUri, projections, selection, selectionArgs, sortOrder)) {
             if (cursor != null && cursor.moveToFirst()) {
-                int idColumn = cursor.getColumnIndexOrThrow(MediaStore.Images.Media._ID);
+                int idCol = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns._ID);
+                int nameCol = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.DISPLAY_NAME);
+                int dateCol = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.DATE_TAKEN);
+                int typeCol = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.MEDIA_TYPE);
+
                 do {
-                    long id = cursor.getLong(idColumn);
-                    Uri contentUri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id);
-                    uris.add(contentUri);
-                    fileInfo(contentUri, cursor);
+                    long id = cursor.getLong(idCol);
+                    int mediaType = cursor.getInt(typeCol);
+                    String displayName = cursor.getString(nameCol);
+                    long dateTaken = cursor.getLong(dateCol);
+
+                    // Determine correct base URI for the specific file type
+                    Uri baseUri;
+                    if (mediaType == MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO) {
+                        baseUri = MediaStore.Video.Media.EXTERNAL_CONTENT_URI;
+                        vids++;
+                    } else {
+                        baseUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+                        pics++;
+                    }
+
+                    uris.add(ContentUris.withAppendedId(baseUri, id));
+                    appendFileInfoToBuffer(logBatch, id, displayName, dateTaken, mediaType);
                 } while (cursor.moveToNext());
+
+                mainActivity.logMessage(logBatch.toString());
             } else {
-                mainActivity.logMessage("ERROR : probleme avec cursor");
+                mainActivity.logMessage("ERROR : Aucun média trouvé.");
             }
         } catch (Exception e) {
+            mainActivity.logMessage(logBatch.toString()); // on veut voir jusqu ou il a enregistré
             mainActivity.logException(e);
         }
 
-        // 3. Informer l'utilisateur et envoyer
-        mainActivity.logMessage("Auto-sélection : " + uris.size() + " photos trouvées pour ce mois.");
+        long duration = SystemClock.elapsedRealtime() - startTime;
+        mainActivity.logMessage("Sélection : " + pics + " images et " + vids + " vidéos. total: " + uris.size() + ". Temps : " + duration + " ms");
+
         return uris;
     }
 
-    private void fileInfo(Uri uri, Cursor cursor) {
-        String displayId = cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media._ID));
-        String displayName = cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.DISPLAY_NAME));
-        long dateTaken = cursor.getLong(cursor.getColumnIndex(MediaStore.Images.Media.DATE_TAKEN));
+    private void appendFileInfoToBuffer(StringBuilder sb, long displayId, String displayName, long dateTaken, int mediaType) {
+        String dateString = (dateTaken > 0) ? dateFormat.format(new Date(dateTaken)) : "Aucune date";
+        String type = (mediaType == MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO) ? "video" : "image";
 
-        String dateString = "Aucune date";
-        if (dateTaken > 0) {
-            dateString = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(new Date(dateTaken));
-        }
-
-        String debugInfo = "------- FILE -------\n" +
-                "id   : " + displayId + "\n" +
-                "Nom  : " + displayName + "\n" +
-                "Date : " + dateString + "\n";
-
-        // Affichage dans le logView sur le thread principal
-        mainActivity.logMessage(debugInfo);
+        sb.append("------- FILE " + displayId + " -------\n")
+                .append("Type : ").append(type).append("\n")
+                .append("Nom  : ").append(displayName).append("\n")
+                .append("Date : ").append(dateString).append("\n");
     }
-
 }
