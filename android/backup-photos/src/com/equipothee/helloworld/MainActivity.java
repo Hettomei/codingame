@@ -149,28 +149,25 @@ public class MainActivity extends Activity {
         savePref(KEY_URL, currentUrl);
 
         List<Uri> uris = new ArrayList<>();
+        StringBuilder logBatch = new StringBuilder();
+
         if (data.getClipData() != null) {
             int count = data.getClipData().getItemCount();
             for (int i = 0; i < count; i++) {
                 uris.add(data.getClipData().getItemAt(i).getUri());
-                String line = "photo ajoutée " + data.getClipData().getItemAt(i).getUri() + "\n";
-                mainHandler.post(() -> {
-                    logView.append(line);
-                    scrollView.post(() -> scrollView.fullScroll(ScrollView.FOCUS_DOWN));
-                });
+                data.getClipData().getItemAt(i).getUri();
+
+                logBatch.append("photo ajoutée ")
+                        .append(data.getClipData().getItemAt(i).getUri())
+                        .append("\n");
             }
         } else if (data.getData() != null) {
             uris.add(data.getData());
         }
 
         String targetUrl = urlField.getText().toString().trim();
-        String line = "sent to '" + targetUrl + "'\n";
-
-        mainHandler.post(() -> {
-            logView.append(line);
-            scrollView.post(() -> scrollView.fullScroll(ScrollView.FOCUS_DOWN));
-        });
-
+        logMessage(logBatch.toString());
+        logMessage("sent to '" + targetUrl + "'");
         new Thread(() -> sendAll(uris, targetUrl)).start();
     }
 

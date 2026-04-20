@@ -32,7 +32,8 @@ public class FileSelector {
                 MediaStore.Files.FileColumns._ID,
                 MediaStore.Files.FileColumns.DATE_TAKEN,
                 MediaStore.Files.FileColumns.DISPLAY_NAME,
-                MediaStore.Files.FileColumns.MEDIA_TYPE
+                MediaStore.Files.FileColumns.MEDIA_TYPE,
+                MediaStore.Files.FileColumns.SIZE
         };
 
         // 2. Query MediaStore.Files to get both Images and Videos in one IPC call
@@ -46,7 +47,8 @@ public class FileSelector {
 
         Uri queryUri = MediaStore.Files.getContentUri("external");
 
-        StringBuilder logBatch = new StringBuilder();
+        StringBuilder logBatchPic = new StringBuilder();
+        StringBuilder logBatchVid = new StringBuilder();
 
         try (Cursor cursor = mainActivity.getContentResolver().query(queryUri, projections, selection, selectionArgs, sortOrder)) {
             if (cursor != null && cursor.moveToFirst()) {
@@ -54,49 +56,59 @@ public class FileSelector {
                 int nameCol = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.DISPLAY_NAME);
                 int dateCol = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.DATE_TAKEN);
                 int typeCol = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.MEDIA_TYPE);
+                int sizeCol = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.SIZE);
 
                 do {
                     long id = cursor.getLong(idCol);
                     int mediaType = cursor.getInt(typeCol);
                     String displayName = cursor.getString(nameCol);
                     long dateTaken = cursor.getLong(dateCol);
+                    long size = cursor.getLong(sizeCol);
 
                     // Determine correct base URI for the specific file type
                     Uri baseUri;
                     if (mediaType == MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO) {
                         baseUri = MediaStore.Video.Media.EXTERNAL_CONTENT_URI;
                         vids++;
+                        appendFileInfoToBuffer(logBatchVid, id, displayName, dateTaken, mediaType, size);
                     } else {
                         baseUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
                         pics++;
+                        appendFileInfoToBuffer(logBatchPic, id, displayName, dateTaken, mediaType, size);
                     }
 
                     uris.add(ContentUris.withAppendedId(baseUri, id));
-                    appendFileInfoToBuffer(logBatch, id, displayName, dateTaken, mediaType);
                 } while (cursor.moveToNext());
 
-                mainActivity.logMessage(logBatch.toString());
+                logBatchPic.append(logBatchVid);
+                mainActivity.logMessage(logBatchPic.toString());
             } else {
                 mainActivity.logMessage("ERROR : Aucun média trouvé.");
             }
         } catch (Exception e) {
-            mainActivity.logMessage(logBatch.toString()); // on veut voir jusqu ou il a enregistré
+            mainActivity.logMessage(logBatchPic.toString()); // on veut voir jusqu ou il a enregistré
             mainActivity.logException(e);
         }
 
         long duration = SystemClock.elapsedRealtime() - startTime;
-        mainActivity.logMessage("Sélection : " + pics + " images et " + vids + " vidéos. total: " + uris.size() + ". Temps : " + duration + " ms");
+        mainActivity.logMessage("Sélection : \n" +
+                pics + " images\n" +
+                vids + " vidéos\n" +
+                "total: " + uris.size() +
+                "Temps : " + duration + " ms");
 
         return uris;
     }
 
-    private void appendFileInfoToBuffer(StringBuilder sb, long displayId, String displayName, long dateTaken, int mediaType) {
+    private void appendFileInfoToBuffer(StringBuilder sb, long displayId, String displayName, long dateTaken, int mediaType, long size) {
         String dateString = (dateTaken > 0) ? dateFormat.format(new Date(dateTaken)) : "Aucune date";
         String type = (mediaType == MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO) ? "video" : "image";
+        double sizeInMb = size / (1024.0 * 1024.0);
 
         sb.append("------- FILE " + displayId + " -------\n")
-                .append("Type : ").append(type).append("\n")
-                .append("Nom  : ").append(displayName).append("\n")
-                .append("Date : ").append(dateString).append("\n");
+                .append("Type: ").append(type).append("\n")
+                .append("Name: ").append(displayName).append("\n")
+                .append("Date: ").append(dateString).append("\n")
+                .append("Size: ").append(String.format(Locale.getDefault(), "%.2f", sizeInMb)).append(" MB").append("\n");
     }
 }
