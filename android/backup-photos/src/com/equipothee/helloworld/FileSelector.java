@@ -56,9 +56,8 @@ public class FileSelector {
     private void fileInfo(Uri uri, Cursor cursor) {
         String displayId = cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media._ID));
         String displayName = cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.DISPLAY_NAME));
+        long dateTaken = cursor.getLong(cursor.getColumnIndex(MediaStore.Images.Media.DATE_TAKEN));
 
-        int dateIdx = cursor.getColumnIndex(MediaStore.Images.Media.DATE_TAKEN);
-        long dateTaken = (dateIdx != -1) ? cursor.getLong(dateIdx) : 0;
         String dateString = "Aucune date";
         if (dateTaken > 0) {
             dateString = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(new Date(dateTaken));
