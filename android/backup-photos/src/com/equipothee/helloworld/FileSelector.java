@@ -39,15 +39,14 @@ public class FileSelector {
         };
 
         // On filtre par date de capture et on exclut les images qui n'ont pas de date
-        String selection = MediaStore.Images.Media.DATE_TAKEN + " >= ?";
-        long startTime = calendar.getTimeInMillis();
-        String[] selectionArgs = new String[]{String.valueOf(startTime)};
-        String sortOrder = MediaStore.Images.Media.DATE_TAKEN + " ASC";
+        String dateString = new SimpleDateFormat("yyyyMM", Locale.getDefault()).format(new Date());
+        String[] selectionArgs = new String[]{"PXL_" + dateString + "%"};
+        String selection = MediaStore.Images.Media.DISPLAY_NAME + " like ?";
+        String sortOrder = MediaStore.Images.Media.DISPLAY_NAME + " ASC";
 
         try (Cursor cursor = mainActivity.getContentResolver().query(collection, projections, selection, selectionArgs, sortOrder)) {
             if (cursor != null && cursor.moveToFirst()) {
                 int idColumn = cursor.getColumnIndexOrThrow(MediaStore.Images.Media._ID);
-
                 do {
                     long id = cursor.getLong(idColumn);
                     Uri contentUri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id);
@@ -68,23 +67,19 @@ public class FileSelector {
 
     private void fileInfo(Uri uri, Cursor cursor) {
         String displayId = cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media._ID));
-
-        int nameIdx = cursor.getColumnIndex(MediaStore.Images.Media.DISPLAY_NAME);
-        String displayName = (nameIdx != -1) ? cursor.getString(nameIdx) : "Inconnu";
+        String displayName = cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.DISPLAY_NAME));
 
         int dateIdx = cursor.getColumnIndex(MediaStore.Images.Media.DATE_TAKEN);
         long dateTaken = (dateIdx != -1) ? cursor.getLong(dateIdx) : 0;
         String dateString = "Aucune date";
         if (dateTaken > 0) {
-            dateString = new SimpleDateFormat("yyyyMMdd HHmmss", Locale.getDefault())
-                    .format(new Date(dateTaken));
+            dateString = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(new Date(dateTaken));
         }
 
         String debugInfo = "------- FILE -------\n" +
-                "Uri  : " + uri.getLastPathSegment() + "\n" +
                 "id   : " + displayId + "\n" +
                 "Nom  : " + displayName + "\n" +
-                "Date :     " + dateString + "\n";
+                "Date : " + dateString + "\n";
 
         // Affichage dans le logView sur le thread principal
         mainActivity.logMessage(debugInfo);
