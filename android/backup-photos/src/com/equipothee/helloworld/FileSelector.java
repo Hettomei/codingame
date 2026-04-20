@@ -91,10 +91,9 @@ public class FileSelector {
         }
 
         long duration = SystemClock.elapsedRealtime() - startTime;
-        mainActivity.logMessage("Sélection : \n" +
-                pics + " images\n" +
+        mainActivity.logMessage(uris.size() + " fichiers : " +
+                pics + " images, " +
                 vids + " vidéos\n" +
-                "total: " + uris.size() +
                 "Temps : " + duration + " ms");
 
         return uris;
@@ -109,6 +108,7 @@ public class FileSelector {
                 .append("Type: ").append(type).append("\n")
                 .append("Name: ").append(displayName).append("\n")
                 .append("Date: ").append(dateString).append("\n")
-                .append("Size: ").append(String.format(Locale.getDefault(), "%.2f", sizeInMb)).append(" MB").append("\n");
+                .append("Size: ").append(String.format(Locale.getDefault(), "%.2f", sizeInMb)).append(" MB")
+                .append("\n\n");
     }
 }

@@ -142,8 +142,10 @@ public class MainActivity extends Activity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode != PICK_IMAGES || resultCode != RESULT_OK || data == null)
+        if (requestCode != PICK_IMAGES || resultCode != RESULT_OK || data == null) {
+            logMessage("Rien d interessant");
             return;
+        }
 
         String currentUrl = urlField.getText().toString().trim();
         savePref(KEY_URL, currentUrl);
@@ -154,11 +156,11 @@ public class MainActivity extends Activity {
         if (data.getClipData() != null) {
             int count = data.getClipData().getItemCount();
             for (int i = 0; i < count; i++) {
-                uris.add(data.getClipData().getItemAt(i).getUri());
-                data.getClipData().getItemAt(i).getUri();
+                Uri uri = data.getClipData().getItemAt(i).getUri();
+                uris.add(uri);
 
                 logBatch.append("photo ajoutée ")
-                        .append(data.getClipData().getItemAt(i).getUri())
+                        .append(uri)
                         .append("\n");
             }
         } else if (data.getData() != null) {
