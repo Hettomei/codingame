@@ -175,16 +175,12 @@ public class MainActivity extends Activity {
     private void sendAll(List<MyFile> myFiles) {
         String targetUrl = urlField.getText().toString().trim();
         logMessage("sent to " + targetUrl);
-        StringBuilder logger = new StringBuilder();
         for (MyFile myFile : myFiles) {
-						// TODO : on est ici, a coder.
+						logMessage(myFile.debug());
             boolean ok = sendPhoto(myFile, targetUrl);
-            String date = classicTimeFormat.format(new Date());
-            String line = "[" + date + "] " + myFile.getFileName() + " : " + (ok ? "OK" : "KO") + "\n";
-            logger.append(line);
-            logger.append(myFile.debug()).append("\n");
+            String line = myFile.getFileName() + " : " + (ok ? "OK" : "KO");
+            logMessage(line);
         }
-        logMessage(logger);
     }
 
     private boolean sendPhoto(MyFile myFile, String targetUrl) {
@@ -245,9 +241,10 @@ public class MainActivity extends Activity {
     }
 
     public void logMessage(String str) {
+				String line = "[" + classicTimeFormat.format(new Date()) + "] " + str + "\n";
         mainHandler.post(() -> {
-            logView.append(str + "\n");
-            scrollView.post(() -> scrollView.fullScroll(ScrollView.FOCUS_DOWN));
+            logView.append(line);
+            // scrollView.post(() -> scrollView.fullScroll(ScrollView.FOCUS_DOWN));
         });
     }
 
