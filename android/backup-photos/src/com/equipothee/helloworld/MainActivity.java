@@ -5,13 +5,11 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.provider.MediaStore;
 import android.view.KeyEvent;
 import android.widget.EditText;
 import android.widget.ScrollView;
@@ -122,7 +120,7 @@ public class MainActivity extends Activity {
                 getCurrentSearch();
             } else {
                 // L'utilisateur a dit NON
-                logView.append("Erreur : Permission refusée. Impossible de scanner les photos.\n");
+                logMessage("Erreur : Permission refusée. Impossible de scanner les photos.");
             }
         }
     }
@@ -134,9 +132,10 @@ public class MainActivity extends Activity {
 
     private void pickImages() {
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-        intent.setType("image/*");
+        intent.setType("*/*");
+        intent.putExtra(Intent.EXTRA_MIME_TYPES, new String[]{"image/*", "video/*"});
         intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
-        startActivityForResult(Intent.createChooser(intent, "Choisir des photos"), PICK_IMAGES);
+        startActivityForResult(Intent.createChooser(intent, "Choisir photos et vidéos"), PICK_IMAGES);
     }
 
     @Override
@@ -153,24 +152,27 @@ public class MainActivity extends Activity {
         List<Uri> uris = new ArrayList<>();
         StringBuilder logBatch = new StringBuilder();
 
+        Uri uri;
         if (data.getClipData() != null) {
             int count = data.getClipData().getItemCount();
             for (int i = 0; i < count; i++) {
-                Uri uri = data.getClipData().getItemAt(i).getUri();
+                uri = data.getClipData().getItemAt(i).getUri();
                 uris.add(uri);
-
-                logBatch.append("photo ajoutée ")
-                        .append(uri)
-                        .append("\n");
+                logBatch.append(fs.findAndLogFileInfo(uri.getLastPathSegment()));
             }
         } else if (data.getData() != null) {
-            uris.add(data.getData());
+            uri = data.getData();
+            uri.getLastPathSegment();
+            uris.add(uri);
+            logBatch.append(fs.findAndLogFileInfo(uri.getLastPathSegment()));
+        } else {
+            logBatch.append("Normalement vous ne devriez pas voir ce message.");
         }
 
         String targetUrl = urlField.getText().toString().trim();
-        logMessage(logBatch.toString());
-        logMessage("sent to '" + targetUrl + "'");
-        new Thread(() -> sendAll(uris, targetUrl)).start();
+        logBatch.append("sent to '").append(targetUrl).append("'");
+        logMessage(logBatch);
+//        new Thread(() -> sendAll(uris, targetUrl)).start();
     }
 
     private void sendAll(List<Uri> uris, String targetUrl) {
@@ -226,33 +228,21 @@ public class MainActivity extends Activity {
         }
     }
 
-    private String getFileName(Uri uri) {
-        String[] projection = {MediaStore.Images.Media.DATE_TAKEN};
-        try (Cursor cursor = getContentResolver().query(uri, projection, null, null, null)) {
-            if (cursor != null && cursor.moveToFirst()) {
-                long dateTaken = cursor.getLong(0);
-                if (dateTaken > 0) {
-                    String formatted = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault())
-                            .format(new Date(dateTaken));
-                    return "IMG_" + formatted + ".jpg";
-                }
-            }
-        } catch (Exception e) {
-            logException(e);
-            throw e;
-        }
-
-        // Fallback : date actuelle
-        String formatted = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date());
-        return "IMG_" + formatted + ".jpg";
-    }
-
     public void logException(Exception e) {
-        String errorMsg = "ERROR: " + e.getClass().getSimpleName() + " " + e.getMessage() + "\n";
+        e.printStackTrace();
+        String errorMsg = formatException(e);
         mainHandler.post(() -> {
             logView.append(errorMsg);
             scrollView.post(() -> scrollView.fullScroll(ScrollView.FOCUS_DOWN));
         });
+    }
+
+    public String formatException(Exception e) {
+        return "ERROR: " + e.getClass().getSimpleName() + " " + e.getMessage() + "\n";
+    }
+
+    public void logMessage(StringBuilder sb) {
+        logMessage(sb.toString());
     }
 
     public void logMessage(String str) {

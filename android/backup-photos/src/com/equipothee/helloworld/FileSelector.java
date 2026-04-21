@@ -49,6 +49,7 @@ public class FileSelector {
 
         StringBuilder logBatchPic = new StringBuilder();
         StringBuilder logBatchVid = new StringBuilder();
+        StringBuilder logException = new StringBuilder();
 
         try (Cursor cursor = mainActivity.getContentResolver().query(queryUri, projections, selection, selectionArgs, sortOrder)) {
             if (cursor != null && cursor.moveToFirst()) {
@@ -79,22 +80,21 @@ public class FileSelector {
 
                     uris.add(ContentUris.withAppendedId(baseUri, id));
                 } while (cursor.moveToNext());
-
-                logBatchPic.append(logBatchVid);
-                mainActivity.logMessage(logBatchPic.toString());
             } else {
-                mainActivity.logMessage("ERROR : Aucun média trouvé.");
+                logException.append("ERROR : Aucun média trouvé.");
             }
         } catch (Exception e) {
-            mainActivity.logMessage(logBatchPic.toString()); // on veut voir jusqu ou il a enregistré
-            mainActivity.logException(e);
+            logException.append(mainActivity.formatException(e));
         }
 
+        logBatchPic.append(logBatchVid).append(logException);
+
         long duration = SystemClock.elapsedRealtime() - startTime;
-        mainActivity.logMessage(uris.size() + " fichiers : " +
+        logBatchPic.append(uris.size() + " fichiers : " +
                 pics + " images, " +
                 vids + " vidéos\n" +
                 "Temps : " + duration + " ms");
+        mainActivity.logMessage(logBatchPic);
 
         return uris;
     }
@@ -111,4 +111,52 @@ public class FileSelector {
                 .append("Size: ").append(String.format(Locale.getDefault(), "%.2f", sizeInMb)).append(" MB")
                 .append("\n\n");
     }
+
+    public StringBuilder findAndLogFileInfo(String fileId) {
+        StringBuilder logs = new StringBuilder();
+        // 1. Définir les colonnes que l'on veut récupérer
+        String[] projections = new String[]{
+                MediaStore.Files.FileColumns._ID,
+                MediaStore.Files.FileColumns.DISPLAY_NAME,
+                MediaStore.Files.FileColumns.DATE_TAKEN,
+                MediaStore.Files.FileColumns.MEDIA_TYPE,
+                MediaStore.Files.FileColumns.SIZE
+        };
+
+        // 2. Préparer la sélection (le WHERE) pour cibler l'ID précis
+        String selection = MediaStore.Files.FileColumns._ID + " = ?";
+        String[] selectionArgs = new String[]{fileId};
+
+        Uri queryUri = MediaStore.Files.getContentUri("external");
+
+        // 3. Exécuter la requête
+        try (Cursor cursor = mainActivity.getContentResolver().query(queryUri, projections, selection, selectionArgs, null)) {
+            if (cursor != null && cursor.moveToFirst()) {
+                // Récupération des indices des colonnes
+                int idCol = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns._ID);
+                int nameCol = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.DISPLAY_NAME);
+                int dateCol = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.DATE_TAKEN);
+                int typeCol = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.MEDIA_TYPE);
+                int sizeCol = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.SIZE);
+
+                // Extraction des données
+                long id = cursor.getLong(idCol);
+                String displayName = cursor.getString(nameCol);
+                long dateTaken = cursor.getLong(dateCol);
+                int mediaType = cursor.getInt(typeCol);
+                long size = cursor.getLong(sizeCol);
+
+                // 4. Affichage des infos (Réutilisation de ta méthode existante)
+                logs.append("--- RECHERCHE PAR ID (").append(fileId).append(") ---\n");
+                appendFileInfoToBuffer(logs, id, displayName, dateTaken, mediaType, size);
+            } else {
+                logs.append("INFO : Aucun fichier trouvé pour l'ID ").append(fileId);
+            }
+        } catch (Exception e) {
+            mainActivity.logException(e);
+        }
+        return logs;
+    }
+
+
 }

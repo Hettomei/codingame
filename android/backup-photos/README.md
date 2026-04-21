@@ -23,16 +23,8 @@ sdkmanager "platforms;android-34" "build-tools;34.0.0" "platform-tools"
 # compiler et envoyer l app:
 
 ```
-./build.sh
-
-adb devices
-
-adb install build/app-signed.apk
-
-# (Réinstaller si déjà présent)
-adb install -r build/app-signed.apk
-
-adb shell am start -n com.equipothee.helloworld/.MainActivity
+./init.sh # une seule fois
+./build_and_run.sh
 ```
 
 # Backend

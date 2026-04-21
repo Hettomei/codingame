@@ -1,10 +1,14 @@
 set -eu
 
+set -x
 powershell.exe 'usbipd list'
+set +x
 
-read -r -p "taper le busiId sous la forme '2-8' => " busid
+read -e -r -p "taper le busiId sous la forme <x-y> : " -i "2-" busid
 
+set -x
 powershell.exe "usbipd attach --wsl --busid $busid"
+set +x
 
 echo "WAIT 5 sec"
 sleep 5
