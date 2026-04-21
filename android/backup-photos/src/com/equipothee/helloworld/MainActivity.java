@@ -30,6 +30,7 @@ public class MainActivity extends Activity {
 
     private static final int PICK_IMAGES = 1;
     private static final int PERMISSION_REQUEST_CODE = 100;
+    private static final SimpleDateFormat classicTimeFormat = new SimpleDateFormat("HH:mm:ss", Locale.getDefault());
     // Constantes pour la sauvegarde
     private static final String PREFS_NAME = "AppPrefs";
     private static final String KEY_URL = "target_url";
@@ -101,13 +102,17 @@ public class MainActivity extends Activity {
         savePref(KEY_URL, urlField.getText().toString().trim());
         savePref(KEY_SEARCH, searchField.getText().toString());
 
-        List<Uri> uris = fs.getCurrentMonth(searchField.getText().toString());
+        List<MyFile> myFiles = fs.getCurrentMonth(searchField.getText().toString());
 
-//            if (!uris.isEmpty()) {
-//                String targetUrl = urlField.getText().toString().trim();
-//                new Thread(() -> sendAll(uris, targetUrl)).start();
-//            }
+        // TODO : afficher un mini recap
+//        logBatchPic.append(myFiles.size()).append(" fichiers : ")
+//                .append(pics).append(" images, ")
+//                .append(vids).append(" vidéos\n")
+//                .append("Temps : ").append(duration).append(" ms");
+//        mainActivity.logMessage(logBatchPic);
 
+
+        new Thread(() -> sendAll(myFiles)).start();
     }
 
     @Override
@@ -149,46 +154,40 @@ public class MainActivity extends Activity {
         String currentUrl = urlField.getText().toString().trim();
         savePref(KEY_URL, currentUrl);
 
-        List<Uri> uris = new ArrayList<>();
-        StringBuilder logBatch = new StringBuilder();
+        List<MyFile> myFiles = new ArrayList<>();
 
         Uri uri;
         if (data.getClipData() != null) {
             int count = data.getClipData().getItemCount();
             for (int i = 0; i < count; i++) {
                 uri = data.getClipData().getItemAt(i).getUri();
-                uris.add(uri);
-                logBatch.append(fs.findAndLogFileInfo(uri.getLastPathSegment()));
+                myFiles.add(fs.getFile(uri));
             }
         } else if (data.getData() != null) {
             uri = data.getData();
-            uri.getLastPathSegment();
-            uris.add(uri);
-            logBatch.append(fs.findAndLogFileInfo(uri.getLastPathSegment()));
+            myFiles.add(fs.getFile(uri));
         } else {
-            logBatch.append("Normalement vous ne devriez pas voir ce message.");
+            logMessage("Normalement vous ne devriez pas voir ce message.");
         }
+        new Thread(() -> sendAll(myFiles)).start();
+    }
 
+    private void sendAll(List<MyFile> myFiles) {
         String targetUrl = urlField.getText().toString().trim();
-        logBatch.append("sent to '").append(targetUrl).append("'");
-        logMessage(logBatch);
-//        new Thread(() -> sendAll(uris, targetUrl)).start();
-    }
-
-    private void sendAll(List<Uri> uris, String targetUrl) {
-        for (Uri uri : uris) {
-            String name = getFileName(uri);
-            boolean ok = sendPhoto(uri, name, targetUrl);
-            String date = new SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(new Date());
-            String line = "[" + date + "] " + name + " : " + (ok ? "OK" : "KO") + "\n";
-            mainHandler.post(() -> {
-                logView.append(line);
-                scrollView.post(() -> scrollView.fullScroll(ScrollView.FOCUS_DOWN));
-            });
+        logMessage("sent to " + targetUrl);
+        StringBuilder logger = new StringBuilder();
+        for (MyFile myFile : myFiles) {
+						// TODO : on est ici, a coder.
+            boolean ok = sendPhoto(myFile, targetUrl);
+            String date = classicTimeFormat.format(new Date());
+            String line = "[" + date + "] " + myFile.getFileName() + " : " + (ok ? "OK" : "KO") + "\n";
+            logger.append(line);
+            logger.append(myFile.debug()).append("\n");
         }
+        logMessage(logger);
     }
 
-    private boolean sendPhoto(Uri uri, String filename, String targetUrl) {
+    private boolean sendPhoto(MyFile myFile, String targetUrl) {
         String boundary = "----Boundary" + System.currentTimeMillis();
         try {
             HttpURLConnection conn = (HttpURLConnection) new URL(targetUrl).openConnection();
@@ -202,11 +201,11 @@ public class MainActivity extends Activity {
 
             // Part header
             String partHeader = "--" + boundary + "\r\n" + "Content-Disposition: form-data; name=\"photo\"; filename=\""
-                    + filename + "\"\r\n" + "Content-Type: image/jpeg\r\n\r\n";
+                    + myFile.getFileName() + "\"\r\n" + "Content-Type: image/jpeg\r\n\r\n";
             out.write(partHeader.getBytes(StandardCharsets.UTF_8));
 
             // Données image
-            InputStream in = getContentResolver().openInputStream(uri);
+            InputStream in = getContentResolver().openInputStream(myFile.getUri());
             byte[] buf = new byte[8192];
             int len;
             while ((len = in.read(buf)) != -1)

@@ -1,42 +1,25 @@
 package com.equipothee.helloworld;
 
-import android.content.ContentUris;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.SystemClock;
 import android.provider.MediaStore;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 
 public class FileSelector {
     private final MainActivity mainActivity;
-    private final SimpleDateFormat dateFormat;
 
     public FileSelector(MainActivity mainActivity) {
         this.mainActivity = mainActivity;
-        this.dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
     }
 
-    public List<Uri> getCurrentMonth(String recherche) {
-        long startTime = SystemClock.elapsedRealtime(); // Performance metric
-        List<Uri> uris = new ArrayList<>();
-        int pics = 0;
-        int vids = 0;
+    public List<MyFile> getCurrentMonth(String recherche) {
+        long startTime = SystemClock.elapsedRealtime();
+        List<MyFile> myFiles = new ArrayList<>();
 
-        // 1. Single projection for all file types
-        String[] projections = new String[]{
-                MediaStore.Files.FileColumns._ID,
-                MediaStore.Files.FileColumns.DATE_TAKEN,
-                MediaStore.Files.FileColumns.DISPLAY_NAME,
-                MediaStore.Files.FileColumns.MEDIA_TYPE,
-                MediaStore.Files.FileColumns.SIZE
-        };
-
-        // 2. Query MediaStore.Files to get both Images and Videos in one IPC call
+        // Query MediaStore.Files to get both Images and Videos in one IPC call
         // Filter by name and ensure we only get Images or Videos
         String selection = MediaStore.Files.FileColumns.DISPLAY_NAME + " LIKE ? AND (" +
                 MediaStore.Files.FileColumns.MEDIA_TYPE + "=" + MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE + " OR " +
@@ -47,11 +30,7 @@ public class FileSelector {
 
         Uri queryUri = MediaStore.Files.getContentUri("external");
 
-        StringBuilder logBatchPic = new StringBuilder();
-        StringBuilder logBatchVid = new StringBuilder();
-        StringBuilder logException = new StringBuilder();
-
-        try (Cursor cursor = mainActivity.getContentResolver().query(queryUri, projections, selection, selectionArgs, sortOrder)) {
+        try (Cursor cursor = mainActivity.getContentResolver().query(queryUri, MyProjections.full(), selection, selectionArgs, sortOrder)) {
             if (cursor != null && cursor.moveToFirst()) {
                 int idCol = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns._ID);
                 int nameCol = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.DISPLAY_NAME);
@@ -60,77 +39,29 @@ public class FileSelector {
                 int sizeCol = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.SIZE);
 
                 do {
-                    long id = cursor.getLong(idCol);
-                    int mediaType = cursor.getInt(typeCol);
-                    String displayName = cursor.getString(nameCol);
-                    long dateTaken = cursor.getLong(dateCol);
-                    long size = cursor.getLong(sizeCol);
-
-                    // Determine correct base URI for the specific file type
-                    Uri baseUri;
-                    if (mediaType == MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO) {
-                        baseUri = MediaStore.Video.Media.EXTERNAL_CONTENT_URI;
-                        vids++;
-                        appendFileInfoToBuffer(logBatchVid, id, displayName, dateTaken, mediaType, size);
-                    } else {
-                        baseUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
-                        pics++;
-                        appendFileInfoToBuffer(logBatchPic, id, displayName, dateTaken, mediaType, size);
-                    }
-
-                    uris.add(ContentUris.withAppendedId(baseUri, id));
+                    MyFile myFile = extractFileFromCursor(cursor, idCol, nameCol, dateCol, typeCol, sizeCol);
+                    myFiles.add(myFile);
                 } while (cursor.moveToNext());
             } else {
-                logException.append("ERROR : Aucun média trouvé.");
+                mainActivity.logMessage("ERROR : Aucun média trouvé.");
             }
         } catch (Exception e) {
-            logException.append(mainActivity.formatException(e));
+            mainActivity.logException(e);
         }
 
-        logBatchPic.append(logBatchVid).append(logException);
-
         long duration = SystemClock.elapsedRealtime() - startTime;
-        logBatchPic.append(uris.size() + " fichiers : " +
-                pics + " images, " +
-                vids + " vidéos\n" +
-                "Temps : " + duration + " ms");
-        mainActivity.logMessage(logBatchPic);
-
-        return uris;
+        return myFiles;
     }
 
-    private void appendFileInfoToBuffer(StringBuilder sb, long displayId, String displayName, long dateTaken, int mediaType, long size) {
-        String dateString = (dateTaken > 0) ? dateFormat.format(new Date(dateTaken)) : "Aucune date";
-        String type = (mediaType == MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO) ? "video" : "image";
-        double sizeInMb = size / (1024.0 * 1024.0);
+    public MyFile getFile(Uri uri) {
+        String fileId = uri.getLastPathSegment();
 
-        sb.append("------- FILE " + displayId + " -------\n")
-                .append("Type: ").append(type).append("\n")
-                .append("Name: ").append(displayName).append("\n")
-                .append("Date: ").append(dateString).append("\n")
-                .append("Size: ").append(String.format(Locale.getDefault(), "%.2f", sizeInMb)).append(" MB")
-                .append("\n\n");
-    }
-
-    public StringBuilder findAndLogFileInfo(String fileId) {
-        StringBuilder logs = new StringBuilder();
-        // 1. Définir les colonnes que l'on veut récupérer
-        String[] projections = new String[]{
-                MediaStore.Files.FileColumns._ID,
-                MediaStore.Files.FileColumns.DISPLAY_NAME,
-                MediaStore.Files.FileColumns.DATE_TAKEN,
-                MediaStore.Files.FileColumns.MEDIA_TYPE,
-                MediaStore.Files.FileColumns.SIZE
-        };
-
-        // 2. Préparer la sélection (le WHERE) pour cibler l'ID précis
+        Uri queryUri = MediaStore.Files.getContentUri("external");
         String selection = MediaStore.Files.FileColumns._ID + " = ?";
         String[] selectionArgs = new String[]{fileId};
 
-        Uri queryUri = MediaStore.Files.getContentUri("external");
-
-        // 3. Exécuter la requête
-        try (Cursor cursor = mainActivity.getContentResolver().query(queryUri, projections, selection, selectionArgs, null)) {
+        // Exécuter la requête
+        try (Cursor cursor = mainActivity.getContentResolver().query(queryUri, MyProjections.full(), selection, selectionArgs, null)) {
             if (cursor != null && cursor.moveToFirst()) {
                 // Récupération des indices des colonnes
                 int idCol = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns._ID);
@@ -139,23 +70,21 @@ public class FileSelector {
                 int typeCol = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.MEDIA_TYPE);
                 int sizeCol = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.SIZE);
 
-                // Extraction des données
-                long id = cursor.getLong(idCol);
-                String displayName = cursor.getString(nameCol);
-                long dateTaken = cursor.getLong(dateCol);
-                int mediaType = cursor.getInt(typeCol);
-                long size = cursor.getLong(sizeCol);
-
-                // 4. Affichage des infos (Réutilisation de ta méthode existante)
-                logs.append("--- RECHERCHE PAR ID (").append(fileId).append(") ---\n");
-                appendFileInfoToBuffer(logs, id, displayName, dateTaken, mediaType, size);
+                return extractFileFromCursor(cursor, idCol, nameCol, dateCol, typeCol, sizeCol);
             } else {
-                logs.append("INFO : Aucun fichier trouvé pour l'ID ").append(fileId);
+                return null;
             }
-        } catch (Exception e) {
-            mainActivity.logException(e);
         }
-        return logs;
+    }
+
+    private MyFile extractFileFromCursor(Cursor cursor, int idCol, int nameCol, int dateCol, int typeCol, int sizeCol) {
+        // Extraction des données
+        long id = cursor.getLong(idCol);
+        String displayName = cursor.getString(nameCol);
+        long dateTaken = cursor.getLong(dateCol);
+        int mediaType = cursor.getInt(typeCol);
+        long size = cursor.getLong(sizeCol);
+        return new MyFile(id, mediaType, displayName, dateTaken, size);
     }
 
 
