@@ -51,8 +51,15 @@ class Handler(BaseHTTPRequestHandler):
     def do_POST(self):
         if self.path == "/prepare":
             self.handle_prepare()
-        else:
+        elif self.path == "/upload":
             self.handle_save()
+        else:
+            response = json.dumps({"path": self.path}).encode()
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Length", len(response))
+            self.end_headers()
+            self.wfile.write(response)
 
     def handle_save(self):
         # 1. Récupérer le type de contenu et la boundary
@@ -62,6 +69,7 @@ class Handler(BaseHTTPRequestHandler):
             self.end_headers()
             return
 
+        print(f"From: User-Agent: {self.headers.get('User-Agent', 'Aucun User-Agent')}")
         boundary = content_type.split("boundary=")[1].encode()
         length = int(self.headers.get('Content-Length', 0))
 
@@ -113,10 +121,12 @@ class Handler(BaseHTTPRequestHandler):
                 f.truncate()
 
         print(f"✅ Fichier sauvegardé : {save_path}")
-        print(f"From: User-Agent: {self.headers.get('User-Agent', 'Aucun User-Agent')}")
+        response = json.dumps({"file": filename, "save": True}).encode()
         self.send_response(200)
+        self.send_header("Content-Type", "application/json")
+        self.send_header("Content-Length", len(response))
         self.end_headers()
-        self.wfile.write(f"Transfert de {filename} réussi".encode())
+        self.wfile.write(response)
 
 Handler.prepare_tmp_dir()
 print("Send any GET or POST to http://localhost:8000 or http://0.0.0.0:8000")
