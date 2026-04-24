@@ -29,10 +29,22 @@ sdkmanager "platforms;android-34" "build-tools;34.0.0" "platform-tools"
 
 # Backend
 
-Pour le moment le backend ne fait rien d autre que de montrer qu'il a recu les data
-
 ```
 python simple_backend.py
+```
+
+Si on envoie un fichier avec le meme nom, ce fichier sera effacé.
+
+Pour le tester :
+
+Demander si fichier présent :
+```
+curl http://localhost:8000/prepare -H "Content-Type: application/json" -d '["PXL_123.jpg", "PHOTO.png", "aPAbQoQ_460swp.webp"]' | jq
+```
+
+Ecraser le fichier :
+```
+curl http://localhost:8000/upload -F "file=@aa.webp"
 ```
 
 # demo
@@ -42,7 +54,44 @@ python simple_backend.py
 
 # Troubleshoot :
 
-Pour que android fonctionne sous wsl :
+
+# python wsl dispo dans le reseau
+
+pour que cette commande lancé sous wsl fonctionne meme quand on l appel depuis le telephone :
+
+```
+python simple_backend.py
+```
+
+Il faut :
+
+- ajouter une regle de pare feu :
+
+```
+# lancer powershell en mode admin
+
+New-NetFirewallRule -DisplayName "WSL2 port 8000" `
+  -Direction Inbound `
+  -Action Allow `
+  -Protocol TCP `
+  -LocalPort 8000
+```
+
+```
+# cat .\wsl-forward.ps1
+$wslIp = (wsl hostname -I).Trim().Split(" ")[0]
+Write-Output "Forwarding 0.0.0.0:8000 -> $wslIp : 8000"
+
+netsh interface portproxy delete v4tov4 listenport=8000 listenaddress=0.0.0.0
+netsh interface portproxy add v4tov4 listenaddress=0.0.0.0 listenport=8000 connectaddress=$wslIp connectport=8000
+
+Write-Host "Forwarding 0.0.0.0:8000 -> $wslIp : 8000"
+
+
+# puis l executer dans powershell en mode admin
+```
+
+# Pour que android fonctionne sous wsl :
 
 Tout d abord, j avais un cable "de charge" donc pas de data sous powershell lsusb ensuite :
 

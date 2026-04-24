@@ -4,3 +4,4 @@ mykey.jks
 /.classpath
 /.project
 /backup-photos.iml
+/__pycache__/
