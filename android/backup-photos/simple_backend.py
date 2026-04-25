@@ -1,4 +1,5 @@
 from http.server import HTTPServer, BaseHTTPRequestHandler
+import traceback
 import tempfile
 import json
 import re
@@ -37,23 +38,26 @@ class Handler(BaseHTTPRequestHandler):
         body = self.rfile.read(length)
 
         try:
-            filenames = json.loads(body)
-            if not isinstance(filenames, list):
-                raise ValueError("Expected a list")
+            all_json = json.loads(body)
+            print(f"INFO << {all_json}")
         except Exception as e:
             print(f"ERROR : {e}")
+            print(traceback.format_exc())
             self.send_response(400)
             self.send_header("Content-Type", "application/json")
             self.end_headers()
             self.wfile.write(json.dumps({"error": str(e)}).encode())
             return
 
+        prefix = all_json["prefix"]
         result = [
-            {"fichier": build_path("tim", filename), "isPresent": file_exists("tim", filename)}
-            for filename in filenames
+            {"fichier": build_path(prefix, filename), "isPresent": file_exists(prefix, filename)}
+            for filename in all_json["filenames"]
         ]
 
-        response = json.dumps(result).encode()
+        response = json.dumps(result)
+        print(f"INFO >> {response}")
+        response = response.encode()
         self.send_response(200)
         self.send_header("Content-Type", "application/json")
         self.send_header("Content-Length", len(response))
@@ -85,28 +89,37 @@ class Handler(BaseHTTPRequestHandler):
         boundary = content_type.split("boundary=")[1].encode()
         length = int(self.headers.get('Content-Length', 0))
 
-        # 2. Lire le début pour trouver le nom du fichier (filename)
+        # 2. Lire le début pour trouver le nom du fichier et le prefix
         # On lit les 2048 premiers octets pour trouver l'en-tête multipart
-        header_chunk = self.rfile.read(2048)
-        match = re.search(b'filename="(.+?)"', header_chunk)
-        filename = match.group(1).decode('utf-8') if match else "upload.tmp"
-        save_path = build_path("tim", filename)
+        body_chunck = self.rfile.read(min(length, 2048))
+        re_prefix = re.search(rb'name="prefix"\r\n\r\n(.+?)\r\n', body_chunck)
+        prefix = re_prefix.group(1).decode('utf-8')
+
+        match = re.search(b'filename="(.+?)"', body_chunck)
+        filename = match.group(1).decode('utf-8')
+        save_path = build_path(prefix, filename)
         make_dirs(save_path)
         print(f"📥 Réception de {filename} - {length / 1024 / 1024:.2f} MB")
 
         # 3. Trouver où commence réellement le contenu binaire
         # Le contenu commence après la double ligne vide \r\n\r\n
+
         try:
-            header_end = header_chunk.index(b'\r\n\r\n') + 4
-            file_data_start = header_chunk[header_end:]
-        except ValueError:
+            # on degage la partie prefix
+            header_end = body_chunck.index(b'\r\n\r\n') + 4
+            file_data_start = body_chunck[header_end:]
+            # on degage la partie file
+            header_end = file_data_start.index(b'\r\n\r\n') + 4
+            file_data_start = file_data_start[header_end:]
+        except ValueError as e:
+            print(e)
+            print(traceback.format_exc())
             self.send_response(400)
             self.end_headers()
             return
 
         # 4. Écriture par morceaux (Chunks) dans le dossier temporaire
-        remaining = length - len(header_chunk)
-        remaining = length - len(header_chunk)
+        remaining = length - len(body_chunck)
 
         with open(save_path, 'wb') as f:
             # Écrire le reliquat du premier chunk lu

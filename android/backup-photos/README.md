@@ -39,7 +39,8 @@ Pour le tester :
 
 Demander si fichier présent :
 ```
-curl http://localhost:8000/prepare -H "Content-Type: application/json" -d '["PXL_123.jpg", "PHOTO.png", "aPAbQoQ_460swp.webp"]' | jq
+curl http://localhost:8000/prepare -H "Content-Type: application/json" \
+     -d '{ "prefix": "tim", "filenames": ["PXL_20241225.jpg", "PHOTO.png"]' | jq
 ```
 
 Ecraser le fichier :

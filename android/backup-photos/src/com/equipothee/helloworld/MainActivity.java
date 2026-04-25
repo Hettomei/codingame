@@ -14,6 +14,7 @@ import android.view.KeyEvent;
 import android.widget.EditText;
 import android.widget.ScrollView;
 import android.widget.TextView;
+import android.util.Log;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -176,7 +177,7 @@ public class MainActivity extends Activity {
         String targetUrl = urlField.getText().toString().trim();
         logMessage("sent to " + targetUrl);
         for (MyFile myFile : myFiles) {
-						logMessage(myFile.debug());
+            logMessage(myFile.debug());
             boolean ok = sendPhoto(myFile, targetUrl);
             String line = myFile.getFileName() + " : " + (ok ? "OK" : "KO");
             logMessage(line);
@@ -185,41 +186,69 @@ public class MainActivity extends Activity {
 
     private boolean sendPhoto(MyFile myFile, String targetUrl) {
         String boundary = "----Boundary" + System.currentTimeMillis();
+        HttpURLConnection conn = null;
+
         try {
-            HttpURLConnection conn = (HttpURLConnection) new URL(targetUrl).openConnection();
+            // --- MIME type dynamique --- TODO a changer
+            String mimeType = getContentResolver().getType(myFile.getUri());
+            if (mimeType == null) mimeType = "application/octet-stream";
+
+            conn = (HttpURLConnection) new URL(targetUrl).openConnection();
             conn.setRequestMethod("POST");
             conn.setDoOutput(true);
             conn.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + boundary);
-            conn.setConnectTimeout(10000);
-            conn.setReadTimeout(30000);
+            conn.setConnectTimeout(10_000);
+            conn.setReadTimeout(30_000);
 
-            OutputStream out = conn.getOutputStream();
+            // --- Streaming sans bufferiser tout en RAM ---
+            conn.setChunkedStreamingMode(8192);
 
-            // Part header
-            String partHeader = "--" + boundary + "\r\n" + "Content-Disposition: form-data; name=\"photo\"; filename=\""
-                    + myFile.getFileName() + "\"\r\n" + "Content-Type: image/jpeg\r\n\r\n";
-            out.write(partHeader.getBytes(StandardCharsets.UTF_8));
+            try (OutputStream out = new BufferedOutputStream(conn.getOutputStream())) {
+              String prefixPart = "--" + boundary + "\r\n"
+                      + "Content-Disposition: form-data; name=\"prefix\"\r\n\r\n"
+                      + "tim" + "\r\n";
+              out.write(prefixPart.getBytes(StandardCharsets.UTF_8));
 
-            // Données image
-            InputStream in = getContentResolver().openInputStream(myFile.getUri());
-            byte[] buf = new byte[8192];
-            int len;
-            while ((len = in.read(buf)) != -1)
-                out.write(buf, 0, len);
-            in.close();
+                // Part header
+                String partHeader = "--" + boundary + "\r\n"
+                        + "Content-Disposition: form-data; name=\"any\"; filename=\""
+                        + myFile.getFileName() + "\"\r\n"
+                        + "Content-Type: " + mimeType + "\r\n\r\n";
+                out.write(partHeader.getBytes(StandardCharsets.UTF_8));
 
-            // Part footer
-            out.write(("\r\n--" + boundary + "--\r\n").getBytes(StandardCharsets.UTF_8));
-            out.flush();
-            out.close();
+                // Données fichier
+                try (InputStream in = new BufferedInputStream(
+                        getContentResolver().openInputStream(myFile.getUri()))) {
+                    if (in == null) throw new IOException("Impossible d'ouvrir l'URI : " + myFile.getUri());
+                    byte[] buf = new byte[8192];
+                    int len;
+                    while ((len = in.read(buf)) != -1)
+                        out.write(buf, 0, len);
+                }
+
+                // Part footer
+                out.write(("\r\n--" + boundary + "--\r\n").getBytes(StandardCharsets.UTF_8));
+            }
 
             int code = conn.getResponseCode();
-            conn.disconnect();
-            return code >= 200 && code < 300;
+
+            // --- Lire le body d'erreur pour faciliter le debug ---
+            if (code < 200 || code >= 300) {
+                InputStream err = conn.getErrorStream();
+                if (err != null) {
+                    String body = new String(err.readAllBytes(), StandardCharsets.UTF_8);
+                    Log.w("SendPhoto", "HTTP " + code + " : " + body);
+                    err.close();
+                }
+                return false;
+            }
+            return true;
 
         } catch (Exception e) {
             logException(e);
             return false;
+        } finally {
+            if (conn != null) conn.disconnect();  // ← toujours libéré
         }
     }
 
@@ -233,7 +262,7 @@ public class MainActivity extends Activity {
     }
 
     public String formatException(Exception e) {
-        return "ERROR: " + e.getClass().getSimpleName() + " " + e.getMessage() + "\n";
+        return "[" + classicTimeFormat.format(new Date()) + "] ERROR: " + e.getClass().getSimpleName() + " " + e.getMessage() + "\n";
     }
 
     public void logMessage(StringBuilder sb) {
@@ -241,7 +270,7 @@ public class MainActivity extends Activity {
     }
 
     public void logMessage(String str) {
-				String line = "[" + classicTimeFormat.format(new Date()) + "] " + str + "\n";
+        String line = "[" + classicTimeFormat.format(new Date()) + "] " + str + "\n";
         mainHandler.post(() -> {
             logView.append(line);
             // scrollView.post(() -> scrollView.fullScroll(ScrollView.FOCUS_DOWN));
