@@ -4,15 +4,27 @@ import json
 import re
 import os
 
+SUB_TMP = os.path.join(tempfile.gettempdir(), "sendpics")
+
+def build_path(prefix, filename):
+    match = re.search(r'(\d{4})(\d{2})(\d{2})', filename)
+    if match:
+        yyyy, mm = match.group(1), match.group(2)
+        return os.path.join(SUB_TMP, yyyy, f"{prefix}-{yyyy}-{mm}", filename)
+    else:
+        return os.path.join(SUB_TMP, f"{prefix}-other", filename)
+
+def build_dir(dest):
+    os.makedirs(dest, exist_ok=True)
+    return dest
+
+def file_exists(prefix, filename):
+    return os.path.isfile(build_path(prefix, filename))
+
+def make_dirs(save_path):
+    os.makedirs(os.path.dirname(save_path), exist_ok=True)
 
 class Handler(BaseHTTPRequestHandler):
-    SUB_TMP = None
-
-    @staticmethod
-    def prepare_tmp_dir():
-        Handler.SUB_TMP = os.path.join(tempfile.gettempdir(), "sendpics")
-        os.makedirs(Handler.SUB_TMP, exist_ok=True)
-        print(f"Temp dir ready: {Handler.SUB_TMP}")
 
     def do_GET(self):
         print(f"GET {self.path}")
@@ -37,8 +49,8 @@ class Handler(BaseHTTPRequestHandler):
             return
 
         result = [
-            {"fichier": name, "isPresent": os.path.isfile(os.path.join(Handler.SUB_TMP, name))}
-            for name in filenames
+            {"fichier": build_path("tim", filename), "isPresent": file_exists("tim", filename)}
+            for filename in filenames
         ]
 
         response = json.dumps(result).encode()
@@ -78,7 +90,8 @@ class Handler(BaseHTTPRequestHandler):
         header_chunk = self.rfile.read(2048)
         match = re.search(b'filename="(.+?)"', header_chunk)
         filename = match.group(1).decode('utf-8') if match else "upload.tmp"
-        save_path = os.path.join(Handler.SUB_TMP, filename)
+        save_path = build_path("tim", filename)
+        make_dirs(save_path)
         print(f"📥 Réception de {filename} - {length / 1024 / 1024:.2f} MB")
 
         # 3. Trouver où commence réellement le contenu binaire
@@ -121,14 +134,13 @@ class Handler(BaseHTTPRequestHandler):
                 f.truncate()
 
         print(f"✅ Fichier sauvegardé : {save_path}")
-        response = json.dumps({"file": filename, "save": True}).encode()
+        response = json.dumps({"file": save_path, "saved": True}).encode()
         self.send_response(200)
         self.send_header("Content-Type", "application/json")
         self.send_header("Content-Length", len(response))
         self.end_headers()
         self.wfile.write(response)
 
-Handler.prepare_tmp_dir()
 print("Send any GET or POST to http://localhost:8000 or http://0.0.0.0:8000")
 
 try:
