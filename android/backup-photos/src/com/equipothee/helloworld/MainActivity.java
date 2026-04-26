@@ -10,12 +10,15 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.widget.EditText;
 import android.widget.ScrollView;
 import android.widget.TextView;
-import android.util.Log;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
@@ -204,10 +207,10 @@ public class MainActivity extends Activity {
             conn.setChunkedStreamingMode(8192);
 
             try (OutputStream out = new BufferedOutputStream(conn.getOutputStream())) {
-              String prefixPart = "--" + boundary + "\r\n"
-                      + "Content-Disposition: form-data; name=\"prefix\"\r\n\r\n"
-                      + "tim" + "\r\n";
-              out.write(prefixPart.getBytes(StandardCharsets.UTF_8));
+                String prefixPart = "--" + boundary + "\r\n"
+                        + "Content-Disposition: form-data; name=\"prefix\"\r\n\r\n"
+                        + "tim" + "\r\n";
+                out.write(prefixPart.getBytes(StandardCharsets.UTF_8));
 
                 // Part header
                 String partHeader = "--" + boundary + "\r\n"
@@ -219,7 +222,8 @@ public class MainActivity extends Activity {
                 // Données fichier
                 try (InputStream in = new BufferedInputStream(
                         getContentResolver().openInputStream(myFile.getUri()))) {
-                    if (in == null) throw new IOException("Impossible d'ouvrir l'URI : " + myFile.getUri());
+                    if (in == null)
+                        throw new IOException("Impossible d'ouvrir l'URI : " + myFile.getUri());
                     byte[] buf = new byte[8192];
                     int len;
                     while ((len = in.read(buf)) != -1)
