@@ -86,6 +86,8 @@ class Handler(BaseHTTPRequestHandler):
             self.wfile.write(response)
 
     def handle_save(self):
+        print("-------------------------------")
+        print(self.headers.__str__().strip())
         # 1. Récupérer le type de contenu et la boundary
         content_type = self.headers.get("Content-Type", "")
         if "boundary=" not in content_type:
@@ -93,29 +95,37 @@ class Handler(BaseHTTPRequestHandler):
             self.end_headers()
             return
 
-        print(f"From: User-Agent: {self.headers.get('User-Agent', 'Aucun User-Agent')}")
         boundary = content_type.split("boundary=")[1].encode()
         length = int(self.headers.get("Content-Length", 0))
 
-        # 2. Lire le début pour trouver le nom du fichier et le prefix
-        # On lit les 2048 premiers octets pour trouver l'en-tête multipart
-        body_chunck = self.rfile.read(min(length, 2048))
-        re_prefix = re.search(rb'name="prefix"\r\n\r\n(.+?)\r\n', body_chunck)
+        if length > 0:
+            # 2. Lire le début pour trouver le nom du fichier et le prefix
+            # On lit les 2048 premiers octets pour trouver l'en-tête multipart
+            body_chunk = self.rfile.read(min(length, 2048))
+        elif "chunked" in self.headers.get("Transfer-Encoding", ""):
+            line = self.rfile.readline().strip()
+            chunk_length = int(line, 16)
+            body_chunk = self.rfile.read(chunk_length)
+            # Each chunk is followed by an additional empty newline that we have to consume.
+            self.rfile.readline()
+
+
+        re_prefix = re.search(rb'name="prefix"\r\n\r\n(.+?)\r\n', body_chunk)
         prefix = re_prefix.group(1).decode("utf-8")
 
-        match = re.search(b'filename="(.+?)"', body_chunck)
-        filename = match.group(1).decode("utf-8")
+        re_filename = re.search(b'filename="(.+?)"', body_chunk)
+        filename = re_filename.group(1).decode("utf-8")
+
         save_path = build_path(prefix, filename)
         make_dirs(save_path)
-        print(f"📥 Réception de {filename} - {length / 1024 / 1024:.2f} MB")
 
         # 3. Trouver où commence réellement le contenu binaire
         # Le contenu commence après la double ligne vide \r\n\r\n
 
         try:
             # on degage la partie prefix
-            header_end = body_chunck.index(b"\r\n\r\n") + 4
-            file_data_start = body_chunck[header_end:]
+            header_end = body_chunk.index(b"\r\n\r\n") + 4
+            file_data_start = body_chunk[header_end:]
             # on degage la partie file
             header_end = file_data_start.index(b"\r\n\r\n") + 4
             file_data_start = file_data_start[header_end:]
@@ -126,27 +136,45 @@ class Handler(BaseHTTPRequestHandler):
             self.end_headers()
             return
 
-        # 4. Écriture par morceaux (Chunks) dans le dossier temporaire
-        remaining = length - len(body_chunck)
+        print(f"📥 Réception de {filename} ...")
 
         with open(save_path, "wb") as f:
-            # Écrire le reliquat du premier chunk lu
             f.write(file_data_start)
+            if length > 0:
+                # Lire le reste par morceaux de 64 KB
+                remaining = length - len(body_chunk)
+                while remaining > 0:
+                    chunk_size = min(remaining, 65536)
+                    chunk = self.rfile.read(chunk_size)
+                    if not chunk:
+                        break
+                    f.write(chunk)
+                    remaining -= len(chunk)
 
-            # Lire le reste par morceaux de 64 KB
-            while remaining > 0:
-                chunk_size = min(remaining, 65536)
-                chunk = self.rfile.read(chunk_size)
-                if not chunk:
-                    break
-                f.write(chunk)
-                remaining -= len(chunk)
+            elif "chunked" in self.headers.get("Transfer-Encoding", ""):
+                while True:
+                    line = self.rfile.readline().strip()
+                    chunk_length = int(line, 16)
+
+                    if chunk_length != 0:
+                        chunk = self.rfile.read(chunk_length)
+                        f.write(chunk)
+
+                    # Each chunk is followed by an additional empty newline that we have to consume.
+                    self.rfile.readline()
+
+                    # Finally, a chunk size of 0 is an end indication
+                    if chunk_length == 0:
+                        break
 
         # 5. Nettoyage de la fin du fichier
         # Le dernier chunk contient la boundary de fermeture (\r\n--boundary--\r\n)
         # On rouvre le fichier pour tronquer cette partie inutile
         with open(save_path, "rb+") as f:
-            f.seek(-len(boundary) - 20, 2)  # On recule un peu avant la fin
+            # on demarre a la fin du fichier, et on recule
+            max_back = f.seek(0, os.SEEK_END)
+            max_offset = min(max_back, len(boundary) + 20)
+            f.seek(- max_offset, os.SEEK_END)
             last_bytes = f.read()
             # On cherche l'index de la boundary de fin pour couper juste avant
             idx = last_bytes.find(b"\r\n--" + boundary)
@@ -154,7 +182,8 @@ class Handler(BaseHTTPRequestHandler):
                 f.seek(-len(last_bytes) + idx, 2)
                 f.truncate()
 
-        print(f"✅ Fichier sauvegardé : {save_path}")
+        length = os.path.getsize(save_path)
+        print(f"✅ Fichier sauvegardé : {save_path}, {length} B, {length / 1024 / 1024:.2f} MB")
         response = json.dumps({"file": save_path, "saved": True}).encode()
         self.send_response(200)
         self.send_header("Content-Type", "application/json")
