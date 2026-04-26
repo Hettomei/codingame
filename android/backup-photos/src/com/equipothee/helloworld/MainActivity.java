@@ -38,7 +38,10 @@ public class MainActivity extends Activity {
     // Constantes pour la sauvegarde
     private static final String PREFS_NAME = "AppPrefs";
     private static final String KEY_URL = "target_url";
-    private static final String DEFAULT_URL = "http://192.168.1.15:8000/sendpics/send-photo";
+    private static final String DEFAULT_URL = "http://192.168.1.15:8000/upload";
+
+    private static final String KEY_PREFIX = "key_prefix";
+    private static final String DEFAULT_PREFIX = "name";
     private static final String KEY_SEARCH = "target_search";
     public Handler mainHandler;
     private EditText urlField;
@@ -46,6 +49,7 @@ public class MainActivity extends Activity {
     private TextView logView;
     private ScrollView scrollView;
     private FileSelector fs;
+    private List<MyFile> myFiles;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,26 +62,38 @@ public class MainActivity extends Activity {
         scrollView = findViewById(R.id.scrollView);
         urlField = findViewById(R.id.urlField);
         searchField = findViewById(R.id.searchField);
+        EditText prefixField = findViewById(R.id.prefixField);
+
+        myFiles = new ArrayList<>();
 
         SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
         urlField.setText(prefs.getString(KEY_URL, DEFAULT_URL));
+        prefixField.setText(prefs.getString(KEY_PREFIX, DEFAULT_PREFIX));
+        searchField.setText(prefs.getString(KEY_SEARCH, getDefaultSearch()));
 
-        String dateString = new SimpleDateFormat("yyyyMM", Locale.getDefault()).format(new Date());
-        String selectionArgs = "PXL_" + dateString + "%";
-        searchField.setText(prefs.getString(KEY_SEARCH, selectionArgs));
-
-        findViewById(R.id.btnReset).setOnClickListener(v -> {
+        findViewById(R.id.btnResetUrl).setOnClickListener(v -> {
             urlField.setText(DEFAULT_URL);
-            savePref(KEY_URL, DEFAULT_URL); // On remet aussi à zéro la sauvegarde
+            savePref(KEY_URL, DEFAULT_URL);
+        });
+
+        findViewById(R.id.btnResetPrefix).setOnClickListener(v -> {
+            prefixField.setText(DEFAULT_PREFIX);
+            savePref(KEY_PREFIX, DEFAULT_PREFIX);
         });
 
         findViewById(R.id.btnResetSearch).setOnClickListener(v -> {
-            searchField.setText(selectionArgs);
-            savePref(KEY_SEARCH, selectionArgs); // On remet aussi à zéro la sauvegarde
+            searchField.setText(getDefaultSearch());
+            savePref(KEY_SEARCH, getDefaultSearch());
         });
 
-        findViewById(R.id.btnSend).setOnClickListener(v -> pickImages());
-        findViewById(R.id.btnMonth).setOnClickListener(v -> checkPermissionAndProceed());
+        findViewById(R.id.btnSelectionManuelle).setOnClickListener(v -> pickImages());
+        findViewById(R.id.btnSelectionAuto).setOnClickListener(v -> checkPermissionAndProceed());
+        findViewById(R.id.btnSend).setOnClickListener(v -> actionSend());
+    }
+
+    private String getDefaultSearch() {
+        String dateString = new SimpleDateFormat("yyyyMM", Locale.getDefault()).format(new Date());
+        return "PXL_" + dateString + "%";
     }
 
     private void checkPermissionAndProceed() {
@@ -103,18 +119,14 @@ public class MainActivity extends Activity {
     }
 
     private void getCurrentSearch() {
+        myFiles.addAll(fs.getCurrentMonth(searchField.getText().toString()));
+        printFileNames();
+    }
+
+    private void actionSend() {
         savePref(KEY_URL, urlField.getText().toString().trim());
         savePref(KEY_SEARCH, searchField.getText().toString());
-
-        List<MyFile> myFiles = fs.getCurrentMonth(searchField.getText().toString());
-
-        // TODO : afficher un mini recap
-//        logBatchPic.append(myFiles.size()).append(" fichiers : ")
-//                .append(pics).append(" images, ")
-//                .append(vids).append(" vidéos\n")
-//                .append("Temps : ").append(duration).append(" ms");
-//        mainActivity.logMessage(logBatchPic);
-
+        savePref(KEY_PREFIX, getPrefixText()); // On remet aussi à zéro la sauvegarde
 
         new Thread(() -> sendAll(myFiles)).start();
     }
@@ -155,11 +167,6 @@ public class MainActivity extends Activity {
             return;
         }
 
-        String currentUrl = urlField.getText().toString().trim();
-        savePref(KEY_URL, currentUrl);
-
-        List<MyFile> myFiles = new ArrayList<>();
-
         Uri uri;
         if (data.getClipData() != null) {
             int count = data.getClipData().getItemCount();
@@ -173,7 +180,16 @@ public class MainActivity extends Activity {
         } else {
             logMessage("Normalement vous ne devriez pas voir ce message.");
         }
-        new Thread(() -> sendAll(myFiles)).start();
+
+        printFileNames();
+    }
+
+    private void printFileNames() {
+        StringBuilder sb = new StringBuilder();
+        for (MyFile myFile : myFiles) {
+            sb.append(myFile.getFileName()).append("\n");
+        }
+        displayMessage(sb.toString());
     }
 
     private void sendAll(List<MyFile> myFiles) {
@@ -205,7 +221,7 @@ public class MainActivity extends Activity {
             try (OutputStream out = new BufferedOutputStream(conn.getOutputStream())) {
                 String prefixPart = "--" + boundary + "\r\n"
                         + "Content-Disposition: form-data; name=\"prefix\"\r\n\r\n"
-                        + "tim" + "\r\n";
+                        + getPrefixText() + "\r\n";
                 out.write(prefixPart.getBytes(StandardCharsets.UTF_8));
 
                 // Part header
@@ -252,6 +268,11 @@ public class MainActivity extends Activity {
         }
     }
 
+    private String getPrefixText() {
+        EditText prefixField = findViewById(R.id.prefixField);
+        return prefixField.getText().toString();
+    }
+
     public void logException(Exception e) {
         e.printStackTrace();
         String errorMsg = formatException(e);
@@ -273,7 +294,15 @@ public class MainActivity extends Activity {
         String line = "[" + classicTimeFormat.format(new Date()) + "] " + str + "\n";
         mainHandler.post(() -> {
             logView.append(line);
-            // scrollView.post(() -> scrollView.fullScroll(ScrollView.FOCUS_DOWN));
+             scrollView.post(() -> scrollView.fullScroll(ScrollView.FOCUS_DOWN));
+        });
+    }
+
+    public void displayMessage(String str) {
+        String line = str + "\n";
+        mainHandler.post(() -> {
+            logView.append(line);
+            scrollView.post(() -> scrollView.fullScroll(ScrollView.FOCUS_DOWN));
         });
     }
 
