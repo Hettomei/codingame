@@ -192,10 +192,6 @@ public class MainActivity extends Activity {
         HttpURLConnection conn = null;
 
         try {
-            // --- MIME type dynamique --- TODO a changer
-            String mimeType = getContentResolver().getType(myFile.getUri());
-            if (mimeType == null) mimeType = "application/octet-stream";
-
             conn = (HttpURLConnection) new URL(targetUrl).openConnection();
             conn.setRequestMethod("POST");
             conn.setDoOutput(true);
@@ -216,7 +212,7 @@ public class MainActivity extends Activity {
                 String partHeader = "--" + boundary + "\r\n"
                         + "Content-Disposition: form-data; name=\"any\"; filename=\""
                         + myFile.getFileName() + "\"\r\n"
-                        + "Content-Type: " + mimeType + "\r\n\r\n";
+                        + "Content-Type: " + myFile.getMimeType() + "\r\n\r\n";
                 out.write(partHeader.getBytes(StandardCharsets.UTF_8));
 
                 // Données fichier

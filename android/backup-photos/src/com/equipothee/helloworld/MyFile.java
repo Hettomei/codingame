@@ -3,6 +3,7 @@ package com.equipothee.helloworld;
 import android.content.ContentUris;
 import android.net.Uri;
 import android.provider.MediaStore;
+import android.webkit.MimeTypeMap;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -52,10 +53,22 @@ public class MyFile {
 
         sb.append("------- FILE ").append(id).append(" -------\n")
                 .append("Type: ").append(type).append("\n")
+                .append("MimeType: ").append(getMimeType()).append("\n")
                 .append("Name: ").append(displayName).append("\n")
                 .append("Date: ").append(dateString).append("\n")
                 .append("Size: ").append(String.format(Locale.getDefault(), "%.2f", sizeInMb)).append(" MB");
 
         return sb.toString();
+    }
+
+    public String getMimeType() {
+        final String extension = MimeTypeMap.getFileExtensionFromUrl(getFileName());
+        String mimeType = null;
+        if (extension != null) {
+            mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension.toLowerCase());
+        }
+        if (mimeType == null) mimeType = "application/octet-stream";
+
+        return mimeType;
     }
 }
