@@ -26,8 +26,11 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.Locale;
 
 public class MainActivity extends Activity {
@@ -49,7 +52,7 @@ public class MainActivity extends Activity {
     private TextView logView;
     private ScrollView scrollView;
     private FileSelector fs;
-    private List<MyFile> myFiles;
+    private Set<MyFile> myFiles;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,7 +67,7 @@ public class MainActivity extends Activity {
         searchField = findViewById(R.id.searchField);
         EditText prefixField = findViewById(R.id.prefixField);
 
-        myFiles = new ArrayList<>();
+        myFiles = new HashSet<>();
 
         SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
         urlField.setText(prefs.getString(KEY_URL, DEFAULT_URL));
@@ -89,6 +92,7 @@ public class MainActivity extends Activity {
         findViewById(R.id.btnSelectionManuelle).setOnClickListener(v -> pickImages());
         findViewById(R.id.btnSelectionAuto).setOnClickListener(v -> checkPermissionAndProceed());
         findViewById(R.id.btnSend).setOnClickListener(v -> actionSend());
+        findViewById(R.id.btnVider).setOnClickListener(v -> actionClear());
     }
 
     private String getDefaultSearch() {
@@ -129,6 +133,11 @@ public class MainActivity extends Activity {
         savePref(KEY_PREFIX, getPrefixText()); // On remet aussi à zéro la sauvegarde
 
         new Thread(() -> sendAll(myFiles)).start();
+    }
+
+    private void actionClear() {
+        myFiles.clear();
+        printFileNames();
     }
 
     @Override
@@ -189,13 +198,18 @@ public class MainActivity extends Activity {
         for (MyFile myFile : myFiles) {
             sb.append(myFile.getFileName()).append("\n");
         }
+        sb.append(myFiles.size()).append(" fichiers").append("\n");
         displayMessage(sb.toString());
     }
 
-    private void sendAll(List<MyFile> myFiles) {
+    private void sendAll(Set<MyFile> myFiles) {
         String targetUrl = urlField.getText().toString().trim();
         logMessage("sent to " + targetUrl);
-        for (MyFile myFile : myFiles) {
+
+        List<MyFile> sorted = new ArrayList<>(myFiles);
+        sorted.sort(Comparator.comparing(MyFile::getFileName, String.CASE_INSENSITIVE_ORDER));
+
+        for (MyFile myFile : sorted) {
             logMessage(myFile.debug());
             boolean ok = sendPhoto(myFile, targetUrl);
             String line = myFile.getFileName() + " : " + (ok ? "OK" : "KO");

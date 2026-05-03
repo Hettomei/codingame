@@ -71,4 +71,21 @@ public class MyFile {
 
         return mimeType;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof MyFile)) return false;
+        MyFile other = (MyFile) o;
+        return this.id == other.id;
+    }
+
+    @Override
+    public int hashCode() {
+        return Long.hashCode(this.id);
+    }
+
+    public long getId() {
+        return this.id;
+    }
 }

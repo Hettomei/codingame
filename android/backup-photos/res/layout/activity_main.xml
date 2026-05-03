@@ -74,27 +74,47 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal">
 
-
         <Button
             android:id="@+id/btnSelectionManuelle"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Selection" />
+            android:text="1 Selection" />
 
         <Button
             android:id="@+id/btnSelectionAuto"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Auto" />
+            android:text="1 Auto" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/btnRemoveSent"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="2 Filtrer" />
 
         <Button
             android:id="@+id/btnSend"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Envoyer" />
+            android:text="3 Envoyer" />
+
+        <Button
+            android:id="@+id/btnVider"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="4 Vider" />
+
     </LinearLayout>
 
     <ScrollView
