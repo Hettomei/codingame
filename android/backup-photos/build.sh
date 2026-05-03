@@ -11,8 +11,9 @@ mkdir -p build/gen build/obj build/dex build/apk_unsigned build/apk_aligned
 
 # 1. Compiler les ressources
 aapt2 compile res/layout/activity_main.xml -o build/
+aapt2 compile res/layout/item_send_file.xml -o build/
 
-aapt2 link build/layout_activity_main.xml.flat \
+aapt2 link build/layout_activity_main.xml.flat build/layout_item_send_file.xml.flat \
     -I $ANDROID_JAR \
     --manifest AndroidManifest.xml \
     --min-sdk-version 24 \

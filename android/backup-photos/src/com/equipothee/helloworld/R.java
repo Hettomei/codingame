@@ -17,13 +17,15 @@ public final class R {
     public static final int btnSelectionManuelle=0x7f010005;
     public static final int btnSend=0x7f010006;
     public static final int btnVider=0x7f010007;
-    public static final int logView=0x7f010008;
-    public static final int prefixField=0x7f010009;
-    public static final int scrollView=0x7f01000a;
-    public static final int searchField=0x7f01000b;
-    public static final int urlField=0x7f01000c;
+    public static final int fileNameTextView=0x7f010008;
+    public static final int logView=0x7f010009;
+    public static final int prefixField=0x7f01000a;
+    public static final int scrollView=0x7f01000b;
+    public static final int searchField=0x7f01000c;
+    public static final int urlField=0x7f01000d;
   }
   public static final class layout {
     public static final int activity_main=0x7f020000;
+    public static final int item_send_file=0x7f020001;
   }
 }
