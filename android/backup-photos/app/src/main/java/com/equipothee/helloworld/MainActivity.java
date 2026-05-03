@@ -308,7 +308,7 @@ public class MainActivity extends Activity {
         String line = "[" + classicTimeFormat.format(new Date()) + "] " + str + "\n";
         mainHandler.post(() -> {
             logView.append(line);
-             scrollView.post(() -> scrollView.fullScroll(ScrollView.FOCUS_DOWN));
+            scrollView.post(() -> scrollView.fullScroll(ScrollView.FOCUS_DOWN));
         });
     }
 

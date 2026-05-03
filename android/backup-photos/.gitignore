@@ -5,3 +5,6 @@ mykey.jks
 /.project
 /backup-photos.iml
 /__pycache__/
+/.gradle/
+/gradle/
+/app/build/

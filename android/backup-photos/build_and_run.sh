@@ -1,7 +1,12 @@
 set -e
 
 ./build.sh
-adb install -r build/app-signed.apk
+
+
+APK=app/build/outputs/apk/debug/app-debug.apk
+adb install -r $APK
+echo "✓ APK installé sur le device"
+
 adb shell am start -n com.equipothee.helloworld/.MainActivity
 
 # allumer et deverouiller l ecran
