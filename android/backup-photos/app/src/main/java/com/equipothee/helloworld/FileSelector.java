@@ -21,10 +21,7 @@ public class FileSelector {
 
         // Query MediaStore.Files to get both Images and Videos in one IPC call
         // Filter by name and ensure we only get Images or Videos
-        String selection = MediaStore.Files.FileColumns.DISPLAY_NAME + " LIKE ? AND (" +
-                MediaStore.Files.FileColumns.MEDIA_TYPE + "=" + MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE + " OR " +
-                MediaStore.Files.FileColumns.MEDIA_TYPE + "=" + MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO + ")";
-
+        String selection = MediaStore.Files.FileColumns.DISPLAY_NAME + " LIKE ?";
         String[] selectionArgs = new String[]{recherche};
         String sortOrder = MediaStore.Files.FileColumns.DISPLAY_NAME + " ASC";
 
