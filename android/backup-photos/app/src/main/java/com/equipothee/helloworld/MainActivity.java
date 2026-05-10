@@ -15,6 +15,7 @@ import android.view.KeyEvent;
 import android.widget.EditText;
 import android.widget.ScrollView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -89,7 +90,7 @@ public class MainActivity extends Activity {
             savePref(KEY_SEARCH, getDefaultSearch());
         });
 
-        findViewById(R.id.btnSelectionManuelle).setOnClickListener(v -> pickImages());
+        findViewById(R.id.btnSelectionManuelle).setOnClickListener(v -> pickFiles());
         findViewById(R.id.btnSelectionAuto).setOnClickListener(v -> checkPermissionAndProceed());
         findViewById(R.id.btnSend).setOnClickListener(v -> actionSend());
         findViewById(R.id.btnVider).setOnClickListener(v -> actionClear());
@@ -101,24 +102,32 @@ public class MainActivity extends Activity {
     }
 
     private void checkPermissionAndProceed() {
-        // Déterminer quelle permission demander selon la version d'Android
-        String permissionImg;
-        String permissionVid;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            permissionImg = Manifest.permission.READ_MEDIA_IMAGES;
-            permissionVid = Manifest.permission.READ_MEDIA_VIDEO;
-        } else {
-            permissionImg = Manifest.permission.READ_EXTERNAL_STORAGE;
-            permissionVid = Manifest.permission.READ_EXTERNAL_STORAGE;
-        }
+            String[] permissions = {
+                    Manifest.permission.READ_MEDIA_IMAGES,
+                    Manifest.permission.READ_MEDIA_VIDEO
+            };
 
-        // Vérifier si la permissionImg est déjà accordée
-        if (checkSelfPermission(permissionImg) == PackageManager.PERMISSION_GRANTED && checkSelfPermission(permissionVid) == PackageManager.PERMISSION_GRANTED) {
-            // autorisé
-            getCurrentSearch();
+            boolean allGranted = true;
+            for (String p : permissions) {
+                if (checkSelfPermission(p) != PackageManager.PERMISSION_GRANTED) {
+                    allGranted = false;
+                    break;
+                }
+            }
+
+            if (allGranted) {
+                getCurrentSearch();
+            } else {
+                requestPermissions(permissions, PERMISSION_REQUEST_CODE);
+            }
         } else {
-            // Non autorisé
-            requestPermissions(new String[]{permissionImg, permissionVid}, PERMISSION_REQUEST_CODE);
+            String permission = Manifest.permission.READ_EXTERNAL_STORAGE;
+            if (checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED) {
+                getCurrentSearch();
+            } else {
+                requestPermissions(new String[]{permission}, PERMISSION_REQUEST_CODE);
+            }
         }
     }
 
@@ -160,12 +169,12 @@ public class MainActivity extends Activity {
         prefs.edit().putString(key, url).apply();
     }
 
-    private void pickImages() {
-        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+    private void pickFiles() {
+        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
         intent.setType("*/*");
-        intent.putExtra(Intent.EXTRA_MIME_TYPES, new String[]{"image/*", "video/*"});
         intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
-        startActivityForResult(Intent.createChooser(intent, "Choisir photos et vidéos"), PICK_IMAGES);
+        startActivityForResult(intent, PICK_IMAGES);
     }
 
     @Override
@@ -181,11 +190,21 @@ public class MainActivity extends Activity {
             int count = data.getClipData().getItemCount();
             for (int i = 0; i < count; i++) {
                 uri = data.getClipData().getItemAt(i).getUri();
-                myFiles.add(fs.getFile(uri));
+                MyFile file = fs.getFile(uri);
+                if (file != null) {
+                    myFiles.add(file);
+                } else {
+                    logMessage("Impossible de récupérer le fichier pour l'uri: " + uri);
+                }
             }
         } else if (data.getData() != null) {
             uri = data.getData();
-            myFiles.add(fs.getFile(uri));
+            MyFile file = fs.getFile(uri);
+            if (file != null) {
+                myFiles.add(file);
+            } else {
+                logMessage("Impossible de récupérer le fichier pour l'uri: " + uri);
+            }
         } else {
             logMessage("Normalement vous ne devriez pas voir ce message.");
         }
@@ -196,7 +215,9 @@ public class MainActivity extends Activity {
     private void printFileNames() {
         StringBuilder sb = new StringBuilder();
         for (MyFile myFile : myFiles) {
-            sb.append(myFile.getFileName()).append("\n");
+            if (myFile != null) {
+                sb.append(myFile.getFileName()).append("\n");
+            }
         }
         sb.append(myFiles.size()).append(" fichiers").append("\n");
         displayMessage(sb.toString());
@@ -210,7 +231,7 @@ public class MainActivity extends Activity {
         sorted.sort(Comparator.comparing(MyFile::getFileName, String.CASE_INSENSITIVE_ORDER));
 
         for (MyFile myFile : sorted) {
-            logMessage(myFile.debug());
+            logMessage(myFile.debug(getContentResolver()));
             boolean ok = sendPhoto(myFile, targetUrl);
             String line = myFile.getFileName() + " : " + (ok ? "OK" : "KO");
             logMessage(line);
@@ -242,7 +263,7 @@ public class MainActivity extends Activity {
                 String partHeader = "--" + boundary + "\r\n"
                         + "Content-Disposition: form-data; name=\"any\"; filename=\""
                         + myFile.getFileName() + "\"\r\n"
-                        + "Content-Type: " + myFile.getMimeType() + "\r\n\r\n";
+                        + "Content-Type: " + myFile.getMimeType(getContentResolver()) + "\r\n\r\n";
                 out.write(partHeader.getBytes(StandardCharsets.UTF_8));
 
                 // Données fichier
@@ -288,20 +309,18 @@ public class MainActivity extends Activity {
     }
 
     public void logException(Exception e) {
-        e.printStackTrace();
-        String errorMsg = formatException(e);
+        reportError("Exception", e);
+    }
+
+    public void reportError(String tag, Throwable t) {
+        Log.e(tag, "An error occurred: " + t.getMessage(), t);
+        String errorMsg = "[" + classicTimeFormat.format(new Date()) + "] ERROR: " + t.getClass().getSimpleName() + " " + t.getMessage() + "\n";
+        
         mainHandler.post(() -> {
             logView.append(errorMsg);
             scrollView.post(() -> scrollView.fullScroll(ScrollView.FOCUS_DOWN));
+            Toast.makeText(MainActivity.this, t.getMessage(), Toast.LENGTH_LONG).show();
         });
-    }
-
-    public String formatException(Exception e) {
-        return "[" + classicTimeFormat.format(new Date()) + "] ERROR: " + e.getClass().getSimpleName() + " " + e.getMessage() + "\n";
-    }
-
-    public void logMessage(StringBuilder sb) {
-        logMessage(sb.toString());
     }
 
     public void logMessage(String str) {
@@ -309,6 +328,7 @@ public class MainActivity extends Activity {
         mainHandler.post(() -> {
             logView.append(line);
             scrollView.post(() -> scrollView.fullScroll(ScrollView.FOCUS_DOWN));
+            Toast.makeText(MainActivity.this, line, Toast.LENGTH_LONG).show();
         });
     }
 
