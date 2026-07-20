@@ -1,6 +1,7 @@
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from datetime import datetime
 
+import socket
 import traceback
 import tempfile
 import json
@@ -96,7 +97,7 @@ class Handler(BaseHTTPRequestHandler):
             self.handle_save()
         else:
             response = json.dumps({"path": self.path}).encode()
-            self.send_response(200)
+            self.send_response(404)
             self.send_header("Content-Type", "application/json")
             self.send_header("Content-Length", len(response))
             self.end_headers()
@@ -209,7 +210,12 @@ class Handler(BaseHTTPRequestHandler):
         self.wfile.write(response)
 
 
-print("Send any GET or POST to http://localhost:8000 or http://0.0.0.0:8000")
+h = socket.gethostbyname_ex(socket.gethostname())[-1]
+print(f"Send any GET or POST to http://localhost:8000 or http://0.0.0.0:8000 or {h}")
+
+print()
+print(f"save file to {build_path('tim', 'PXL_20261809_11223344.jpg')}")
+
 
 try:
     HTTPServer(("0.0.0.0", 8000), Handler).serve_forever()
