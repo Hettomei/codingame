@@ -1,4 +1,6 @@
 from http.server import HTTPServer, BaseHTTPRequestHandler
+from datetime import datetime
+
 import traceback
 import tempfile
 import json
@@ -35,8 +37,23 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         print(f"GET {self.path}")
         print(dict(self.headers))
+        if self.path == "/verifie-que-la-connexion-fonctionne":
+            self.handle_connexion_ok()
+        else:
+            response = (json.dumps({f"{self.path}": "404"}) + "\n").encode()
+            self.send_response(404)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Length", len(response))
+            self.end_headers()
+            self.wfile.write(response)
+
+    def handle_connexion_ok(self):
+        response = (json.dumps({"now": f"{datetime.now()}"}) + "\n").encode()
         self.send_response(200)
+        self.send_header("Content-Type", "application/json")
+        self.send_header("Content-Length", len(response))
         self.end_headers()
+        self.wfile.write(response)
 
     def handle_prepare(self):
         length = int(self.headers.get("Content-Length", 0))
