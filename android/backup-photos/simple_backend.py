@@ -1,4 +1,7 @@
 from http.server import HTTPServer, BaseHTTPRequestHandler
+from datetime import datetime
+
+import socket
 import traceback
 import tempfile
 import json
@@ -35,8 +38,23 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         print(f"GET {self.path}")
         print(dict(self.headers))
+        if self.path == "/verifie-que-la-connexion-fonctionne":
+            self.handle_connexion_ok()
+        else:
+            response = (json.dumps({f"{self.path}": "404"}) + "\n").encode()
+            self.send_response(404)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Length", len(response))
+            self.end_headers()
+            self.wfile.write(response)
+
+    def handle_connexion_ok(self):
+        response = (json.dumps({"now": f"{datetime.now()}"}) + "\n").encode()
         self.send_response(200)
+        self.send_header("Content-Type", "application/json")
+        self.send_header("Content-Length", len(response))
         self.end_headers()
+        self.wfile.write(response)
 
     def handle_prepare(self):
         length = int(self.headers.get("Content-Length", 0))
@@ -79,7 +97,7 @@ class Handler(BaseHTTPRequestHandler):
             self.handle_save()
         else:
             response = json.dumps({"path": self.path}).encode()
-            self.send_response(200)
+            self.send_response(404)
             self.send_header("Content-Type", "application/json")
             self.send_header("Content-Length", len(response))
             self.end_headers()
@@ -192,7 +210,12 @@ class Handler(BaseHTTPRequestHandler):
         self.wfile.write(response)
 
 
-print("Send any GET or POST to http://localhost:8000 or http://0.0.0.0:8000")
+h = socket.gethostbyname_ex(socket.gethostname())[-1]
+print(f"Send any GET or POST to http://localhost:8000 or http://0.0.0.0:8000 or {h}")
+
+print()
+print(f"save file to {build_path('tim', 'PXL_20261809_11223344.jpg')}")
+
 
 try:
     HTTPServer(("0.0.0.0", 8000), Handler).serve_forever()
