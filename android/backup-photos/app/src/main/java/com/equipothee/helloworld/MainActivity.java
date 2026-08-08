@@ -159,7 +159,7 @@ public class MainActivity extends Activity {
                 getCurrentSearch();
             } else {
                 // L'utilisateur a dit NON
-                logMessage("Erreur : Permission refusée. Impossible de scanner les photos.");
+                reportError("NoPermision", "Permission refusée. Impossible de scanner les photos.");
             }
         }
     }
@@ -181,7 +181,7 @@ public class MainActivity extends Activity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode != PICK_IMAGES || resultCode != RESULT_OK || data == null) {
-            logMessage("Rien d interessant");
+            reportError("Nothing", "Rien d interessant");
             return;
         }
 
@@ -206,7 +206,7 @@ public class MainActivity extends Activity {
                 logMessage("Impossible de récupérer le fichier pour l'uri: " + uri);
             }
         } else {
-            logMessage("Normalement vous ne devriez pas voir ce message.");
+            reportError("StrangeHappening", "Normalement vous ne devriez pas voir ce message.");
         }
 
         printFileNames();
@@ -323,12 +323,22 @@ public class MainActivity extends Activity {
         });
     }
 
+    public void reportError(String tag, String msg) {
+        Log.e(tag, "An error occurred: " + msg);
+        String errorMsg = "[" + classicTimeFormat.format(new Date()) + "] ERROR: " + tag + " " + msg + "\n";
+
+        mainHandler.post(() -> {
+            logView.append(errorMsg);
+            scrollView.post(() -> scrollView.fullScroll(ScrollView.FOCUS_DOWN));
+            Toast.makeText(MainActivity.this, msg, Toast.LENGTH_LONG).show();
+        });
+    }
+
     public void logMessage(String str) {
         String line = "[" + classicTimeFormat.format(new Date()) + "] " + str + "\n";
         mainHandler.post(() -> {
             logView.append(line);
             scrollView.post(() -> scrollView.fullScroll(ScrollView.FOCUS_DOWN));
-            Toast.makeText(MainActivity.this, line, Toast.LENGTH_LONG).show();
         });
     }
 

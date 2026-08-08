@@ -3,17 +3,13 @@ package com.equipothee.helloworld;
 import android.content.ContentUris;
 import android.database.Cursor;
 import android.net.Uri;
-import android.os.SystemClock;
 import android.provider.MediaStore;
 import android.provider.OpenableColumns;
-import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class FileSelector {
-    private final MainActivity mainActivity;
-
     private static final String[] PROJECTION = {
             MediaStore.Files.FileColumns._ID,
             MediaStore.Files.FileColumns.DISPLAY_NAME,
@@ -21,14 +17,13 @@ public class FileSelector {
             MediaStore.Files.FileColumns.MEDIA_TYPE,
             MediaStore.Files.FileColumns.SIZE
     };
+    private final MainActivity mainActivity;
 
     public FileSelector(MainActivity mainActivity) {
         this.mainActivity = mainActivity;
     }
 
     public List<MyFile> getCurrentMonth(String recherche) {
-        List<MyFile> myFiles = new ArrayList<>();
-
         String selection = MediaStore.Files.FileColumns.DISPLAY_NAME + " LIKE ?";
         String[] selectionArgs = new String[]{recherche};
         String sortOrder = MediaStore.Files.FileColumns.DISPLAY_NAME + " ASC";
@@ -36,24 +31,11 @@ public class FileSelector {
         Uri queryUri = MediaStore.Files.getContentUri("external");
 
         try (Cursor cursor = mainActivity.getContentResolver().query(queryUri, PROJECTION, selection, selectionArgs, sortOrder)) {
-            if (cursor != null && cursor.moveToFirst()) {
-                int idCol = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns._ID);
-                int nameCol = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.DISPLAY_NAME);
-                int dateCol = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.DATE_TAKEN);
-                int typeCol = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.MEDIA_TYPE);
-                int sizeCol = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.SIZE);
-
-                do {
-                    myFiles.add(extractFileFromCursor(cursor, idCol, nameCol, dateCol, typeCol, sizeCol));
-                } while (cursor.moveToNext());
-            } else {
-                mainActivity.logMessage("ERROR : Aucun média trouvé.");
-            }
+            return extractFilesFromCursor(cursor);
         } catch (Exception e) {
             mainActivity.reportError("FileSelector", e);
+            return new ArrayList<>();
         }
-
-        return myFiles;
     }
 
     public MyFile getFile(Uri uri) {
@@ -72,14 +54,7 @@ public class FileSelector {
                     String[] selectionArgs = new String[]{String.valueOf(id)};
 
                     try (Cursor cursor = mainActivity.getContentResolver().query(queryUri, PROJECTION, selection, selectionArgs, null)) {
-                        if (cursor != null && cursor.moveToFirst()) {
-                            return extractFileFromCursor(cursor,
-                                    cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns._ID),
-                                    cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.DISPLAY_NAME),
-                                    cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.DATE_TAKEN),
-                                    cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.MEDIA_TYPE),
-                                    cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.SIZE));
-                        }
+                        return extractFilesFromCursor(cursor).get(0);
                     }
                 } catch (NumberFormatException e) {
                     // Pas un ID numérique MediaStore, on passera au fallback
@@ -92,7 +67,7 @@ public class FileSelector {
                 if (cursor != null && cursor.moveToFirst()) {
                     int nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
                     int sizeIndex = cursor.getColumnIndex(OpenableColumns.SIZE);
-                    
+
                     String name = (nameIndex != -1) ? cursor.getString(nameIndex) : "unknown";
                     long size = (sizeIndex != -1) ? cursor.getLong(sizeIndex) : 0;
                     long dateTaken = 0;
@@ -117,5 +92,23 @@ public class FileSelector {
         long size = cursor.getLong(sizeCol);
 
         return new MyFile(uri, displayName, dateTaken, size);
+    }
+
+    private List<MyFile> extractFilesFromCursor(Cursor cursor) {
+        List<MyFile> myFiles = new ArrayList<>();
+        if (cursor != null && cursor.moveToFirst()) {
+            int idCol = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns._ID);
+            int nameCol = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.DISPLAY_NAME);
+            int dateCol = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.DATE_TAKEN);
+            int typeCol = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.MEDIA_TYPE);
+            int sizeCol = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.SIZE);
+
+            do {
+                myFiles.add(extractFileFromCursor(cursor, idCol, nameCol, dateCol, typeCol, sizeCol));
+            } while (cursor.moveToNext());
+        } else {
+            mainActivity.logMessage("ERROR : Aucun média trouvé.");
+        }
+        return myFiles;
     }
 }
