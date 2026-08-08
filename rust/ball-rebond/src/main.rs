@@ -1,6 +1,6 @@
 use macroquad::prelude::*;
 
-const GRAVITY: f32 = 500.0;
+const GRAVITY: f32 = 800.0;
 
 struct World {
     balls: Vec<Ball>,
@@ -27,6 +27,7 @@ struct Ball {
     y: f32,
     vx: f32,
     vy: f32,
+    incx: f32,
 }
 
 impl Ball {
@@ -36,6 +37,7 @@ impl Ball {
             y,
             vx: 0.0,
             vy: 0.0,
+            incx: 1.0,
         }
     }
 
@@ -48,14 +50,28 @@ impl Ball {
         self.vx = vx;
     }
 
+    fn set_y(&mut self, y: f32) {
+        self.y = y;
+    }
+
+    fn set_x(&mut self, x: f32) {
+        self.x = x;
+    }
+
+    fn invert_vx(&mut self) {
+        self.vx *= -1.0;
+    }
+
     fn invert_vy(&mut self) {
         self.vy *= -1.0;
     }
 
     fn update(&mut self, dt: f32) {
+        // self.incx += 1.0;
+
         self.vy += GRAVITY * dt;
 
-        self.x += self.vx * dt;
+        self.x += (self.vx + self.incx) * dt;
         self.y += self.vy * dt;
     }
 
@@ -64,10 +80,10 @@ impl Ball {
     }
 }
 
-#[macroquad::main("Mon premier programme graphique")]
+#[macroquad::main("Ball")]
 async fn main() {
-    let mut ball = Ball::new(50.0, 10.0);
-    ball.set_vx(100.0);
+    let mut ball = Ball::new(50.0, 100.0);
+    ball.set_vx(200.0);
 
     println!("--- one world ---");
     let mut world = World::new();
@@ -83,21 +99,29 @@ async fn main() {
     }
 
     loop {
-        if ball.y > screen_height() - 30.0 {
+        if ball.y > screen_height() - 60.0 {
             ball.invert_vy();
+            // avoid a bug when it stay at exact position and "float" at bottom
+            ball.set_y(screen_height() - 60.0 - 1.0)
         }
         if ball.x > screen_width() - 30.0 {
-            ball.set_vx(-100.0);
+            ball.invert_vx();
+            ball.set_x(screen_width() - 30.0 - 5.0)
         }
         if ball.x < 30.0 {
-            ball.set_vx(100.0);
+            ball.invert_vx();
+            ball.set_x(30.0 + 0.1)
         }
         let dt = get_frame_time();
         ball.update(dt);
 
+        // if get_fps() > 490 {
+        //     println!("{:10}", get_fps());
+        // }
+
         clear_background(BEIGE);
         draw_rectangle(0.0, 550.0, screen_width(), 50.0, BROWN);
-        draw_circle(ball.x, ball.y, 30.0, ORANGE);
+        draw_circle(ball.x, ball.y, 30.0, RED);
 
         next_frame().await;
     }
