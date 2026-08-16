@@ -28,6 +28,7 @@ struct Ball {
     vx: f32,
     vy: f32,
     incx: f32,
+    color: Color,
 }
 
 impl Ball {
@@ -38,12 +39,25 @@ impl Ball {
             vx: 0.0,
             vy: 0.0,
             incx: 1.0,
+            color: Color::from_rgba(
+                rand::gen_range(0, 255),
+                rand::gen_range(0, 255),
+                rand::gen_range(0, 255),
+                rand::gen_range(200, 255),
+            ),
         }
     }
 
     fn mmove(&mut self, dx: f32, dy: f32) {
         self.x += dx;
         self.y += dy;
+    }
+
+    fn random_color(&mut self) {
+        self.color.r = rand::gen_range(0.0, 1.0);
+        self.color.g = rand::gen_range(0.0, 1.0);
+        self.color.b = rand::gen_range(0.0, 1.0);
+        self.color.a = rand::gen_range(0.8, 1.0);
     }
 
     fn set_vx(&mut self, vx: f32) {
@@ -102,15 +116,18 @@ async fn main() {
         if ball.y > screen_height() - 60.0 {
             ball.invert_vy();
             // avoid a bug when it stay at exact position and "float" at bottom
-            ball.set_y(screen_height() - 60.0 - 1.0)
+            ball.set_y(screen_height() - 60.0 - 1.0);
+            ball.random_color();
         }
         if ball.x > screen_width() - 30.0 {
             ball.invert_vx();
-            ball.set_x(screen_width() - 30.0 - 5.0)
+            ball.set_x(screen_width() - 30.0 - 5.0);
+            ball.random_color();
         }
         if ball.x < 30.0 {
             ball.invert_vx();
-            ball.set_x(30.0 + 0.1)
+            ball.set_x(30.0 + 0.1);
+            ball.random_color();
         }
         let dt = get_frame_time();
         ball.update(dt);
@@ -121,7 +138,7 @@ async fn main() {
 
         clear_background(BEIGE);
         draw_rectangle(0.0, 550.0, screen_width(), 50.0, BROWN);
-        draw_circle(ball.x, ball.y, 30.0, RED);
+        draw_circle(ball.x, ball.y, 30.0, ball.color);
 
         next_frame().await;
     }
